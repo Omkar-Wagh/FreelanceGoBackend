@@ -1,6 +1,5 @@
 package com.freelancego.service;
 
-import com.freelancego.enums.Role;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;

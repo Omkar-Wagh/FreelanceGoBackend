@@ -1,6 +1,11 @@
 package com.freelancego.model;
 
+import com.freelancego.enums.ExperienceLevel;
 import jakarta.persistence.*;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 @Entity
 public class Freelancer {
@@ -12,11 +17,20 @@ public class Freelancer {
     @MapsId
     @JoinColumn(name = "id")
     private User user;
-
-    private String skills;
-    private Double hourlyRate;
+    private String bio;
     private String portfolioUrl;
+    private String skills;
+    private ExperienceLevel experienceLevel;
+    private String phone;
 
+    @Transient
+    public List<String> getSkillsList() {
+        return skills != null ? Arrays.asList(skills.split("\\s+")) : new ArrayList<>();
+    }
+
+    public void setSkillsList(List<String> skillsList) {
+        this.skills = String.join(" ", skillsList);
+    }
     public int getId() {
         return id;
     }
@@ -41,13 +55,6 @@ public class Freelancer {
         this.skills = skills;
     }
 
-    public Double getHourlyRate() {
-        return hourlyRate;
-    }
-
-    public void setHourlyRate(Double hourlyRate) {
-        this.hourlyRate = hourlyRate;
-    }
 
     public String getPortfolioUrl() {
         return portfolioUrl;
@@ -56,4 +63,32 @@ public class Freelancer {
     public void setPortfolioUrl(String portfolioUrl) {
         this.portfolioUrl = portfolioUrl;
     }
+
+    public String getBio() {
+        return bio;
+    }
+
+    public void setBio(String bio) {
+        this.bio = bio;
+    }
+
+    public ExperienceLevel getExperienceLevel() {
+        return experienceLevel;
+    }
+
+    public void setExperienceLevel(ExperienceLevel experienceLevel) {
+        this.experienceLevel = experienceLevel;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
 }
+
+//List<String> skillsList = freelancer.getSkillsList(); // from request body
+//String skillsString = String.join(" ", skillsList);   // join with space
+//freelancer.setSkills(skillsString);                   // store in DB column

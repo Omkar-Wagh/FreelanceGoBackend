@@ -1,4 +1,6 @@
 package com.freelancego.dto.freelancer;
 
-public record FreelancerDto(int id,String skills, Double hourlyRate, String portfolioUrl) {
+import java.util.List;
+
+public record FreelancerDto(int id, String bio, String portfolioUrl, List<String> skills, String experienceLevel,String phone) {
 }

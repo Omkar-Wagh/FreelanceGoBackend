@@ -18,10 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class UserService {
@@ -104,14 +101,17 @@ public class UserService {
 
         Map<String, Object> response = new HashMap<>();
 
+        response.put("user",new UserDto(user.getId(),user.getUsername(), user.getEmail(),user.getImageData()));
         if (client != null) {
-            response.put("client", new ClientDto(client.getId(), client.getCompanyName()));
+            response.put("client", new ClientDto(client.getId(), client.getCompanyName(),client.getCompanyUrl(),client.getBio(), client.getPhone()));
         } else {
             response.put("client", null);
         }
 
         if (freelancer != null) {
-            response.put("freelancer", new FreelancerDto(freelancer.getId(), freelancer.getSkills(), freelancer.getHourlyRate(), freelancer.getPortfolioUrl()
+            String skillsString = freelancer.getSkills();
+            List<String> skillsList = Arrays.asList(skillsString.split(","));
+            response.put("freelancer", new FreelancerDto(freelancer.getId(), freelancer.getBio(), freelancer.getPortfolioUrl(),skillsList, freelancer.getExperienceLevel().name(), freelancer.getPhone()
             ));
         } else {
             response.put("freelancer", null);

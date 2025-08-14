@@ -14,6 +14,9 @@ public class Client {
     private User user;
 
     private String companyName;
+    private String companyUrl;
+    private String bio;
+    private String phone;
 
     public int getId() {
         return id;
@@ -37,5 +40,29 @@ public class Client {
 
     public void setCompanyName(String companyName) {
         this.companyName = companyName;
+    }
+
+    public String getCompanyUrl() {
+        return companyUrl;
+    }
+
+    public void setCompanyUrl(String companyUrl) {
+        this.companyUrl = companyUrl;
+    }
+
+    public String getBio() {
+        return bio;
+    }
+
+    public void setBio(String bio) {
+        this.bio = bio;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
     }
 }

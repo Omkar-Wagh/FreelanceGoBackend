@@ -19,6 +19,8 @@ public class User {
     @Column(name = "image_data")
     private byte[] imageData;
 
+    private String phone;
+
     @Enumerated(EnumType.STRING)
     private Role role;
 
@@ -52,6 +54,14 @@ public class User {
 
     public void setImageData(byte[] imageData) {
         this.imageData = imageData;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
     }
 
     public Role getRole() {

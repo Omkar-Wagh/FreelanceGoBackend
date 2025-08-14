@@ -1,7 +1,6 @@
 package com.freelancego.controller;
 
 import com.freelancego.dto.user.UserDto;
-import com.freelancego.model.User;
 import com.freelancego.repo.UserRepository;
 import com.freelancego.service.JWTService;
 import com.freelancego.service.UserService;
@@ -53,6 +52,4 @@ public class UserController {
     public ResponseEntity<?> checkAvailableRole(Authentication auth) {
         return userService.checkRoles(auth.getName());
     }
-
-
 }
