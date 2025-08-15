@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import java.util.Base64;
 
 import java.io.IOException;
 import java.util.*;
@@ -35,9 +36,13 @@ public class UserService {
     @Autowired
     private JWTService jwtService;
 
+    @Autowired
+    private UserService userService;
+
     public UserDto getUserDetails(Authentication auth) {
        User user = userRepository.findByEmail(auth.getName());
-        return new UserDto(user.getId(),user.getUsername(), user.getEmail(),user.getImageData());
+        String imageData = toBase64Image(user.getImageData());
+        return new UserDto(user.getId(),user.getUsername(), user.getEmail(),imageData);
     }
 
     public ResponseEntity<?> uploadProfileImage(int id, MultipartFile image, Authentication auth) throws IOException, IOException {
@@ -47,7 +52,7 @@ public class UserService {
         if (user.getId() == loggedInUser.getId()) {
             user.setImageData(image.getBytes());
             userRepository.save(user);
-            return ResponseEntity.ok(new UserDto(user.getId(),user.getUsername(), user.getEmail(),user.getImageData()));
+            return ResponseEntity.ok(new UserDto(user.getId(),user.getUsername(), user.getEmail(),toBase64Image(user.getImageData())));
         }
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Unauthorized to modify this profile.");
     }
@@ -101,7 +106,7 @@ public class UserService {
 
         Map<String, Object> response = new HashMap<>();
 
-        response.put("user",new UserDto(user.getId(),user.getUsername(), user.getEmail(),user.getImageData()));
+        response.put("user",new UserDto(user.getId(),user.getUsername(), user.getEmail(),toBase64Image(user.getImageData())));
         if (client != null) {
             response.put("client", new ClientDto(client.getId(), client.getCompanyName(),client.getCompanyUrl(),client.getBio(), client.getPhone()));
         } else {
@@ -129,5 +134,12 @@ public class UserService {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Not Authenticated");
     }
 
+    public String toBase64Image(byte[] imageBytes) {
+        if (imageBytes == null) {
+            return null;
+        }
+        String base64 = Base64.getEncoder().encodeToString(imageBytes);
+        return base64;
+    }
 
 }
