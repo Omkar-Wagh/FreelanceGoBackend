@@ -140,3 +140,13 @@ public class UserService {
     }
 
 }
+
+/*
+Freelancer
+join date - localdatetime
+
+Client
+job posted
+freelancer hired
+
+ */
