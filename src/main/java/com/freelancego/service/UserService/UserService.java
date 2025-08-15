@@ -1,4 +1,4 @@
-package com.freelancego.service;
+package com.freelancego.service.UserService;
 
 import com.freelancego.dto.client.ClientDto;
 import com.freelancego.dto.freelancer.FreelancerDto;
@@ -111,7 +111,7 @@ public class UserService {
         if (freelancer != null) {
             String skillsString = freelancer.getSkills();
             List<String> skillsList = Arrays.asList(skillsString.split(","));
-            response.put("freelancer", new FreelancerDto(freelancer.getId(), freelancer.getBio(), freelancer.getPortfolioUrl(),skillsList, freelancer.getExperienceLevel().name(), freelancer.getPhone()
+            response.put("freelancer", new FreelancerDto(freelancer.getId(),freelancer.getDesignation(), freelancer.getBio(), freelancer.getPortfolioUrl(),skillsList, freelancer.getExperienceLevel().name(), freelancer.getPhone()
             ));
         } else {
             response.put("freelancer", null);

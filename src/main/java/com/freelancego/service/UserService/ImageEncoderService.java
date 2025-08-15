@@ -1,4 +1,4 @@
-package com.freelancego.service;
+package com.freelancego.service.UserService;
 
 import org.springframework.stereotype.Service;
 

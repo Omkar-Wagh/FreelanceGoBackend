@@ -17,6 +17,7 @@ public class Freelancer {
     @MapsId
     @JoinColumn(name = "id")
     private User user;
+    private String designation;
     private String bio;
     private String portfolioUrl;
     private String skills;
@@ -45,6 +46,14 @@ public class Freelancer {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    public String getDesignation() {
+        return designation;
+    }
+
+    public void setDesignation(String designation) {
+        this.designation = designation;
     }
 
     public String getSkills() {

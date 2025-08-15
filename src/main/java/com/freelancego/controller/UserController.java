@@ -2,8 +2,8 @@ package com.freelancego.controller;
 
 import com.freelancego.dto.user.UserDto;
 import com.freelancego.repo.UserRepository;
-import com.freelancego.service.JWTService;
-import com.freelancego.service.UserService;
+import com.freelancego.service.UserService.JWTService;
+import com.freelancego.service.UserService.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
