@@ -1,6 +1,6 @@
 package com.freelancego.config;
 
-import JWTService;
+import com.freelancego.service.UserService.JWTService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
