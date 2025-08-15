@@ -36,9 +36,6 @@ public class UserService {
     @Autowired
     private JWTService jwtService;
 
-    @Autowired
-    private UserService userService;
-
     public UserDto getUserDetails(Authentication auth) {
        User user = userRepository.findByEmail(auth.getName());
         String imageData = toBase64Image(user.getImageData());
