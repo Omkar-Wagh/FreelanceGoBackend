@@ -22,4 +22,8 @@ public class FreelancerController {
     ResponseEntity<?> createFreelancerProfile(@RequestBody FreelancerDto freelancerDto, Authentication auth){
         return freelancerService.createFreelancer(freelancerDto,auth.getName());
     }
+    @PostMapping("/create-bid")
+    ResponseEntity<?> createBid(){
+        return freelancerService.createBid();
+    }
 }

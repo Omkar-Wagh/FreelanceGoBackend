@@ -80,6 +80,7 @@ public class UserService {
             user.setRole(newRole);
             userRepository.save(user);
             String newToken = jwtService.generateToken(user.getEmail(), newRole.name());
+//            return ResponseEntity.ok(Map.of("token",newToken));
             return ResponseEntity.ok(Collections.singletonMap("token", newToken));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

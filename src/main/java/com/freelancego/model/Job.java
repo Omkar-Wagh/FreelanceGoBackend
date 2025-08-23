@@ -1,7 +1,8 @@
 package com.freelancego.model;
 
+import com.freelancego.enums.Role;
 import jakarta.persistence.*;
-import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.List;
 
 @Entity
@@ -10,13 +11,15 @@ public class Job {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    private String title;
-    private String description;
+    private String jobTitle;
+    private String requiredSkills;
+    private Role ExperienceLevel;
+    private String jobDescription;
+    @Lob
+    private String requirement;
+    private ZoneOffset projectStartTime;
+    private ZoneOffset projectEndTime;
     private Double budget;
-    private String category;
-    private LocalDate deadline;
-    private String status; // OPEN, IN_PROGRESS, COMPLETED
-
     @ManyToOne
     private Client client;
 
@@ -31,20 +34,60 @@ public class Job {
         this.id = id;
     }
 
-    public String getTitle() {
-        return title;
+    public String getJobTitle() {
+        return jobTitle;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
+    public void setJobTitle(String jobTitle) {
+        this.jobTitle = jobTitle;
     }
 
-    public String getDescription() {
-        return description;
+    public String getRequiredSkills() {
+        return requiredSkills;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public void setRequiredSkills(String requiredSkills) {
+        this.requiredSkills = requiredSkills;
+    }
+
+    public Role getExperienceLevel() {
+        return ExperienceLevel;
+    }
+
+    public void setExperienceLevel(Role experienceLevel) {
+        ExperienceLevel = experienceLevel;
+    }
+
+    public String getJobDescription() {
+        return jobDescription;
+    }
+
+    public void setJobDescription(String jobDescription) {
+        this.jobDescription = jobDescription;
+    }
+
+    public String getRequirement() {
+        return requirement;
+    }
+
+    public void setRequirement(String requirement) {
+        this.requirement = requirement;
+    }
+
+    public ZoneOffset getProjectStartTime() {
+        return projectStartTime;
+    }
+
+    public void setProjectStartTime(ZoneOffset projectStartTime) {
+        this.projectStartTime = projectStartTime;
+    }
+
+    public ZoneOffset getProjectEndTime() {
+        return projectEndTime;
+    }
+
+    public void setProjectEndTime(ZoneOffset projectEndTime) {
+        this.projectEndTime = projectEndTime;
     }
 
     public Double getBudget() {
@@ -53,30 +96,6 @@ public class Job {
 
     public void setBudget(Double budget) {
         this.budget = budget;
-    }
-
-    public String getCategory() {
-        return category;
-    }
-
-    public void setCategory(String category) {
-        this.category = category;
-    }
-
-    public LocalDate getDeadline() {
-        return deadline;
-    }
-
-    public void setDeadline(LocalDate deadline) {
-        this.deadline = deadline;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
     }
 
     public Client getClient() {
