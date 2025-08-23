@@ -43,8 +43,8 @@ public class UserController {
 
     @PostMapping("/update-role")
     @PreAuthorize("hasAnyRole('CLIENT', 'FREELANCER')")
-    public ResponseEntity<?> updateRole(@RequestBody Map<String, String> request, @RequestHeader("Authorization") String authHeader) {
-        return userService.updateRole(request,authHeader);
+    public ResponseEntity<?> updateRole(@RequestParam String role, @RequestHeader("Authorization") String authHeader) {
+        return userService.updateRole(role,authHeader);
     }
 
     @GetMapping("/check-role")

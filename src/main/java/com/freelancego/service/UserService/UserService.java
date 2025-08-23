@@ -54,7 +54,7 @@ public class UserService {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Unauthorized to modify this profile.");
     }
 
-    public ResponseEntity<?> updateRole(Map<String, String> request, String authHeader) {
+    public ResponseEntity<?> updateRole(String role, String authHeader) {
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Collections.singletonMap("error", "Invalid Authorization header"));
@@ -68,7 +68,7 @@ public class UserService {
                     .body(Collections.singletonMap("error", "No User Found"));
         }
 
-        String newRoleStr = request.get("role");
+        String newRoleStr = role;
         Role newRole;
         try {
             newRole = Role.valueOf(newRoleStr);
