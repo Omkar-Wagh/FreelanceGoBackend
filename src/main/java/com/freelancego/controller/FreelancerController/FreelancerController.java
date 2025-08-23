@@ -22,8 +22,23 @@ public class FreelancerController {
     ResponseEntity<?> createFreelancerProfile(@RequestBody FreelancerDto freelancerDto, Authentication auth){
         return freelancerService.createFreelancer(freelancerDto,auth.getName());
     }
-    @PostMapping("/create-bid")
-    ResponseEntity<?> createBid(){
-        return freelancerService.createBid();
-    }
+
+//    @PostMapping("/create-bid")
+//    ResponseEntity<?> createBid(@RequestBody BidDto bidDto, Authentication auth){
+//        return freelancerService.createBid();
+//    }
 }
+
+/*
+    private Double amount;
+    private String coverLetter;
+    private LocalDateTime submittedAt;
+
+    @ManyToOne
+    @JoinColumn(name = "job_id", nullable = false)
+    private Job job;
+
+    @ManyToOne
+    @JoinColumn(name = "freelancer_id", nullable = false)
+    private Freelancer freelancer;
+ */
