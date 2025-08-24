@@ -1,5 +1,6 @@
 package com.freelancego.dto.client;
 
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Size;
 import java.time.OffsetDateTime;
 
@@ -12,6 +13,6 @@ public record JobDto(
         String requirement,
         OffsetDateTime projectStartTime,
         OffsetDateTime projectEndTime,
-        @Size(min = 0,message = "Budget should not less or equal to the zero")
+        @DecimalMin(value = "0.1", message = "Budget must be greater than zero")
         Double budget) {
 }

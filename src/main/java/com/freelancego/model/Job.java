@@ -4,7 +4,6 @@ import com.freelancego.enums.Role;
 import jakarta.persistence.*;
 
 import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
 import java.util.List;
 
 @Entity
@@ -19,7 +18,10 @@ public class Job {
     private String jobDescription;
     @Lob
     private String requirement;
+    @Column(columnDefinition = "TIMESTAMP WITH TIME ZONE")
     private OffsetDateTime projectStartTime;
+
+    @Column(columnDefinition = "TIMESTAMP WITH TIME ZONE")
     private OffsetDateTime projectEndTime;
     private Double budget;
     @ManyToOne

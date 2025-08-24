@@ -82,7 +82,7 @@ public class ClientService {
         newJob.setJobTitle(jobDto.jobTitle());
         newJob.setJobDescription(jobDto.jobDescription());
         try {
-            newJob.setExperienceLevel(Role.valueOf(jobDto.ExperienceLevel().toUpperCase()));
+            newJob.setExperienceLevel(Role.valueOf(jobDto.ExperienceLevel().trim().toUpperCase()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("error", "Invalid experience level"));
