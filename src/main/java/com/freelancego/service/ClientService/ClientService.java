@@ -3,7 +3,6 @@ package com.freelancego.service.ClientService;
 import com.freelancego.dto.client.ClientDto;
 import com.freelancego.dto.client.JobDto;
 import com.freelancego.enums.Role;
-import com.freelancego.model.Bid;
 import com.freelancego.model.Client;
 import com.freelancego.model.Job;
 import com.freelancego.model.User;
@@ -15,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -70,11 +68,25 @@ public class ClientService {
     public ResponseEntity<?> createPost(JobDto jobDto,String auth) {
         Job newJob = new Job();
         User user = userRepository.findByEmail(auth);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "Invalid user"));
+        }
+
         Client client = clientRepository.findByUser(user);
+        if (client == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", "Client not found for user"));
+        }
         String requiredSkills = String.join(",", jobDto.requiredSkills());
         newJob.setJobTitle(jobDto.jobTitle());
         newJob.setJobDescription(jobDto.jobDescription());
-        newJob.setExperienceLevel(Role.valueOf(jobDto.ExperienceLevel()));
+        try {
+            newJob.setExperienceLevel(Role.valueOf(jobDto.ExperienceLevel().toUpperCase()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", "Invalid experience level"));
+        }
         newJob.setRequiredSkills(requiredSkills);
         newJob.setRequirement(jobDto.requirement());
         newJob.setProjectStartTime(jobDto.projectStartTime());
@@ -84,22 +96,82 @@ public class ClientService {
         return ResponseEntity.ok(Map.of("message","job created successfully"));
     }
 
-    public ResponseEntity<?> getPostByClient(String name) {
-        User user = userRepository.findByEmail(name);
-        Client client = clientRepository.findByUser(user);
-        List<Job> job = jobRepository.getPostByClient(client);
-        List<JobDto> jobDto = new ArrayList<>();
-        for(Job jobs : job){
-            String[] skills = jobs.getRequiredSkills().split(",");
-            JobDto jobDto1 = new JobDto(
-                    jobs.getJobTitle(),skills,jobs.getExperienceLevel().name(),
-                    jobs.getJobDescription(),jobs.getRequirement(),jobs.getProjectStartTime(),
-                    jobs.getProjectEndTime(),jobs.getBudget()
-                    );
-            jobDto.add(jobDto1);
+    public ResponseEntity<?> getPostByClient(String email) {
+        User user = userRepository.findByEmail(email);
+        if (user == null) {
+            return ResponseEntity.badRequest().body(Map.of("error", "User not found"));
         }
-        return ResponseEntity.ok(Map.of("posts",jobDto));
+
+        Client client = clientRepository.findByUser(user);
+        if (client == null) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Client not found"));
+        }
+
+        List<Job> jobs = jobRepository.findJobByClient(client); // make sure method exists
+        List<JobDto> jobDtos = new ArrayList<>();
+
+        for (Job job : jobs) {
+            String[] skills = (job.getRequiredSkills() != null && !job.getRequiredSkills().isEmpty())
+                    ? job.getRequiredSkills().split(",")
+                    : new String[0];
+
+            JobDto dto = new JobDto(
+                    job.getJobTitle(),
+                    skills,
+                    job.getExperienceLevel() != null ? job.getExperienceLevel().name() : null,
+                    job.getJobDescription(),
+                    job.getRequirement(),
+                    job.getProjectStartTime(),
+                    job.getProjectEndTime(),
+                    job.getBudget()
+            );
+
+            jobDtos.add(dto);
+        }
+
+        return ResponseEntity.ok(Map.of("posts", jobDtos));
     }
+
+
+    public ResponseEntity<?> getPostById(int id, String email) {
+        User user = userRepository.findByEmail(email);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", "User not found"));
+        }
+
+        Client client = clientRepository.findByUser(user);
+        if (client == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", "Client not found"));
+        }
+
+        Job job = jobRepository.findById(id).orElse(null);
+        if (job == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", "Job not found"));
+        }
+
+        if (job.getClient().getId() != (client.getId())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", "Unauthorized access to this job post"));
+        }
+
+        String[] skills = job.getRequiredSkills().split(",");
+        JobDto jobDto = new JobDto(
+                job.getJobTitle(),
+                skills,
+                job.getExperienceLevel().name(),
+                job.getJobDescription(),
+                job.getRequirement(),
+                job.getProjectStartTime(),
+                job.getProjectEndTime(),
+                job.getBudget()
+        );
+
+        return ResponseEntity.ok(Map.of("post", jobDto));
+    }
+
 }
 
 /*

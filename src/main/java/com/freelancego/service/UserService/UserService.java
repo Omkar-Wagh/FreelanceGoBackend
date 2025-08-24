@@ -68,7 +68,7 @@ public class UserService {
                     .body(Collections.singletonMap("error", "No User Found"));
         }
 
-        String newRoleStr = role;
+        String newRoleStr = role.toUpperCase();
         Role newRole;
         try {
             newRole = Role.valueOf(newRoleStr);

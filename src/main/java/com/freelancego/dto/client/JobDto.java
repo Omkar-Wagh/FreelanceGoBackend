@@ -1,10 +1,7 @@
 package com.freelancego.dto.client;
 
-import com.freelancego.enums.Role;
-import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.Size;
-
-import java.time.ZoneOffset;
+import java.time.OffsetDateTime;
 
 public record JobDto(
         @Size(min = 5,message = "Title should be of minimum 5 characters")
@@ -13,8 +10,8 @@ public record JobDto(
         String ExperienceLevel,
         String jobDescription,
         String requirement,
-        ZoneOffset projectStartTime,
-        ZoneOffset projectEndTime,
+        OffsetDateTime projectStartTime,
+        OffsetDateTime projectEndTime,
         @Size(min = 0,message = "Budget should not less or equal to the zero")
         Double budget) {
 }

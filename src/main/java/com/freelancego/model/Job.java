@@ -2,6 +2,8 @@ package com.freelancego.model;
 
 import com.freelancego.enums.Role;
 import jakarta.persistence.*;
+
+import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 
@@ -17,8 +19,8 @@ public class Job {
     private String jobDescription;
     @Lob
     private String requirement;
-    private ZoneOffset projectStartTime;
-    private ZoneOffset projectEndTime;
+    private OffsetDateTime projectStartTime;
+    private OffsetDateTime projectEndTime;
     private Double budget;
     @ManyToOne
     private Client client;
@@ -74,19 +76,19 @@ public class Job {
         this.requirement = requirement;
     }
 
-    public ZoneOffset getProjectStartTime() {
+    public OffsetDateTime getProjectStartTime() {
         return projectStartTime;
     }
 
-    public void setProjectStartTime(ZoneOffset projectStartTime) {
+    public void setProjectStartTime(OffsetDateTime projectStartTime) {
         this.projectStartTime = projectStartTime;
     }
 
-    public ZoneOffset getProjectEndTime() {
+    public OffsetDateTime getProjectEndTime() {
         return projectEndTime;
     }
 
-    public void setProjectEndTime(ZoneOffset projectEndTime) {
+    public void setProjectEndTime(OffsetDateTime projectEndTime) {
         this.projectEndTime = projectEndTime;
     }
 

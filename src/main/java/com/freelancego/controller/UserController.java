@@ -11,7 +11,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
@@ -51,4 +50,5 @@ public class UserController {
     public ResponseEntity<?> checkAvailableRole(Authentication auth) {
         return userService.checkRoles(auth.getName());
     }
+
 }

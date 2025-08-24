@@ -30,5 +30,9 @@ public class ClientController {
     ResponseEntity<?> getPost(Authentication auth){
         return clientService.getPostByClient(auth.getName());
     }
+    @GetMapping("/get-post/id")
+    ResponseEntity<?> getPostById(@PathVariable("id") int id,Authentication auth){
+        return clientService.getPostById(id,auth.getName());
+    }
 
 }
