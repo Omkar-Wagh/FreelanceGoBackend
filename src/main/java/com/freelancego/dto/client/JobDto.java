@@ -8,7 +8,7 @@ public record JobDto(
         @Size(min = 5,message = "Title should be of minimum 5 characters")
         String jobTitle,
         String[] requiredSkills,
-        String ExperienceLevel,
+        String experienceLevel,
         String jobDescription,
         String requirement,
         OffsetDateTime projectStartTime,

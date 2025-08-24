@@ -1,5 +1,6 @@
 package com.freelancego.model;
 
+import com.freelancego.enums.ExperienceLevel;
 import com.freelancego.enums.Role;
 import jakarta.persistence.*;
 
@@ -14,7 +15,8 @@ public class Job {
 
     private String jobTitle;
     private String requiredSkills;
-    private Role ExperienceLevel;
+    @Enumerated(EnumType.STRING)
+    private ExperienceLevel experienceLevel;
     private String jobDescription;
     @Lob
     private String requirement;
@@ -54,12 +56,12 @@ public class Job {
         this.requiredSkills = requiredSkills;
     }
 
-    public Role getExperienceLevel() {
-        return ExperienceLevel;
+    public ExperienceLevel getExperienceLevel() {
+        return experienceLevel;
     }
 
-    public void setExperienceLevel(Role experienceLevel) {
-        ExperienceLevel = experienceLevel;
+    public void setExperienceLevel(ExperienceLevel experienceLevel) {
+        this.experienceLevel = experienceLevel;
     }
 
     public String getJobDescription() {

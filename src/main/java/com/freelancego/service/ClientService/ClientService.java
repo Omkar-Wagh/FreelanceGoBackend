@@ -2,6 +2,7 @@ package com.freelancego.service.ClientService;
 
 import com.freelancego.dto.client.ClientDto;
 import com.freelancego.dto.client.JobDto;
+import com.freelancego.enums.ExperienceLevel;
 import com.freelancego.enums.Role;
 import com.freelancego.model.Client;
 import com.freelancego.model.Job;
@@ -82,7 +83,7 @@ public class ClientService {
         newJob.setJobTitle(jobDto.jobTitle());
         newJob.setJobDescription(jobDto.jobDescription());
         try {
-            newJob.setExperienceLevel(Role.valueOf(jobDto.ExperienceLevel().trim().toUpperCase()));
+            newJob.setExperienceLevel(ExperienceLevel.valueOf(jobDto.experienceLevel().trim().toUpperCase()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("error", "Invalid experience level"));
