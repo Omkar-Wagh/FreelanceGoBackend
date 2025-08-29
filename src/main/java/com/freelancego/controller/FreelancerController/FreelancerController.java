@@ -10,16 +10,21 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api")
 public class FreelancerController {
 
-    @Autowired
-    private FreelancerService freelancerService;
+    final private FreelancerService freelancerService;
+
+    public FreelancerController(FreelancerService freelancerService) {
+        this.freelancerService = freelancerService;
+    }
 
     @PostMapping("/create-profile/freelancer")
-    ResponseEntity<?> createFreelancerProfile(@RequestBody FreelancerDto freelancerDto, Authentication auth){
-        return freelancerService.createFreelancer(freelancerDto,auth.getName());
+    ResponseEntity<Map<String,Object>> createFreelancerProfile(@RequestBody FreelancerDto freelancerDto, Authentication auth){
+        return ResponseEntity.ok(freelancerService.createFreelancer(freelancerDto,auth.getName()));
     }
 
 //    @PostMapping("/create-bid")
@@ -27,17 +32,3 @@ public class FreelancerController {
 //        return freelancerService.createBid();
 //    }
 }
-
-/*
-    private Double amount;
-    private String coverLetter;
-    private LocalDateTime submittedAt;
-
-    @ManyToOne
-    @JoinColumn(name = "job_id", nullable = false)
-    private Job job;
-
-    @ManyToOne
-    @JoinColumn(name = "freelancer_id", nullable = false)
-    private Freelancer freelancer;
- */

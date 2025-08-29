@@ -2,7 +2,6 @@ package com.freelancego.model;
 
 import com.freelancego.enums.ExperienceLevel;
 import jakarta.persistence.*;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -24,14 +23,6 @@ public class Freelancer {
     private ExperienceLevel experienceLevel;
     private String phone;
 
-    @Transient
-    public List<String> getSkillsList() {
-        return skills != null ? Arrays.asList(skills.split("\\s+")) : new ArrayList<>();
-    }
-
-    public void setSkillsList(List<String> skillsList) {
-        this.skills = String.join(" ", skillsList);
-    }
     public int getId() {
         return id;
     }
@@ -96,8 +87,6 @@ public class Freelancer {
     public void setPhone(String phone) {
         this.phone = phone;
     }
-}
 
-//List<String> skillsList = freelancer.getSkillsList(); // from request body
-//String skillsString = String.join(" ", skillsList);   // join with space
-//freelancer.setSkills(skillsString);                   // store in DB column
+
+}

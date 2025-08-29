@@ -1,110 +1,105 @@
 package com.freelancego.service.UserService;
 
+import com.freelancego.security.service.JWTService;
 import com.freelancego.dto.client.ClientDto;
 import com.freelancego.dto.freelancer.FreelancerDto;
 import com.freelancego.dto.user.UserDto;
 import com.freelancego.enums.Role;
+import com.freelancego.exception.BadRequestException;
+import com.freelancego.exception.InternalServerErrorException;
+import com.freelancego.exception.UnauthorizedAccessException;
+import com.freelancego.exception.UserNotFoundException;
+import com.freelancego.mapper.UserMapper;
 import com.freelancego.model.Client;
 import com.freelancego.model.Freelancer;
 import com.freelancego.model.User;
 import com.freelancego.repo.ClientRepository;
 import com.freelancego.repo.FreelancerRepository;
 import com.freelancego.repo.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import java.util.Base64;
-
 import java.io.IOException;
 import java.util.*;
 
 @Service
 public class UserService {
 
-    @Autowired
-    private UserRepository userRepository;
+    final private UserRepository userRepository;
+    final private ClientRepository clientRepository;
+    final private FreelancerRepository freelancerRepository;
+    final private JWTService jwtService;
+    final private UserMapper userMapper;
 
-    @Autowired
-    private ClientRepository clientRepository;
-
-    @Autowired
-    private FreelancerRepository freelancerRepository;
-
-    @Autowired
-    private JWTService jwtService;
-
-    public UserDto getUserDetails(Authentication auth) {
-       User user = userRepository.findByEmail(auth.getName());
-        String imageData = toBase64Image(user.getImageData());
-        return new UserDto(user.getId(),user.getUsername(), user.getEmail(),imageData);
+    public UserService(UserRepository userRepository, ClientRepository clientRepository, FreelancerRepository freelancerRepository, JWTService jwtService, UserMapper userMapper) {
+        this.userRepository = userRepository;
+        this.clientRepository = clientRepository;
+        this.freelancerRepository = freelancerRepository;
+        this.jwtService = jwtService;
+        this.userMapper = userMapper;
     }
 
-    public ResponseEntity<?> uploadProfileImage(int id, MultipartFile image, Authentication auth) throws IOException, IOException {
-        User user = userRepository.findById(id).orElseThrow();
-        User loggedInUser = userRepository.findByEmail(auth.getName());
+    public UserDto getUserDetails(Authentication auth) {
+       User user = userRepository.findByEmail(auth.getName())
+               .orElseThrow(() -> new UserNotFoundException("User not found"));
+        return userMapper.toDTO(user);
+    }
+
+    public UserDto uploadProfileImage(int id, MultipartFile image, Authentication auth) throws IOException {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+        User loggedInUser = userRepository.findByEmail(auth.getName())
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         if (user.getId() == loggedInUser.getId()) {
             user.setImageData(image.getBytes());
             userRepository.save(user);
-            return ResponseEntity.ok(new UserDto(user.getId(),user.getUsername(), user.getEmail(),toBase64Image(user.getImageData())));
+            return userMapper.toDTO(user);
+        } else {
+            throw new UnauthorizedAccessException("Unauthorized to modify this profile.");
         }
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Unauthorized to modify this profile.");
     }
 
-    public ResponseEntity<?> updateRole(String role, String authHeader) {
+
+    public String updateRole(String role, String authHeader) {
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Collections.singletonMap("error", "Invalid Authorization header"));
+            throw new BadRequestException("Bad Request");
         }
 
         String token = authHeader.substring(7);
         String email = jwtService.extractUsername(token);
-        User user = userRepository.findByEmail(email);
-        if (user == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Collections.singletonMap("error", "No User Found"));
-        }
-
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
         String newRoleStr = role.toUpperCase();
         Role newRole;
         try {
             newRole = Role.valueOf(newRoleStr);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Collections.singletonMap("error", "Invalid Role"));
+            throw new BadRequestException("Invalid Role");
         }
+
         try {
             user.setRole(newRole);
             userRepository.save(user);
-            String newToken = jwtService.generateToken(user.getEmail(), newRole.name());
-//            return ResponseEntity.ok(Map.of("token",newToken));
-            return ResponseEntity.ok(Collections.singletonMap("token", newToken));
+            return jwtService.generateToken(user.getEmail(), newRole.name());
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Collections.singletonMap("error", "Failed to Generate New Token"));
+            throw  new InternalServerErrorException("Failed to create token");
         }
     }
 
-    public ResponseEntity<?> checkRoles(String username) {
+    public Map<String,Object> checkRoles(String username) {
 
-        if (username == null || username.trim().isEmpty()) {
-            return ResponseEntity.badRequest().body(Map.of("error", "Username is required"));
-        }
+        User user = userRepository.findByEmail(username)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
 
-        User user = userRepository.findByEmail(username);
-        if (user == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "User not found"));
-        }
-
-        Freelancer freelancer = freelancerRepository.findByUser(user);
-        Client client = clientRepository.findByUser(user);
+        Freelancer freelancer = freelancerRepository.findByUser(user)
+                .orElseThrow(() -> new UserNotFoundException("Freelancer not found"));
+        Client client = clientRepository.findByUser(user)
+                .orElseThrow(() -> new UserNotFoundException("Client not found"));
 
         Map<String, Object> response = new HashMap<>();
 
-        response.put("user",new UserDto(user.getId(),user.getUsername(), user.getEmail(),toBase64Image(user.getImageData())));
+        response.put("user",userMapper.toDTO(user));
         if (client != null) {
             response.put("client", new ClientDto(client.getId(), client.getCompanyName(),client.getCompanyUrl(),client.getBio(), client.getPhone()));
         } else {
@@ -120,34 +115,14 @@ public class UserService {
             response.put("freelancer", null);
         }
 
-        return ResponseEntity.ok(response);
+        return response;
     }
 
-    public ResponseEntity<?> getIsAuthenticated(Authentication auth) {
-        User user = userRepository.findByEmail(auth.getName());
-        if (user != null) {
-            return ResponseEntity.ok("Authenticated");
-//            return ResponseEntity.status(HttpStatus.OK).body(user);
-        }
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Not Authenticated");
-    }
-
-    public String toBase64Image(byte[] imageBytes) {
-        if (imageBytes == null) {
-            return null;
-        }
-        String base64 = Base64.getEncoder().encodeToString(imageBytes);
-        return base64;
+    public boolean getIsAuthenticated(Authentication auth) {
+        User user = userRepository.findByEmail(auth.getName())
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+//        userRepository.findByEmail(auth.getName()).isPresent();
+        return true;
     }
 
 }
-
-/*
-Freelancer
-join date - localdatetime
-
-Client
-job posted
-freelancer hired
-
- */

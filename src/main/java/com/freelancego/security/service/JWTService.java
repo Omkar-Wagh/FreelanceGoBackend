@@ -1,4 +1,4 @@
-package com.freelancego.service.UserService;
+package com.freelancego.security.service;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

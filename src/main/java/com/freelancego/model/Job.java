@@ -1,9 +1,8 @@
 package com.freelancego.model;
 
 import com.freelancego.enums.ExperienceLevel;
-import com.freelancego.enums.Role;
+import com.freelancego.enums.JobPostStatus;
 import jakarta.persistence.*;
-
 import java.time.OffsetDateTime;
 import java.util.List;
 
@@ -26,6 +25,8 @@ public class Job {
     @Column(columnDefinition = "TIMESTAMP WITH TIME ZONE")
     private OffsetDateTime projectEndTime;
     private Double budget;
+    @Enumerated(EnumType.STRING)
+    private JobPostStatus status;
     @ManyToOne
     private Client client;
 
@@ -102,6 +103,14 @@ public class Job {
 
     public void setBudget(Double budget) {
         this.budget = budget;
+    }
+
+    public JobPostStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(JobPostStatus status) {
+        this.status = status;
     }
 
     public Client getClient() {

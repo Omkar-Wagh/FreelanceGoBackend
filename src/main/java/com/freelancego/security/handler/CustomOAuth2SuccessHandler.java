@@ -1,13 +1,13 @@
-package com.freelancego.config;
+package com.freelancego.security.handler;
 
 import com.freelancego.enums.Role;
+import com.freelancego.exception.UserNotFoundException;
 import com.freelancego.model.User;
 import com.freelancego.repo.UserRepository;
+import com.freelancego.security.service.JWTService;
 import com.freelancego.service.UserService.ImageEncoderService;
-import com.freelancego.service.UserService.JWTService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -19,14 +19,15 @@ import java.io.IOException;
 @Component
 public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
-    @Autowired
-    private JWTService jwtService;
+    final private JWTService jwtService;
+    final private UserRepository userRepository;
+    final private ImageEncoderService imageEncoder;
 
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private ImageEncoderService imageEncoder;
+    public CustomOAuth2SuccessHandler(JWTService jwtService, UserRepository userRepository, ImageEncoderService imageEncoder) {
+        this.jwtService = jwtService;
+        this.userRepository = userRepository;
+        this.imageEncoder = imageEncoder;
+    }
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request,
@@ -42,7 +43,7 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
         String picture = user.getAttribute("picture");
         byte [] image = imageEncoder.downloadImageFromUrl(picture);
         // Save user if not exists
-        User existingUser = userRepository.findByEmail(email);
+        User existingUser = userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException("user not found"));
         if (existingUser == null) {
             existingUser = new User();
             existingUser.setEmail(email);
