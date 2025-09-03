@@ -1,6 +1,5 @@
 package com.freelancego.dto.freelancer;
 
-import com.freelancego.dto.client.JobDto;
 import java.time.OffsetDateTime;
 
 public record BidDto(
@@ -8,7 +7,6 @@ public record BidDto(
         Double amount,
         String coverLetter,
         OffsetDateTime submittedAt,
-        JobDto jobDto,
         FreelancerDto freelancerDto
 ) {
 }

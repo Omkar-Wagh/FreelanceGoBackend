@@ -89,7 +89,6 @@ public class JobServiceImpl implements JobService {
     }
 
 
-
     public JobDto getPostById(int id, String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));

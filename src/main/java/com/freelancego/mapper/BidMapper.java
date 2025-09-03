@@ -13,7 +13,6 @@ public interface BidMapper {
     @Mapping(source = "freelancer", target = "freelancerDto")
     BidDto toDto(Bid bid);
 
-    @Mapping(source = "jobDto", target = "job")
     @Mapping(source = "freelancerDto", target = "freelancer")
     Bid toEntity(BidDto bidDto);
 
