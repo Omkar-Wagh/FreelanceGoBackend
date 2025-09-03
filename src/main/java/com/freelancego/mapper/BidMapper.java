@@ -9,11 +9,12 @@ import java.util.List;
 @Mapper(componentModel = "spring", uses = {JobMapper.class, FreelancerMapper.class})
 public interface BidMapper {
 
-    @Mapping(source = "job", target = "jobDto")
     @Mapping(source = "freelancer", target = "freelancerDto")
+    @Mapping(source = "job", target = "jobDto", ignore = true) // 👈 don’t map job into dto
     BidDto toDto(Bid bid);
 
     @Mapping(source = "freelancerDto", target = "freelancer")
+    @Mapping(source = "jobDto", target = "job")   // 👈 allow job mapping from dto to entity
     Bid toEntity(BidDto bidDto);
 
     List<BidDto> toDtoList(List<Bid> bids);
