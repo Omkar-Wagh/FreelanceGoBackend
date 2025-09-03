@@ -2,7 +2,7 @@ package com.freelancego.model;
 
 import com.freelancego.enums.EscrowStatus;
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 @Entity
 public class Escrow {
@@ -16,9 +16,9 @@ public class Escrow {
     @Enumerated(EnumType.STRING)
     private EscrowStatus status; // HELD, RELEASED, REFUNDED
 
-    private LocalDateTime createdAt;
-    private LocalDateTime releasedAt;
-    private LocalDateTime refundedAt;
+    private OffsetDateTime createdAt;
+    private OffsetDateTime releasedAt;
+    private OffsetDateTime refundedAt;
 
     @OneToOne(optional = false)
     private Contract contract;

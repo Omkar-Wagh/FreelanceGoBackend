@@ -1,6 +1,6 @@
 package com.freelancego.mapper;
 
-import com.freelancego.dto.client.BidDto;
+import com.freelancego.dto.freelancer.BidDto;
 import com.freelancego.model.Bid;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

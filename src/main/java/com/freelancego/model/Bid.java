@@ -1,7 +1,7 @@
 package com.freelancego.model;
 
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 @Entity
 @Table(
@@ -16,7 +16,7 @@ public class Bid {
 
     private Double amount;
     private String coverLetter;
-    private LocalDateTime submittedAt;
+    private OffsetDateTime submittedAt;
 
     @ManyToOne
     @JoinColumn(name = "job_id", nullable = false)
@@ -50,11 +50,11 @@ public class Bid {
         this.coverLetter = coverLetter;
     }
 
-    public LocalDateTime getSubmittedAt() {
+    public OffsetDateTime getSubmittedAt() {
         return submittedAt;
     }
 
-    public void setSubmittedAt(LocalDateTime submittedAt) {
+    public void setSubmittedAt(OffsetDateTime submittedAt) {
         this.submittedAt = submittedAt;
     }
 
