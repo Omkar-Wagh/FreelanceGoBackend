@@ -13,6 +13,7 @@ import java.util.List;
 public interface JobRepository extends JpaRepository<Job, Integer> {
     Page<Job> findJobByClient(Client client, Pageable pageable);
     List<Job> findByClientIdAndStatusAndPhaseIn(int id, JobStatus status, List<JobPhase> phases);
-    List<Job> findByClientIdAndStatusAndPhaseIn(int id, JobStatus status, JobPhase phases);
-    List<Job> findByClientIdAndStatusIn(int id, JobStatus status);
+    List<Job> findByClientIdAndStatusAndPhase(int id, JobStatus status, JobPhase phases);
+    List<Job> findByClientIdAndStatus(int clientId, JobStatus status);
+
 }
