@@ -120,7 +120,7 @@ public class JobServiceImpl implements JobService {
     }
 
     public List<JobDto> getActivePost(Client client) {
-        List<Job> jobs = jobRepository.findByClientIdAndStatusAndPhaseIn(client.getId(), JobStatus.ACTIVE);
+        List<Job> jobs = jobRepository.findByClientIdAndStatusIn(client.getId(), JobStatus.ACTIVE);
         List<JobDto> jobDtos = jobMapper.toDtoList(jobs);
         return jobDtos;
     }
