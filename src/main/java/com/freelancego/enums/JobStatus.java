@@ -1,6 +1,6 @@
 package com.freelancego.enums;
 
-public enum JobPostStatus {
+public enum JobStatus {
     ACTIVE,
     INACTIVE;
 

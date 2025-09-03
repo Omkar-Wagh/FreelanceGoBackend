@@ -1,5 +1,6 @@
 package com.freelancego.dto.client;
 
+import com.freelancego.dto.freelancer.BidDto;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -8,6 +9,8 @@ import java.time.OffsetDateTime;
 import java.util.List;
 
 public record JobDto(
+
+        int id,
 
         @NotBlank(message = "Job title cannot be blank")
         @Size(min = 5, message = "Title should be of minimum 5 characters")
@@ -31,10 +34,17 @@ public record JobDto(
         @NotNull(message = "Project end time is required")
         OffsetDateTime projectEndTime,
 
+        OffsetDateTime createdAt,
+
         @DecimalMin(value = "0.1", message = "Budget must be greater than zero")
         @NotNull(message = "Budget is required")
         Double budget,
 
-        @NotBlank(message = "Status is required")
-        String status
+        String status,
+
+        String phase,
+
+        ClientDto clientDto,
+
+        List<BidDto> bidDto
 ) { }

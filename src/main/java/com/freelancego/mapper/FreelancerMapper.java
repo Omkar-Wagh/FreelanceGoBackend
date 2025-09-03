@@ -11,11 +11,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = {UserMapper.class})
 public interface FreelancerMapper {
 
     @Mapping(target = "skills", source = "skills", qualifiedByName = "stringToList")
     @Mapping(target = "experienceLevel", source = "experienceLevel", qualifiedByName = "enumToString")
+    @Mapping(target = "userDto", source = "user")
     FreelancerDto toDTO(Freelancer freelancer);
 
     @Mapping(target = "skills", source = "skills", qualifiedByName = "listToString")

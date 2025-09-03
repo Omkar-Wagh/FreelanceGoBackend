@@ -1,11 +1,18 @@
 package com.freelancego.repo;
 
+import com.freelancego.enums.JobPhase;
+import com.freelancego.enums.JobStatus;
 import com.freelancego.model.Client;
 import com.freelancego.model.Job;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
 public interface JobRepository extends JpaRepository<Job, Integer> {
-    List<Job> findJobByClient(Client client);
+    Page<Job> findJobByClient(Client client, Pageable pageable);
+    List<Job> findByClientIdAndStatusAndPhaseIn(int id, JobStatus status, List<JobPhase> phases);
+    List<Job> findByClientIdAndStatusAndPhaseIn(int id, JobStatus status, JobPhase phases);
+    List<Job> findByClientIdAndStatusAndPhaseIn(int id, JobStatus status);
 }

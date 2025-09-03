@@ -1,5 +1,7 @@
 package com.freelancego.service.UserService;
 
+import com.freelancego.mapper.ClientMapper;
+import com.freelancego.mapper.FreelancerMapper;
 import com.freelancego.security.service.JWTService;
 import com.freelancego.dto.client.ClientDto;
 import com.freelancego.dto.freelancer.FreelancerDto;
@@ -30,13 +32,17 @@ public class UserService {
     final private FreelancerRepository freelancerRepository;
     final private JWTService jwtService;
     final private UserMapper userMapper;
+    final private ClientMapper clientMapper;
+    final private FreelancerMapper freelancerMapper;
 
-    public UserService(UserRepository userRepository, ClientRepository clientRepository, FreelancerRepository freelancerRepository, JWTService jwtService, UserMapper userMapper) {
+    public UserService(UserRepository userRepository, ClientRepository clientRepository, FreelancerRepository freelancerRepository, JWTService jwtService, UserMapper userMapper, ClientMapper clientMapper, FreelancerMapper freelancerMapper) {
         this.userRepository = userRepository;
         this.clientRepository = clientRepository;
         this.freelancerRepository = freelancerRepository;
         this.jwtService = jwtService;
         this.userMapper = userMapper;
+        this.clientMapper = clientMapper;
+        this.freelancerMapper = freelancerMapper;
     }
 
     public UserDto getUserDetails(Authentication auth) {
@@ -101,7 +107,7 @@ public class UserService {
 
         response.put("user",userMapper.toDTO(user));
         if (client != null) {
-            response.put("client", new ClientDto(client.getId(), client.getCompanyName(),client.getCompanyUrl(),client.getBio(), client.getPhone()));
+            response.put("client",clientMapper.toDTO(client));
         } else {
             response.put("client", null);
         }
@@ -109,8 +115,7 @@ public class UserService {
         if (freelancer != null) {
             String skillsString = freelancer.getSkills();
             List<String> skillsList = Arrays.asList(skillsString.split(","));
-            response.put("freelancer", new FreelancerDto(freelancer.getId(),freelancer.getDesignation(), freelancer.getBio(), freelancer.getPortfolioUrl(),skillsList, freelancer.getExperienceLevel().name(), freelancer.getPhone()
-            ));
+            response.put("freelancer",freelancerMapper.toDTO(freelancer));
         } else {
             response.put("freelancer", null);
         }

@@ -2,7 +2,8 @@ package com.freelancego.mapper;
 
 import com.freelancego.dto.client.JobDto;
 import com.freelancego.enums.ExperienceLevel;
-import com.freelancego.enums.JobPostStatus;
+import com.freelancego.enums.JobPhase;
+import com.freelancego.enums.JobStatus;
 import com.freelancego.exception.BadRequestException;
 import com.freelancego.model.Job;
 import org.mapstruct.Mapper;
@@ -12,18 +13,23 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = {ClientMapper.class,BidMapper.class})
 public interface JobMapper {
 
     @Mapping(target = "requiredSkills", source = "requiredSkills", qualifiedByName = "listToString")
     @Mapping(target = "experienceLevel", source = "experienceLevel", qualifiedByName = "stringToExperienceLevel")
-    @Mapping(target = "status", source = "status", qualifiedByName = "stringToJobPostStatus")
+//    @Mapping(target = "status", source = "status", qualifiedByName = "stringToJobPostStatus")
     Job toEntity(JobDto dto);
 
     @Mapping(target = "requiredSkills", source = "requiredSkills", qualifiedByName = "stringToList")
     @Mapping(target = "experienceLevel", source = "experienceLevel", qualifiedByName = "experienceLevelToString")
     @Mapping(target = "status", source = "status", qualifiedByName = "jobPostStatusToString")
+    @Mapping(target = "phase", source = "phase", qualifiedByName = "jobPostPhaseToString")
+    @Mapping(target = "clientDto", source = "client")
+    @Mapping(target = "bidDto", source = "bids")
     JobDto toDto(Job job);
+
+    List<JobDto> toDtoList(List<Job> jobs);
 
     @Named("listToString")
     static String mapListToString(List<String> list) {
@@ -39,7 +45,6 @@ public interface JobMapper {
                 .collect(Collectors.toList());
     }
 
-    // 🔹 String ↔ ExperienceLevel
     @Named("stringToExperienceLevel")
     static ExperienceLevel mapStringToExperienceLevel(String level) {
         if (level == null || level.isBlank()) {
@@ -58,19 +63,24 @@ public interface JobMapper {
     }
 
     @Named("stringToJobPostStatus")
-    static JobPostStatus mapStringToJobPostStatus(String status) {
+    static JobStatus mapStringToJobPostStatus(String status) {
         if (status == null || status.isBlank()) {
             throw new BadRequestException("Status is required");
         }
         try {
-            return JobPostStatus.valueOf(status.trim().toUpperCase());
+            return JobStatus.valueOf(status.trim().toUpperCase());
         } catch (IllegalArgumentException e) {
             throw new BadRequestException("Invalid status: " + status);
         }
     }
 
     @Named("jobPostStatusToString")
-    static String mapJobPostStatusToString(JobPostStatus status) {
+    static String mapJobPostStatusToString(JobStatus status) {
+        return (status == null) ? null : status.name();
+    }
+
+    @Named("jobPostPhaseToString")
+    static String mapJobPostPhaseToString(JobPhase status) {
         return (status == null) ? null : status.name();
     }
 }
