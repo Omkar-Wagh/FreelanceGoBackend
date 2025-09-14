@@ -43,7 +43,7 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
         String picture = user.getAttribute("picture");
         byte [] image = imageEncoder.downloadImageFromUrl(picture);
         // Save user if not exists
-        User existingUser = userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException("user not found"));
+        User existingUser = userRepository.findByEmail(email).orElse(null);
         if (existingUser == null) {
             existingUser = new User();
             existingUser.setEmail(email);
