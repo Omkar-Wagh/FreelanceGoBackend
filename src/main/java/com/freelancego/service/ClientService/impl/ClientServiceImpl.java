@@ -40,6 +40,7 @@ public class ClientServiceImpl implements ClientService {
 
         Map<String,Object> response = new HashMap<>();
         Client client = clientMapper.toEntity(clientDto);
+        client.setUser(user);
         clientRepository.save(client);
 
         user.setRole(Role.CLIENT);
