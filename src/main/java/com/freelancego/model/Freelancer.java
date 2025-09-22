@@ -13,7 +13,7 @@ public class Freelancer {
     private int id;
 
     @OneToOne
-    @MapsId
+//    @MapsId
     @JoinColumn(name = "id")
     private User user;
     private String designation;

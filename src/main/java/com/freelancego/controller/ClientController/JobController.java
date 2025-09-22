@@ -30,7 +30,7 @@ public class JobController {
     }
 
     @GetMapping("/get-post/{id}")
-    ResponseEntity<JobDto> getPostById(@PathVariable("id") int id, Authentication auth){
+    ResponseEntity<Map<String,Object>> getPostById(@PathVariable("id") int id, Authentication auth){
         return ResponseEntity.ok(jobService.getPostById(id,auth.getName()));
     }
 

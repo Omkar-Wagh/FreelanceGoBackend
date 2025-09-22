@@ -99,9 +99,9 @@ public class UserService {
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         Freelancer freelancer = freelancerRepository.findByUser(user)
-                .orElseThrow(() -> new UserNotFoundException("Freelancer not found"));
+                .orElse(null);
         Client client = clientRepository.findByUser(user)
-                .orElseThrow(() -> new UserNotFoundException("Client not found"));
+                .orElse(null);
 
         Map<String, Object> response = new HashMap<>();
 
@@ -113,8 +113,6 @@ public class UserService {
         }
 
         if (freelancer != null) {
-            String skillsString = freelancer.getSkills();
-            List<String> skillsList = Arrays.asList(skillsString.split(","));
             response.put("freelancer",freelancerMapper.toDTO(freelancer));
         } else {
             response.put("freelancer", null);

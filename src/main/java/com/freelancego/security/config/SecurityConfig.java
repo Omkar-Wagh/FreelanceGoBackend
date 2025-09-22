@@ -42,6 +42,10 @@ public class SecurityConfig {
                 )
                 .oauth2Login(oauth -> oauth
                         .successHandler(oAuth2SuccessHandler)
+                        .failureHandler((request, response, exception) -> {
+                            request.getSession().setAttribute("loginError", "Login failed. Please try again.");
+                            response.sendRedirect("/auth-failed");
+                        })
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();

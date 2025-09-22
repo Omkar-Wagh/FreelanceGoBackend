@@ -11,7 +11,7 @@ public interface JobService {
 
     public Page<JobDto> getPostByClient(int page, int size, String email);
 
-    public JobDto getPostById(int id, String email);
+    public Map<String,Object> getPostById(int id, String email);
 
     public Map<String,Object> getDashboardData(String name);
 

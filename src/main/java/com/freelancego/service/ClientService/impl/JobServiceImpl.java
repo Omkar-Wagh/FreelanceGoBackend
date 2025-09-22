@@ -1,6 +1,7 @@
 package com.freelancego.service.ClientService.impl;
 
 import com.freelancego.dto.client.JobDto;
+import com.freelancego.dto.client.response.DashBoardResponseDto;
 import com.freelancego.enums.JobPhase;
 import com.freelancego.enums.JobStatus;
 import com.freelancego.exception.UnauthorizedAccessException;
@@ -17,7 +18,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-
 import java.time.OffsetDateTime;
 import java.util.*;
 
@@ -89,7 +89,7 @@ public class JobServiceImpl implements JobService {
     }
 
 
-    public JobDto getPostById(int id, String email) {
+    public Map<String, Object> getPostById(int id, String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
@@ -102,8 +102,11 @@ public class JobServiceImpl implements JobService {
         if (job.getClient().getId() != (client.getId())) {
             throw new UnauthorizedAccessException("Unauthorized access to this Job Post");
         }
-
-        return jobMapper.toDto(job);
+        Map<String,Object> response = new HashMap<>();
+        response.put("Job",jobMapper.toDto(job));
+        Bid bid = new Bid();
+        response.put("Bid",bid);
+        return response;
     }
 
     public List<JobDto> getPostByProgress(Client client) {
@@ -138,28 +141,27 @@ public class JobServiceImpl implements JobService {
         int totalJobs = completedPosts.size();
         int totalActiveProjects = inProgressPosts.size();
 
-        double totalPending = 0;
+        double totalSpending = 0;
         for (JobDto job : completedPosts) {
             Contract contract = contractRepository.findById(job.id())
                     .orElseThrow(() -> new UserNotFoundException("Contract not found for job " + job.id()));
 
             Bid bid = contract.getAcceptedBid();
             if (bid != null) {
-                totalPending += bid.getAmount();
+                totalSpending += bid.getAmount();
             }
         }
 
-        List<JobDto> activePosts1 = limitList(getActivePost(client), 3);
-        List<JobDto> inProgressPosts1 = limitList(getPostByProgress(client),3);
-        List<JobDto> completedPosts1 = limitList(getCompletedPost(client),3);
+        List<JobDto> activePosts1 = limitList(activePosts, 3);
+        List<JobDto> inProgressPosts1 = limitList(inProgressPosts,3);
+        List<JobDto> completedPosts1 = limitList(completedPosts,3);
+        DashBoardResponseDto dashBoardResponseDto = new DashBoardResponseDto(totalJobs,totalActiveProjects,totalSpending);
 
         return Map.of(
                 "active", activePosts1,
                 "progress", inProgressPosts1,
                 "complete", completedPosts1,
-                "totalJobs", totalJobs,
-                "totalActiveProjects", totalActiveProjects,
-                "totalPending", totalPending
+                "dashboard",dashBoardResponseDto
         );
     }
 
