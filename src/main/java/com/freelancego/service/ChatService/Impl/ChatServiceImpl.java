@@ -9,12 +9,13 @@ import com.freelancego.model.ChatMessage;
 import com.freelancego.model.User;
 import com.freelancego.repo.ChatMessageRepository;
 import com.freelancego.repo.UserRepository;
+import com.freelancego.service.ChatService.ChatService;
 import com.pusher.rest.Pusher;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-public class ChatServiceImpl {
+public class ChatServiceImpl implements ChatService {
 
     private final ChatMessageRepository messageRepository;
     private final UserRepository userRepository;
