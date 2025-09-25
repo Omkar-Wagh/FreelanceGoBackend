@@ -1,10 +1,8 @@
 package com.freelancego.service.ChatService;
 
 import com.freelancego.dto.user.ChatDto;
-import org.springframework.stereotype.Service;
 import java.util.List;
 
-@Service
 public interface ChatService {
 
     public ChatDto sendMessage(ChatDto message, String email);

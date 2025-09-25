@@ -1,7 +1,6 @@
 package com.freelancego.controller.ChatController;
 
 import com.freelancego.dto.user.ChatDto;
-import com.freelancego.model.ChatMessage;
 import com.freelancego.service.ChatService.ChatService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
