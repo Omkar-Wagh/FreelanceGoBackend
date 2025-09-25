@@ -2,6 +2,7 @@ package com.freelancego.service.ChatService.Impl;
 
 import com.freelancego.dto.user.ChatDto;
 import com.freelancego.exception.BadRequestException;
+import com.freelancego.exception.InvalidIdException;
 import com.freelancego.exception.UnauthorizedAccessException;
 import com.freelancego.exception.UserNotFoundException;
 import com.freelancego.mapper.ChatMapper;
@@ -111,8 +112,11 @@ public class ChatServiceImpl implements ChatService {
     public String authorizeChannel(String channelName, String socketId, String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
+        if (!socketId.matches("\\d+\\.\\d+")) {
+            throw new InvalidIdException("Invalid socket_id");
+        }
         authorizeChannelForOperation(channelName, user.getId());
-        return pusher.authenticate(socketId, channelName);
+        return pusher.authenticate(channelName, socketId);
     }
 }
 
