@@ -11,7 +11,6 @@ import com.freelancego.repo.ChatMessageRepository;
 import com.freelancego.repo.UserRepository;
 import com.pusher.rest.Pusher;
 import org.springframework.stereotype.Service;
-import java.time.OffsetDateTime;
 import java.util.List;
 
 @Service
@@ -59,7 +58,6 @@ public class ChatServiceImpl {
         String channelName = "private-chat-" + getConversationId(message.getSenderId(), message.getReceiverId());
         authorizeChannelForOperation(channelName, user.getId());
 
-        message.setTimestamp(OffsetDateTime.now());
         ChatMessage saved = messageRepository.save(message);
 
         try {
