@@ -113,7 +113,7 @@ public class ChatServiceImpl implements ChatService {
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         authorizeChannelForOperation(channelName, user.getId());
-        return pusher.authenticate(channelName, socketId);
+        return pusher.authenticate(socketId, channelName);
     }
 }
 
