@@ -15,6 +15,7 @@ public class ChatMessage {
     private OffsetDateTime timestamp;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "chat_history_id")
     private ChatHistory history;
 
     @PrePersist

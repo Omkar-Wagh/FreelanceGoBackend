@@ -1,7 +1,6 @@
 package com.freelancego.service.ChatService;
 
 import com.freelancego.dto.user.ChatDto;
-import com.freelancego.model.ChatMessage;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
