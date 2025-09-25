@@ -56,7 +56,7 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(body, HttpStatus.CONFLICT);
     }
 
-    @ExceptionHandler(ConflictException.class)
+    @ExceptionHandler(InvalidIdException.class)
     public ResponseEntity<Object> handleInvalidIdException(InvalidIdException ex) {
         Map<String, Object> body = new HashMap<>();
         body.put("timestamp", LocalDateTime.now());

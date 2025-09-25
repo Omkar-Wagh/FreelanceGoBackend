@@ -116,7 +116,7 @@ public class ChatServiceImpl implements ChatService {
             throw new InvalidIdException("Invalid socket_id");
         }
         authorizeChannelForOperation(channelName, user.getId());
-        return pusher.authenticate(channelName, socketId);
+        return pusher.authenticate(channelName, socketId).toString();
     }
 }
 
