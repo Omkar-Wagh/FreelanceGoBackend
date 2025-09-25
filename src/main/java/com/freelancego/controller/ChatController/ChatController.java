@@ -19,7 +19,7 @@ public class ChatController {
     }
 
     @PostMapping("/send")
-    public ResponseEntity<ChatDto> sendMessage(@RequestBody ChatMessage message, Authentication auth) {
+    public ResponseEntity<ChatDto> sendMessage(@RequestBody ChatDto message, Authentication auth) {
         ChatDto saved = chatService.sendMessage(message, auth.getName());
         return ResponseEntity.ok(saved);
     }

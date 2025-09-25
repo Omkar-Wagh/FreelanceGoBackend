@@ -64,6 +64,10 @@ public class ChatServiceImpl {
             pusher.trigger(channelName, "new-message", saved);
         } catch (Exception ex) {
             // Log or handle Pusher errors
+            System.out.println("\n");
+            System.out.println("Something went long during the message sending ");
+            System.out.println("\n");
+            ex.printStackTrace();
         }
 
         return chatMapper.toDTO(saved);

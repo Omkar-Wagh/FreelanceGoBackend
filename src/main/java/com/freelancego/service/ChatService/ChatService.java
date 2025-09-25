@@ -8,7 +8,7 @@ import java.util.List;
 @Service
 public interface ChatService {
 
-    public ChatDto sendMessage(ChatMessage message, String email);
+    public ChatDto sendMessage(ChatDto message, String email);
 
     public List<ChatDto> getHistory(int senderId, int receiverId, String email);
 
