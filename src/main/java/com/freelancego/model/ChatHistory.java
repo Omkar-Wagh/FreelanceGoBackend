@@ -30,7 +30,7 @@ public class ChatHistory {
     )
     private Set<Job> jobs;
 
-    @OneToMany(mappedBy = "chatHistory", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "history", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<ChatMessage> chats;
 
     @OneToOne(fetch = FetchType.LAZY)
