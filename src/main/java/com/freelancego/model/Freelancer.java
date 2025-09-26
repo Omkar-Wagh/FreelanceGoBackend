@@ -2,9 +2,6 @@ package com.freelancego.model;
 
 import com.freelancego.enums.ExperienceLevel;
 import jakarta.persistence.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 @Entity
 public class Freelancer {
@@ -13,7 +10,7 @@ public class Freelancer {
     private int id;
 
     @OneToOne
-//    @MapsId
+    @MapsId
     @JoinColumn(name = "id")
     private User user;
     private String designation;

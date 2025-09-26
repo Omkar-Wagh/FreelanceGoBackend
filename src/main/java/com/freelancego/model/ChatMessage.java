@@ -14,10 +14,6 @@ public class ChatMessage {
     @Column(columnDefinition = "TIMESTAMP WITH TIME ZONE", updatable = false, nullable = false)
     private OffsetDateTime timestamp;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "chat_history_id")
-    private ChatHistory history;
-
     @PrePersist
     protected void onCreate() {
         this.timestamp = OffsetDateTime.now();
@@ -63,11 +59,4 @@ public class ChatMessage {
         this.timestamp = timestamp;
     }
 
-    public ChatHistory getHistory() {
-        return history;
-    }
-
-    public void setHistory(ChatHistory history) {
-        this.history = history;
-    }
 }

@@ -5,7 +5,7 @@ import com.freelancego.dto.user.ChatHistoryDto;
 import java.util.List;
 
 public interface ChatHistoryService {
-    ChatHistoryDto createChatHistory(ChatHistoryDto chatHistory);
+    ChatHistoryDto createChatHistory(ChatHistoryDto chatHistory, String email);
 
     List<ChatHistoryDto> getChatHistoryById(int id, String email);
 

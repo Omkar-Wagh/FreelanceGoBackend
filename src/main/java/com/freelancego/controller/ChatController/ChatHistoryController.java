@@ -20,8 +20,8 @@ public class ChatHistoryController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<ChatHistoryDto> createChatHistory(@RequestBody ChatHistoryDto dto) {
-        ChatHistoryDto saved = chatHistoryService.createChatHistory(dto);
+    public ResponseEntity<ChatHistoryDto> createChatHistory(@RequestBody ChatHistoryDto dto, Authentication auth) {
+        ChatHistoryDto saved = chatHistoryService.createChatHistory(dto,auth.getName());
         return ResponseEntity.ok(saved);
     }
 

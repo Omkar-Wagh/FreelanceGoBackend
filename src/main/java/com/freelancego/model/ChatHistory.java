@@ -3,7 +3,6 @@ package com.freelancego.model;
 import jakarta.persistence.*;
 import java.time.OffsetDateTime;
 import java.util.List;
-import java.util.Set;
 
 @Entity
 @Table(name = "chat_history")
@@ -19,26 +18,14 @@ public class ChatHistory {
     private User owner;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "another_id")
+    @JoinColumn(name = "opponent_id")
     private User opponent;
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-            name = "chat_history_jobs",
-            joinColumns = @JoinColumn(name = "chat_history_id"),
-            inverseJoinColumns = @JoinColumn(name = "job_id")
-    )
-    private Set<Job> jobs;
-
-    @OneToMany(mappedBy = "history", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany
     private List<ChatMessage> chats;
 
     @Column(columnDefinition = "TIMESTAMP WITH TIME ZONE", updatable = false, nullable = false)
     private OffsetDateTime createdAt;
-
-    public ChatHistory(User owner) {
-        this.owner = owner;
-    }
 
     @PrePersist
     protected void onCreate() {
@@ -53,9 +40,6 @@ public class ChatHistory {
 
     public User getOpponent() { return opponent; }
     public void setOpponent(User opponent) { this.opponent = opponent; }
-
-    public Set<Job> getJobs() { return jobs; }
-    public void setJobs(Set<Job> jobs) { this.jobs = jobs; }
 
     public List<ChatMessage> getChats() { return chats; }
     public void setChats(List<ChatMessage> chats) { this.chats = chats; }

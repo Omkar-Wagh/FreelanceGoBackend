@@ -26,13 +26,25 @@ public class ChatHistoryServiceImpl implements ChatHistoryService {
         this.chatHistoryMapper = chatHistoryMapper;
     }
 
-    public ChatHistoryDto createChatHistory(ChatHistoryDto history) {
+    public ChatHistoryDto createChatHistory(ChatHistoryDto history, String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("user not found"));
 
         ChatHistory chatHistory = chatHistoryMapper.toEntity(history);
         User owner = chatHistory.getOwner();
         User opponent = chatHistory.getOpponent();
+
+        if(user.getId() != owner.getId()){
+            throw  new UnauthorizedAccessException("Unauthorized request, user does not belongs to chat history");
+        }
+
         boolean status = chatHistoryRepository.existsByOwnerAndOpponent(owner,opponent);
-        if(status == false) {
+        if(!status) {
+            ChatHistory newChatHistory = new ChatHistory();
+            newChatHistory.setOwner(opponent);
+            newChatHistory.setOpponent(owner);
+            newChatHistory.setChats(chatHistory.getChats());
+            chatHistoryRepository.save(newChatHistory);
             chatHistoryRepository.save(chatHistory);
         }
         return chatHistoryMapper.toDTO(chatHistory);
