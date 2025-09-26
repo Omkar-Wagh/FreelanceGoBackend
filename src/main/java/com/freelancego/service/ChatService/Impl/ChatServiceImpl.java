@@ -27,8 +27,8 @@ public class ChatServiceImpl implements ChatService {
         this.userRepository = userRepository;
         this.chatMapper = chatMapper;
 
-        this.pusher = new Pusher("APP_ID", "KEY", "SECRET");
-        this.pusher.setCluster("CLUSTER");
+        this.pusher = new Pusher("APP_ID", "b0dddaee8d0f9b6e5184", "SECRET");
+        this.pusher.setCluster("ap2");
         this.pusher.setEncrypted(true);
     }
 
