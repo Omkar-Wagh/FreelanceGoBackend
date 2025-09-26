@@ -16,6 +16,5 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Intege
             "ORDER BY m.timestamp ASC")
     List<ChatMessage> findConversation(@Param("senderId") int senderId, @Param("receiverId") int receiverId);
 
-    List<ChatMessage> findBySenderIdAndReceiverId(Long senderId, Long receiverId);
 }
 

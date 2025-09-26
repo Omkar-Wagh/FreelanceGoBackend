@@ -15,7 +15,7 @@ public class ChatHistory {
 
     // saved the user twice for both owner and another history
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "owner_id", nullable = false, unique = true)
+    @JoinColumn(name = "owner_id", nullable = false)
     private User owner;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -32,10 +32,6 @@ public class ChatHistory {
 
     @OneToMany(mappedBy = "history", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<ChatMessage> chats;
-
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "last_chat_id")
-    private ChatMessage lastChat;
 
     @Column(columnDefinition = "TIMESTAMP WITH TIME ZONE", updatable = false, nullable = false)
     private OffsetDateTime createdAt;
@@ -55,22 +51,14 @@ public class ChatHistory {
     public User getOwner() { return owner; }
     public void setOwner(User owner) { this.owner = owner; }
 
-    public User getAnother() { return opponent; }
-    public void setAnother(User opponent) { this.opponent = opponent; }
+    public User getOpponent() { return opponent; }
+    public void setOpponent(User opponent) { this.opponent = opponent; }
 
     public Set<Job> getJobs() { return jobs; }
     public void setJobs(Set<Job> jobs) { this.jobs = jobs; }
 
     public List<ChatMessage> getChats() { return chats; }
     public void setChats(List<ChatMessage> chats) { this.chats = chats; }
-
-    public ChatMessage getLastChat() {
-        return lastChat;
-    }
-
-    public void setLastChat(ChatMessage lastChat) {
-        this.lastChat = lastChat;
-    }
 
     public OffsetDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(OffsetDateTime createdAt) { this.createdAt = createdAt; }
