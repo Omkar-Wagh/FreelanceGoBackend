@@ -117,6 +117,7 @@ public class ChatServiceImpl implements ChatService {
 
         String auth =
                 pusher.authenticate(socketId, channelName);
+
         System.out.println(auth);
 
         return auth;
