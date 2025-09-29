@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/chat")
@@ -30,11 +31,12 @@ public class ChatController {
     }
 
     @PostMapping("/pusher/auth")
-    public ResponseEntity<String> authorizeChannel(@RequestParam("channel_name") String channelName,
-                                                   @RequestParam("socket_id") String socketId,
-                                                   Authentication auth) {
-        String auth1 = chatService.authorizeChannel(channelName, socketId, auth.getName());
-        return ResponseEntity.ok(auth1);
+    public Map<String, Object> authorizeChannel(@RequestParam("channel_name") String channelName,
+                                                @RequestParam("socket_id") String socketId,
+                                                Authentication auth) {
+        return chatService.authorizeChannel(channelName, socketId, auth.getName());
+//        return ResponseEntity.ok(auth1);
+//        return auth1;
     }
 }
 

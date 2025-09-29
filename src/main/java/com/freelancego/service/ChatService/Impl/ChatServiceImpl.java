@@ -12,7 +12,10 @@ import com.freelancego.repo.UserRepository;
 import com.freelancego.service.ChatService.ChatService;
 import com.pusher.rest.Pusher;
 import org.springframework.stereotype.Service;
+
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class ChatServiceImpl implements ChatService {
@@ -27,7 +30,7 @@ public class ChatServiceImpl implements ChatService {
         this.userRepository = userRepository;
         this.chatMapper = chatMapper;
 
-        this.pusher = new Pusher("APP_ID", "b0dddaee8d0f9b6e5184", "SECRET");
+        this.pusher = new Pusher("APP_ID", "b0dddaee8d0f9b6e5184","SECRET");
         this.pusher.setCluster("ap2");
         this.pusher.setEncrypted(true);
     }
@@ -108,12 +111,15 @@ public class ChatServiceImpl implements ChatService {
         }
     }
 
-    public String authorizeChannel(String channelName, String socketId, String email) {
+    public Map<String, Object> authorizeChannel(String channelName, String socketId, String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         authorizeChannelForOperation(channelName, user.getId());
-        return pusher.authenticate(socketId, channelName);
+        String auth =
+                pusher.authenticate(socketId, channelName);
+
+        return Collections.singletonMap("auth", auth);
     }
 }
 
