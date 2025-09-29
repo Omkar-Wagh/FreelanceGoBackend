@@ -31,7 +31,7 @@ public class ChatController {
     }
 
     @PostMapping("/pusher/auth")
-    public Map<String, Object> authorizeChannel(@RequestParam("channel_name") String channelName,
+    public String authorizeChannel(@RequestParam("channel_name") String channelName,
                                                 @RequestParam("socket_id") String socketId,
                                                 Authentication auth) {
         return chatService.authorizeChannel(channelName, socketId, auth.getName());

@@ -13,9 +13,7 @@ import com.freelancego.service.ChatService.ChatService;
 import com.pusher.rest.Pusher;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 @Service
 public class ChatServiceImpl implements ChatService {
@@ -111,15 +109,17 @@ public class ChatServiceImpl implements ChatService {
         }
     }
 
-    public Map<String, Object> authorizeChannel(String channelName, String socketId, String email) {
+    public String authorizeChannel(String channelName, String socketId, String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         authorizeChannelForOperation(channelName, user.getId());
+
         String auth =
                 pusher.authenticate(socketId, channelName);
+        System.out.println(auth);
 
-        return Collections.singletonMap("auth", auth);
+        return auth;
     }
 }
 
