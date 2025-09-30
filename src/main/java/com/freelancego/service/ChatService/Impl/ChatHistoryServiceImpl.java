@@ -4,6 +4,8 @@ import com.freelancego.dto.user.ChatHistoryDto;
 import com.freelancego.exception.UnauthorizedAccessException;
 import com.freelancego.exception.UserNotFoundException;
 import com.freelancego.mapper.ChatHistoryMapper;
+import com.freelancego.mapper.ChatMapper;
+import com.freelancego.mapper.UserMapper;
 import com.freelancego.model.ChatHistory;
 import com.freelancego.model.ChatMessage;
 import com.freelancego.model.User;
@@ -14,6 +16,7 @@ import com.freelancego.service.ChatService.ChatHistoryService;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -22,13 +25,17 @@ public class ChatHistoryServiceImpl implements ChatHistoryService {
     private final ChatHistoryRepository chatHistoryRepository;
     private final ChatMessageRepository chatMessageRepository;
     private final ChatHistoryMapper chatHistoryMapper;
+    private final UserMapper userMapper;
+    private final ChatMapper chatMapper;
     private final UserRepository userRepository;
 
-    public ChatHistoryServiceImpl(ChatHistoryRepository chatHistoryRepository,ChatMessageRepository chatMessageRepository,UserRepository userRepository, ChatHistoryMapper chatHistoryMapper) {
+    public ChatHistoryServiceImpl(ChatHistoryRepository chatHistoryRepository,ChatMessageRepository chatMessageRepository,UserRepository userRepository, ChatHistoryMapper chatHistoryMapper,UserMapper userMapper, ChatMapper chatMapper) {
         this.chatHistoryRepository = chatHistoryRepository;
         this.chatMessageRepository = chatMessageRepository;
         this.userRepository= userRepository;
         this.chatHistoryMapper = chatHistoryMapper;
+        this.userMapper = userMapper;
+        this.chatMapper = chatMapper;
     }
 
     public ChatHistoryDto createChatHistory(ChatHistoryDto history, String email) {
@@ -61,15 +68,20 @@ public class ChatHistoryServiceImpl implements ChatHistoryService {
             throw  new UnauthorizedAccessException("Unauthorized request, user does not belongs to chat history");
         }
         List<ChatHistory> histories = chatHistoryRepository.findByOwner(user);
-//        getHistoryWithLast5Chats();
-        return chatHistoryMapper.toDtoList(histories);
-    }
 
-    public List<ChatMessage> getHistoryWithLast5Chats(int historyId) {
-        ChatHistory history = chatHistoryRepository.findById(historyId)
-                .orElseThrow(() -> new RuntimeException("History not found"));
+        List<ChatHistoryDto> dto = new ArrayList<>();
 
-        List<ChatMessage> last5 = chatMessageRepository.findByChatHistoryOrderByCreatedAtDesc(history, PageRequest.of(0, 5));
-        return last5;
+        for(ChatHistory history : histories){
+            List<ChatMessage> last5 =
+                    chatMessageRepository.findBySenderIdAndReceiverIdOrderByTimestampDesc(
+                            history.getOwner().getId(),
+                            history.getOpponent().getId(),
+                            PageRequest.of(0, 5)
+                    );
+            ChatHistoryDto dto1 = new ChatHistoryDto(history.getId(),userMapper.toDTO(history.getOwner()), userMapper.toDTO(history.getOpponent()),history.getCreatedAt(),chatMapper.toDtoList(last5));
+            dto.add(dto1);
+        }
+        return dto;
     }
 }
+

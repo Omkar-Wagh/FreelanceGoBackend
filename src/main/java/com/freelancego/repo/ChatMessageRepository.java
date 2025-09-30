@@ -18,7 +18,6 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Intege
             "ORDER BY m.timestamp ASC")
     List<ChatMessage> findConversation(@Param("senderId") int senderId, @Param("receiverId") int receiverId);
 
-    List<ChatMessage> findByChatHistoryOrderByCreatedAtDesc(ChatHistory history, Pageable pageable);
-
+    List<ChatMessage> findBySenderIdAndReceiverIdOrderByTimestampDesc(int senderId, int receiverId, Pageable pageable);
 }
 

@@ -9,7 +9,6 @@ import com.freelancego.repo.ChatMessageRepository;
 import com.freelancego.repo.UserRepository;
 import com.freelancego.service.ChatService.ChatService;
 import io.ably.lib.realtime.AblyRealtime;
-import io.ably.lib.rest.Auth;
 import io.ably.lib.rest.Auth.TokenRequest;
 import io.ably.lib.types.AblyException;
 import io.ably.lib.types.ClientOptions;
@@ -42,6 +41,7 @@ public class ChatController {
 
     @GetMapping("/token")
     public TokenRequest getAblyToken(@RequestParam int otherUserId) throws Exception {
+        // check the user is present, validations
         return ably.auth.createTokenRequest(null, null);
     }
 
@@ -53,6 +53,8 @@ public class ChatController {
         User user = userRepository.findByEmail(auth.getName())
                 .orElseThrow(() -> new UserNotFoundException("user not found"));
         ChatMessage message = chatMapper.toEntity(chatDto);
+
+        // other user validations
 
         int id1 = Math.min(user.getId(), message.getId());
         int id2 = Math.max(user.getId(), message.getId());
