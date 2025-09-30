@@ -5,10 +5,13 @@ import com.freelancego.exception.UnauthorizedAccessException;
 import com.freelancego.exception.UserNotFoundException;
 import com.freelancego.mapper.ChatHistoryMapper;
 import com.freelancego.model.ChatHistory;
+import com.freelancego.model.ChatMessage;
 import com.freelancego.model.User;
 import com.freelancego.repo.ChatHistoryRepository;
+import com.freelancego.repo.ChatMessageRepository;
 import com.freelancego.repo.UserRepository;
 import com.freelancego.service.ChatService.ChatHistoryService;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,11 +20,13 @@ import java.util.List;
 public class ChatHistoryServiceImpl implements ChatHistoryService {
 
     private final ChatHistoryRepository chatHistoryRepository;
+    private final ChatMessageRepository chatMessageRepository;
     private final ChatHistoryMapper chatHistoryMapper;
     private final UserRepository userRepository;
 
-    public ChatHistoryServiceImpl(ChatHistoryRepository chatHistoryRepository,UserRepository userRepository, ChatHistoryMapper chatHistoryMapper) {
+    public ChatHistoryServiceImpl(ChatHistoryRepository chatHistoryRepository,ChatMessageRepository chatMessageRepository,UserRepository userRepository, ChatHistoryMapper chatHistoryMapper) {
         this.chatHistoryRepository = chatHistoryRepository;
+        this.chatMessageRepository = chatMessageRepository;
         this.userRepository= userRepository;
         this.chatHistoryMapper = chatHistoryMapper;
     }
@@ -43,7 +48,6 @@ public class ChatHistoryServiceImpl implements ChatHistoryService {
             ChatHistory newChatHistory = new ChatHistory();
             newChatHistory.setOwner(opponent);
             newChatHistory.setOpponent(owner);
-            newChatHistory.setChats(chatHistory.getChats());
             chatHistoryRepository.save(newChatHistory);
             chatHistoryRepository.save(chatHistory);
         }
@@ -57,6 +61,15 @@ public class ChatHistoryServiceImpl implements ChatHistoryService {
             throw  new UnauthorizedAccessException("Unauthorized request, user does not belongs to chat history");
         }
         List<ChatHistory> histories = chatHistoryRepository.findByOwner(user);
+//        getHistoryWithLast5Chats();
         return chatHistoryMapper.toDtoList(histories);
+    }
+
+    public List<ChatMessage> getHistoryWithLast5Chats(int historyId) {
+        ChatHistory history = chatHistoryRepository.findById(historyId)
+                .orElseThrow(() -> new RuntimeException("History not found"));
+
+        List<ChatMessage> last5 = chatMessageRepository.findByChatHistoryOrderByCreatedAtDesc(history, PageRequest.of(0, 5));
+        return last5;
     }
 }

@@ -64,12 +64,9 @@ public class ChatServiceImpl implements ChatService {
 
         try {
             pusher.trigger(channelName, "new-message", saved);
+
         } catch (Exception ex) {
             // Log or handle Pusher errors
-            System.out.println("\n");
-            System.out.println("Something went long during the message sending ");
-            System.out.println("\n");
-            ex.printStackTrace();
         }
 
         return chatMapper.toDTO(saved);
@@ -114,10 +111,8 @@ public class ChatServiceImpl implements ChatService {
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         authorizeChannelForOperation(channelName, user.getId());
-
         String auth =
                 pusher.authenticate(socketId, channelName);
-
         System.out.println(auth);
 
         return auth;

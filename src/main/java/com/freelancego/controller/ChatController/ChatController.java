@@ -1,24 +1,74 @@
 package com.freelancego.controller.ChatController;
 
 import com.freelancego.dto.user.ChatDto;
+import com.freelancego.exception.UserNotFoundException;
+import com.freelancego.mapper.ChatMapper;
+import com.freelancego.model.ChatMessage;
+import com.freelancego.model.User;
+import com.freelancego.repo.ChatMessageRepository;
+import com.freelancego.repo.UserRepository;
 import com.freelancego.service.ChatService.ChatService;
+import io.ably.lib.realtime.AblyRealtime;
+import io.ably.lib.rest.Auth;
+import io.ably.lib.rest.Auth.TokenRequest;
+import io.ably.lib.types.AblyException;
+import io.ably.lib.types.ClientOptions;
+import io.ably.lib.types.Message;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/chat")
 public class ChatController {
 
+    private final AblyRealtime ably;
     private final ChatService chatService;
 
-    public ChatController(ChatService chatService) {
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private ChatMessageRepository chatMessageRepository;
+    @Autowired
+    private ChatMapper chatMapper;
+
+    public ChatController(ChatService chatService) throws AblyException{
         this.chatService = chatService;
+        ClientOptions options = new ClientOptions("OtSgGA.cAWR0g:rv1IQX4OtdQJLwINZeD4_v4JB3WpW26PZMlzjQ2UVLQ");
+        this.ably = new AblyRealtime(options);
     }
 
+    @GetMapping("/token")
+    public TokenRequest getAblyToken(@RequestParam int otherUserId) throws Exception {
+        return ably.auth.createTokenRequest(null, null);
+    }
+
+
     @PostMapping("/send")
+    public String sendAndSaveMessage(@RequestBody ChatDto chatDto, Authentication auth) throws Exception {
+
+        // 1. Get logged-in user
+        User user = userRepository.findByEmail(auth.getName())
+                .orElseThrow(() -> new UserNotFoundException("user not found"));
+        ChatMessage message = chatMapper.toEntity(chatDto);
+
+        int id1 = Math.min(user.getId(), message.getId());
+        int id2 = Math.max(user.getId(), message.getId());
+        String channelName = "chat-" + id1 + "-" + id2;
+
+        chatMessageRepository.save(message);
+
+        // 3. Publish to Ably
+        ably.channels.get(channelName)
+                .publish("message", new Message("message", message.getContent()));
+
+        return "Message sent!";
+    }
+
+
+    @PostMapping("/sending")
     public ResponseEntity<ChatDto> sendMessage(@RequestBody ChatDto message, Authentication auth) {
         ChatDto saved = chatService.sendMessage(message, auth.getName());
         return ResponseEntity.ok(saved);
@@ -35,8 +85,6 @@ public class ChatController {
                                                 @RequestParam("socket_id") String socketId,
                                                 Authentication auth) {
         return chatService.authorizeChannel(channelName, socketId, auth.getName());
-//        return ResponseEntity.ok(auth1);
-//        return auth1;
     }
 }
 

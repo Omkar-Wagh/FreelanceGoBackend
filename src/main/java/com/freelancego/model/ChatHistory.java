@@ -2,7 +2,6 @@ package com.freelancego.model;
 
 import jakarta.persistence.*;
 import java.time.OffsetDateTime;
-import java.util.List;
 
 @Entity
 @Table(name = "chat_history")
@@ -21,9 +20,6 @@ public class ChatHistory {
     @JoinColumn(name = "opponent_id")
     private User opponent;
 
-    @OneToMany
-    private List<ChatMessage> chats;
-
     @Column(columnDefinition = "TIMESTAMP WITH TIME ZONE", updatable = false, nullable = false)
     private OffsetDateTime createdAt;
 
@@ -40,9 +36,6 @@ public class ChatHistory {
 
     public User getOpponent() { return opponent; }
     public void setOpponent(User opponent) { this.opponent = opponent; }
-
-    public List<ChatMessage> getChats() { return chats; }
-    public void setChats(List<ChatMessage> chats) { this.chats = chats; }
 
     public OffsetDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(OffsetDateTime createdAt) { this.createdAt = createdAt; }
