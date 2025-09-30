@@ -9,6 +9,7 @@ import com.freelancego.repo.ChatMessageRepository;
 import com.freelancego.repo.UserRepository;
 import com.freelancego.service.ChatService.ChatService;
 import io.ably.lib.realtime.AblyRealtime;
+import io.ably.lib.rest.Auth;
 import io.ably.lib.rest.Auth.TokenRequest;
 import io.ably.lib.types.AblyException;
 import io.ably.lib.types.ClientOptions;
@@ -40,11 +41,20 @@ public class ChatController {
     }
 
     @GetMapping("/token")
-    public TokenRequest getAblyToken(@RequestParam int otherUserId) throws Exception {
-        // check the user is present, validations
+    public TokenRequest getAblyToken(@RequestParam int otherUserId, Authentication auth) throws AblyException {
+        User user = userRepository.findByEmail(auth.getName())
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
 
-        return ably.auth.createTokenRequest(null, null);
+        String clientId = String.valueOf(user.getId());
+
+        Auth.TokenParams params = new Auth.TokenParams();
+        params.clientId = clientId;
+        // optionally, you can restrict channel access:
+        // params.capability = "{ \"chat-" + Math.min(user.getId(), otherUserId) + "-" + Math.max(user.getId(), otherUserId) + "\": [\"publish\",\"subscribe\"] }";
+
+        return ably.auth.createTokenRequest(params, null);
     }
+
 
 
     @PostMapping("/send")
@@ -64,9 +74,9 @@ public class ChatController {
         chatMessageRepository.save(message);
 
         // 3. Publish to Ably
-        ably.channels.get(channelName)
-                .publish("message", new Message("message", message.getContent()));
-
+//        ably.channels.get(channelName)
+//                .publish("message", new Message("message", message.getContent()));
+        ably.channels.get(channelName).publish("message", message);
         return "Message sent!";
     }
 
