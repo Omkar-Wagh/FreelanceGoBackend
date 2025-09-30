@@ -42,6 +42,7 @@ public class ChatController {
     @GetMapping("/token")
     public TokenRequest getAblyToken(@RequestParam int otherUserId) throws Exception {
         // check the user is present, validations
+
         return ably.auth.createTokenRequest(null, null);
     }
 
