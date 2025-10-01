@@ -58,7 +58,7 @@ public class ChatController {
 
 
     @PostMapping("/send")
-    public String sendAndSaveMessage(@RequestBody ChatDto chatDto, Authentication auth) throws Exception {
+    public ResponseEntity<String> sendAndSaveMessage(@RequestBody ChatDto chatDto, Authentication auth) throws AblyException {
 
         // 1. Get logged-in user
         User user = userRepository.findByEmail(auth.getName())
@@ -76,8 +76,8 @@ public class ChatController {
         // 3. Publish to Ably
 //        ably.channels.get(channelName)
 //                .publish("message", new Message("message", message.getContent()));
-        ably.channels.get(channelName).publish("message", message);
-        return "Message sent!";
+        ably.channels.get(channelName).publish("message", chatDto.content());
+        return ResponseEntity.ok("Message sent!");
     }
 
 

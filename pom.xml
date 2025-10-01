@@ -97,7 +97,7 @@
 		<dependency>
 			<groupId>io.ably</groupId>
 			<artifactId>ably-java</artifactId>
-			<version>1.2.42</version> <!-- check for the latest version -->
+			<version>1.2.52</version>
 		</dependency>
 
 	</dependencies>
