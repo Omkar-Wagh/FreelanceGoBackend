@@ -1,7 +1,6 @@
 package com.freelancego.controller.ChatController;
 
 import com.freelancego.dto.user.ChatHistoryDto;
-import com.freelancego.model.ChatHistory;
 import com.freelancego.service.ChatService.ChatHistoryService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -27,7 +26,7 @@ public class ChatHistoryController {
 
     @GetMapping("/{senderId}")
     public ResponseEntity<List<ChatHistoryDto>> getChatHistoryById(@PathVariable("senderId") int id, Authentication auth) {
-        List<ChatHistoryDto> chatHistoryDto = chatHistoryService.getChatHistoryById(id,auth.getName());
+        List<ChatHistoryDto> chatHistoryDto = chatHistoryService.getConversationById(id,auth.getName());
         return ResponseEntity.ok(chatHistoryDto);
     }
 }

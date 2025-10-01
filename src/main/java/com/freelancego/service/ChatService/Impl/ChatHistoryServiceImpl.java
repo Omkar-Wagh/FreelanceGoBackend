@@ -13,7 +13,9 @@ import com.freelancego.repo.ChatHistoryRepository;
 import com.freelancego.repo.ChatMessageRepository;
 import com.freelancego.repo.UserRepository;
 import com.freelancego.service.ChatService.ChatHistoryService;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -61,12 +63,13 @@ public class ChatHistoryServiceImpl implements ChatHistoryService {
         return chatHistoryMapper.toDTO(chatHistory);
     }
 
-    public List<ChatHistoryDto> getChatHistoryById(int id, String email) {
+    public List<ChatHistoryDto> getConversationById(int id, String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException("user not found"));
         if(user.getId() != id){
             throw  new UnauthorizedAccessException("Unauthorized request, user does not belongs to chat history");
         }
+        // Add pagination for this
         List<ChatHistory> histories = chatHistoryRepository.findByOwner(user);
 
         List<ChatHistoryDto> dto = new ArrayList<>();
@@ -77,11 +80,11 @@ public class ChatHistoryServiceImpl implements ChatHistoryService {
                             history.getOwner().getId(),
                             history.getOpponent().getId(),
                             PageRequest.of(0, 5)
-                    );
+                    ).getContent();
             ChatHistoryDto dto1 = new ChatHistoryDto(history.getId(),userMapper.toDTO(history.getOwner()), userMapper.toDTO(history.getOpponent()),history.getCreatedAt(),chatMapper.toDtoList(last5));
             dto.add(dto1);
         }
         return dto;
     }
-}
 
+}

@@ -7,6 +7,5 @@ import java.util.List;
 public interface ChatHistoryService {
     ChatHistoryDto createChatHistory(ChatHistoryDto chatHistory, String email);
 
-    List<ChatHistoryDto> getChatHistoryById(int id, String email);
-
+    List<ChatHistoryDto> getConversationById(int id, String email);
 }

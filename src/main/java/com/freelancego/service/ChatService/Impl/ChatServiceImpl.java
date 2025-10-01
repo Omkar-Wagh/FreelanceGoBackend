@@ -2,6 +2,7 @@ package com.freelancego.service.ChatService.Impl;
 
 import com.freelancego.dto.user.ChatDto;
 import com.freelancego.exception.BadRequestException;
+import com.freelancego.exception.InternalServerErrorException;
 import com.freelancego.exception.UnauthorizedAccessException;
 import com.freelancego.exception.UserNotFoundException;
 import com.freelancego.mapper.ChatMapper;
@@ -10,9 +11,14 @@ import com.freelancego.model.User;
 import com.freelancego.repo.ChatMessageRepository;
 import com.freelancego.repo.UserRepository;
 import com.freelancego.service.ChatService.ChatService;
-import com.pusher.rest.Pusher;
+import io.ably.lib.realtime.AblyRealtime;
+import io.ably.lib.rest.Auth;
+import io.ably.lib.types.AblyException;
+import io.ably.lib.types.ClientOptions;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
+import io.ably.lib.rest.Auth.TokenRequest;
 import java.util.List;
 
 @Service
@@ -20,28 +26,27 @@ public class ChatServiceImpl implements ChatService {
 
     private final ChatMessageRepository messageRepository;
     private final UserRepository userRepository;
-    private final Pusher pusher;
     private final ChatMapper chatMapper;
+    private final AblyRealtime ably;
 
-    public ChatServiceImpl(ChatMessageRepository messageRepository, UserRepository userRepository, ChatMapper chatMapper) {
+    public ChatServiceImpl(ChatMessageRepository messageRepository, UserRepository userRepository, ChatMapper chatMapper) throws AblyException {
         this.messageRepository = messageRepository;
         this.userRepository = userRepository;
         this.chatMapper = chatMapper;
-
-        this.pusher = new Pusher("APP_ID", "b0dddaee8d0f9b6e5184","SECRET");
-        this.pusher.setCluster("ap2");
-        this.pusher.setEncrypted(true);
+        ClientOptions options = new ClientOptions("OtSgGA.cAWR0g:rv1IQX4OtdQJLwINZeD4_v4JB3WpW26PZMlzjQ2UVLQ");
+        this.ably = new AblyRealtime(options);
     }
 
     private String getConversationId(int senderId, int receiverId) {
         return senderId < receiverId ? senderId + "-" + receiverId : receiverId + "-" + senderId;
     }
 
-    public ChatDto sendMessage(ChatDto dto, String email) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
+    public void sendMessage(ChatDto dto, String email) throws AblyException {
 
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("user not found"));
         ChatMessage message = chatMapper.toEntity(dto);
+
         if (message.getSenderId() <= 0 || message.getReceiverId() <= 0) {
             throw new UnauthorizedAccessException("senderId and receiverId are required");
         }
@@ -51,28 +56,25 @@ public class ChatServiceImpl implements ChatService {
         }
 
         if (!userRepository.existsById(message.getSenderId())) {
-            throw new UserNotFoundException("Sender not found");
+            throw new UserNotFoundException("Sender not found with Id " + dto.senderId());
         }
         if (!userRepository.existsById(message.getReceiverId())) {
-            throw new UserNotFoundException("Receiver not found");
+            throw new UserNotFoundException("Receiver not found with Id " + dto.receiverId());
         }
 
-        String channelName = "private-chat-" + getConversationId(message.getSenderId(), message.getReceiverId());
-        authorizeChannelForOperation(channelName, user.getId());
+        int id1 = Math.min(user.getId(), message.getId());
+        int id2 = Math.max(user.getId(), message.getId());
+        String channelName = "chat-" + id1 + "-" + id2;
 
-        ChatMessage saved = messageRepository.save(message);
-
+        messageRepository.save(message);
         try {
-            pusher.trigger(channelName, "new-message", saved);
-
-        } catch (Exception ex) {
-            // Log or handle Pusher errors
+            ably.channels.get(channelName).publish("message", dto.content());
+        }catch (Exception e){
+            throw new InternalServerErrorException("Problem in Sending Message");
         }
-
-        return chatMapper.toDTO(saved);
     }
 
-    public List<ChatDto> getHistory(int senderId, int receiverId, String email) {
+    public List<ChatDto> getHistory(int senderId, int receiverId, int page, int size, String email) {
         if (senderId <= 0 || receiverId <= 0) {
             throw new BadRequestException("senderId and receiverId are required");
         }
@@ -80,42 +82,24 @@ public class ChatServiceImpl implements ChatService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
-        String channelName = "private-chat-" + getConversationId(senderId, receiverId);
-        authorizeChannelForOperation(channelName, user.getId());
+        if (user.getId() != senderId) {
+            throw new UnauthorizedAccessException("User with id: " + senderId + " does not have authorization for this action");
+        }
 
-        List<ChatMessage> messages = messageRepository.findConversation(senderId, receiverId);
+        Pageable pageable = PageRequest.of(page, size);
+
+        List<ChatMessage> messages = messageRepository.findConversation(senderId, receiverId, pageable).getContent();
         return chatMapper.toDtoList(messages);
     }
 
-    private void authorizeChannelForOperation(String channelName, int currentUserId) {
-        if (!channelName.startsWith("private-chat-")) {
-            throw new BadRequestException("Invalid channel name");
-        }
-
-        String[] ids = channelName.replace("private-chat-", "").split("-");
-        int user1 = Integer.parseInt(ids[0]);
-        int user2 = Integer.parseInt(ids[1]);
-
-        if (!(currentUserId == user1) && !(currentUserId == user2)) {
-            throw new UnauthorizedAccessException("User not authorized for this channel");
-        }
-
-        int otherUserId = (currentUserId==user1) ? user2 : user1;
-        if (!userRepository.existsById(otherUserId)) {
-            throw new UserNotFoundException("Other participant not found");
-        }
-    }
-
-    public String authorizeChannel(String channelName, String socketId, String email) {
-        User user = userRepository.findByEmail(email)
+    public TokenRequest getAblyToken(int otherUserId, String name) throws AblyException {
+        User user = userRepository.findByEmail(name)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
-
-        authorizeChannelForOperation(channelName, user.getId());
-        String auth =
-                pusher.authenticate(socketId, channelName);
-        System.out.println(auth);
-
-        return auth;
+        String clientId = String.valueOf(user.getId());
+        Auth.TokenParams params = new Auth.TokenParams();
+        params.clientId = clientId;
+        return ably.auth.createTokenRequest(params, null);
     }
+
 }
 
