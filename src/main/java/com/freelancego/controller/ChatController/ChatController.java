@@ -3,10 +3,9 @@ package com.freelancego.controller.ChatController;
 import com.freelancego.dto.user.ChatDto;
 import com.freelancego.exception.InternalServerErrorException;
 import com.freelancego.service.ChatService.ChatService;
-import io.ably.lib.realtime.AblyRealtime;
 import io.ably.lib.rest.Auth.TokenRequest;
 import io.ably.lib.types.AblyException;
-import io.ably.lib.types.ClientOptions;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -16,13 +15,10 @@ import java.util.List;
 @RequestMapping("/api/chat")
 public class ChatController {
 
-    private final AblyRealtime ably;
     private final ChatService chatService;
 
-    public ChatController(ChatService chatService) throws AblyException{
+    public ChatController(ChatService chatService) {
         this.chatService = chatService;
-        ClientOptions options = new ClientOptions("OtSgGA.cAWR0g:rv1IQX4OtdQJLwINZeD4_v4JB3WpW26PZMlzjQ2UVLQ");
-        this.ably = new AblyRealtime(options);
     }
 
     @GetMapping("/token")
@@ -41,8 +37,8 @@ public class ChatController {
     }
 
     @GetMapping("/history/{senderId}/{receiverId}")
-    public ResponseEntity<List<ChatDto>> getHistory(@PathVariable int senderId, @PathVariable int receiverId,@RequestParam int page, @RequestParam int size,  Authentication auth) {
-        List<ChatDto> history = chatService.getHistory(senderId, receiverId, page, size, auth.getName());
+    public ResponseEntity<Page<ChatDto>> getHistory(@PathVariable int senderId, @PathVariable int receiverId, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "5") int size, Authentication auth) {
+        Page<ChatDto> history = chatService.getHistory(senderId, receiverId, page, size, auth.getName());
         return ResponseEntity.ok(history);
     }
 

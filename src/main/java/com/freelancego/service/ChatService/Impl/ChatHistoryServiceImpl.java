@@ -13,9 +13,7 @@ import com.freelancego.repo.ChatHistoryRepository;
 import com.freelancego.repo.ChatMessageRepository;
 import com.freelancego.repo.UserRepository;
 import com.freelancego.service.ChatService.ChatHistoryService;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;

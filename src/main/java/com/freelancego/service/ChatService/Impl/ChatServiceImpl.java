@@ -15,10 +15,14 @@ import io.ably.lib.realtime.AblyRealtime;
 import io.ably.lib.rest.Auth;
 import io.ably.lib.types.AblyException;
 import io.ably.lib.types.ClientOptions;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import io.ably.lib.rest.Auth.TokenRequest;
+
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -55,9 +59,6 @@ public class ChatServiceImpl implements ChatService {
             throw new UnauthorizedAccessException("Logged-in user does not match senderId");
         }
 
-        if (!userRepository.existsById(message.getSenderId())) {
-            throw new UserNotFoundException("Sender not found with Id " + dto.senderId());
-        }
         if (!userRepository.existsById(message.getReceiverId())) {
             throw new UserNotFoundException("Receiver not found with Id " + dto.receiverId());
         }
@@ -74,7 +75,7 @@ public class ChatServiceImpl implements ChatService {
         }
     }
 
-    public List<ChatDto> getHistory(int senderId, int receiverId, int page, int size, String email) {
+    public Page<ChatDto> getHistory(int senderId, int receiverId, int page, int size, String email) {
         if (senderId <= 0 || receiverId <= 0) {
             throw new BadRequestException("senderId and receiverId are required");
         }
@@ -86,10 +87,15 @@ public class ChatServiceImpl implements ChatService {
             throw new UnauthorizedAccessException("User with id: " + senderId + " does not have authorization for this action");
         }
 
-        Pageable pageable = PageRequest.of(page, size);
+        if (!userRepository.existsById(receiverId)) {
+            throw new UserNotFoundException("Receiver not found with Id " + receiverId);
+        }
 
-        List<ChatMessage> messages = messageRepository.findConversation(senderId, receiverId, pageable).getContent();
-        return chatMapper.toDtoList(messages);
+        Pageable pageable = PageRequest.of(page, size);
+        Page<ChatMessage> messages = messageRepository.findConversation(senderId, receiverId, pageable);
+        List<ChatDto> dtos = chatMapper.toDtoList(messages.getContent());
+        return new PageImpl<>(dtos, messages.getPageable(), messages.getTotalElements());
+
     }
 
     public TokenRequest getAblyToken(int otherUserId, String name) throws AblyException {
