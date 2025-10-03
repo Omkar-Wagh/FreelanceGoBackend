@@ -76,34 +76,57 @@ public class ChatHistoryServiceImpl implements ChatHistoryService {
         return chatHistoryMapper.toDTO(newChatHistory1);
     }
 
+    public ChatHistoryDto createChatHistory(ChatHistoryDto history, String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("user not found"));
+
+        ChatHistory chatHistory = chatHistoryMapper.toEntity(history);
+        User owner = chatHistory.getOwner();
+        User opponent = chatHistory.getOpponent();
+
+        if(user.getId() != owner.getId()){
+            throw  new UnauthorizedAccessException("Unauthorized request, user does not belongs to chat history");
+        }
+
+        boolean status = chatHistoryRepository.existsByOwnerAndOpponent(owner,opponent);
+        if(!status) {
+            ChatHistory newChatHistory = new ChatHistory();
+            newChatHistory.setOwner(opponent);
+            newChatHistory.setOpponent(owner);
+            chatHistoryRepository.save(newChatHistory);
+            chatHistoryRepository.save(chatHistory);
+        }
+        return chatHistoryMapper.toDTO(chatHistory);
+    }
+
     public List<ChatHistoryDto> getConversationById(int id, int page, int size, String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException("user not found"));
-        if(user.getId() != id){
+
+        if (user.getId() != id) {
             throw new UnauthorizedAccessException("Unauthorized request, user does not belong to chat history");
         }
 
         Pageable pageable = PageRequest.of(page, size);
-        List<ChatHistory> histories = chatHistoryRepository.findByOwner(user, pageable);
+        List<ChatHistory> histories = chatHistoryRepository.findByOwner(user, pageable).getContent();
 
         List<ChatHistoryDto> dto = new ArrayList<>();
 
-        for(ChatHistory history : histories){
-            Page<ChatMessage> lastMessagePage =
-                    chatMessageRepository.findLatestMessageBetweenUsers(
-                            history.getOwner().getId(),
-                            history.getOpponent().getId(),
-                            PageRequest.of(0, 1)
-                    );
+        for (ChatHistory history : histories) {
+            Page<ChatMessage> lastMessagePage = chatMessageRepository.findConversation(
+                    history.getOwner().getId(),
+                    history.getOpponent().getId(),
+                    PageRequest.of(0, 1)
+            );
 
-            ChatMessage lastMessage = lastMessagePage.hasContent() ? lastMessagePage.getContent().get(0) : null;
+            ChatMessage last = lastMessagePage.hasContent() ? lastMessagePage.getContent().get(0) : null;
 
             ChatHistoryDto dto1 = new ChatHistoryDto(
                     history.getId(),
                     userMapper.toDTO(history.getOwner()),
                     userMapper.toDTO(history.getOpponent()),
                     history.getCreatedAt(),
-                    lastMessage != null ? chatMapper.toDTO(lastMessage) : null
+                    last != null ? chatMapper.toDTO(last) : null
             );
 
             dto.add(dto1);
@@ -111,6 +134,7 @@ public class ChatHistoryServiceImpl implements ChatHistoryService {
 
         return dto;
     }
+
 
 
 }
