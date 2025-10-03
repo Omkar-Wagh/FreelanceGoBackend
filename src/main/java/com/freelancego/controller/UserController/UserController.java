@@ -47,4 +47,8 @@ public class UserController {
         return ResponseEntity.ok(userService.checkRoles(auth.getName()));
     }
 
+    @GetMapping("/wakeup")
+    public ResponseEntity<String> wakeup() {
+        return ResponseEntity.ok().build();
+    }
 }
