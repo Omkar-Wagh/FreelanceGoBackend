@@ -8,6 +8,8 @@ public record BidDto(
         Double amount,
         String coverLetter,
         OffsetDateTime submittedAt,
+        String timeRequired,
+        String status,
         JobDto jobDto,
         FreelancerDto freelancerDto
 ) {

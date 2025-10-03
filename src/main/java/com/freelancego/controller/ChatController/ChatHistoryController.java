@@ -19,14 +19,15 @@ public class ChatHistoryController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<ChatHistoryDto> createChatHistory(@RequestBody ChatHistoryDto dto, Authentication auth) {
-        ChatHistoryDto saved = chatHistoryService.createChatHistory(dto,auth.getName());
+    public ResponseEntity<ChatHistoryDto> createChatHistory(@PathVariable("senderId") int senderId, @PathVariable("receiverId") int receiverId, Authentication auth) {
+        ChatHistoryDto saved = chatHistoryService.createChatHistory(senderId,receiverId,auth.getName());
         return ResponseEntity.ok(saved);
     }
 
     @GetMapping("/{senderId}")
-    public ResponseEntity<List<ChatHistoryDto>> getChatHistoryById(@PathVariable("senderId") int id, Authentication auth) {
-        List<ChatHistoryDto> chatHistoryDto = chatHistoryService.getConversationById(id,auth.getName());
+    public ResponseEntity<List<ChatHistoryDto>> getChatHistoryById(@PathVariable("senderId") int id,@RequestParam(defaultValue = "0") int page,
+                                                                   @RequestParam(defaultValue = "5") int size, Authentication auth) {
+        List<ChatHistoryDto> chatHistoryDto = chatHistoryService.getConversationById(id,page,size,auth.getName());
         return ResponseEntity.ok(chatHistoryDto);
     }
 }

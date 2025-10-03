@@ -18,8 +18,12 @@ public class Job {
     @Enumerated(EnumType.STRING)
     private ExperienceLevel experienceLevel;
     private String jobDescription;
+
     @Lob
+    @Column(columnDefinition = "TEXT")
     private String requirement;
+
+    private String category;
     @Column(columnDefinition = "TIMESTAMP WITH TIME ZONE")
     private OffsetDateTime projectStartTime;
 
@@ -36,7 +40,7 @@ public class Job {
     @ManyToOne
     private Client client;
 
-    @OneToMany(mappedBy = "job")
+    @OneToMany(mappedBy = "job", cascade = CascadeType.ALL)
     private List<Bid> bids;
 
     public int getId() {
@@ -85,6 +89,14 @@ public class Job {
 
     public void setRequirement(String requirement) {
         this.requirement = requirement;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
     }
 
     public OffsetDateTime getProjectStartTime() {

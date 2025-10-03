@@ -1,5 +1,6 @@
 package com.freelancego.service.FreelancerService.impl;
 
+import com.freelancego.dto.freelancer.BidDto;
 import com.freelancego.dto.freelancer.FreelancerDto;
 import com.freelancego.enums.Role;
 import com.freelancego.exception.ConflictException;

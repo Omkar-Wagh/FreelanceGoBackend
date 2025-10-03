@@ -1,7 +1,8 @@
 package com.freelancego.model;
 
+import com.freelancego.enums.ContractStatus;
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 @Entity
 public class Contract {
@@ -10,18 +11,29 @@ public class Contract {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    private LocalDateTime startDate;
-    private LocalDateTime endDate;
-    private String status; // ACTIVE, COMPLETED, CANCELLED
+    @Enumerated(EnumType.STRING)
+    private ContractStatus status; // ACTIVE, COMPLETED, CANCELLED
 
-    @OneToOne(optional = false)
-    @JoinColumn(name = "bid_id", unique = true)
+    private OffsetDateTime createAt;
+
+    @OneToOne(optional = false, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinColumn(name = "bid_id")
     private Bid acceptedBid;
 
-    @OneToOne(optional = false)
-    @JoinColumn(name = "job_id", unique = true)
+    @OneToOne(optional = false, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinColumn(name = "job_id")
     private Job job;
 
+    @ManyToOne
+    private Client client;
+
+    @ManyToOne
+    private Freelancer freelancer;
+
+    @PrePersist
+    protected void onCreate() {
+        this.createAt = OffsetDateTime.now();
+    }
     public int getId() {
         return id;
     }
@@ -30,28 +42,20 @@ public class Contract {
         this.id = id;
     }
 
-    public LocalDateTime getStartDate() {
-        return startDate;
-    }
-
-    public void setStartDate(LocalDateTime startDate) {
-        this.startDate = startDate;
-    }
-
-    public LocalDateTime getEndDate() {
-        return endDate;
-    }
-
-    public void setEndDate(LocalDateTime endDate) {
-        this.endDate = endDate;
-    }
-
-    public String getStatus() {
+    public ContractStatus getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(ContractStatus status) {
         this.status = status;
+    }
+
+    public OffsetDateTime getCreateAt() {
+        return createAt;
+    }
+
+    public void setCreateAt(OffsetDateTime createAt) {
+        this.createAt = createAt;
     }
 
     public Bid getAcceptedBid() {
@@ -69,33 +73,20 @@ public class Contract {
     public void setJob(Job job) {
         this.job = job;
     }
-}
 
-//@Query("SELECT c FROM Contract c " +
-//        "WHERE c.acceptedBid.freelancer.id = :freelancerId " +
-//        "AND c.job.client.id = :clientId")
-// or else
-//
-//@Entity
-//public class Contract {
-//    @Id
-//    @GeneratedValue
-//    private Long id;
-//
-//    private LocalDate startDate;
-//    private LocalDate endDate;
-//
-//    private String status; // ACTIVE, COMPLETED, CANCELLED
-//
-//    @OneToOne
-//    private Bid acceptedBid;
-//
-//    @OneToOne
-//    private Job job;
-//
-//    @ManyToOne
-//    private Client client; // <-- Added directly
-//
-//    @ManyToOne
-//    private Freelancer freelancer; // <-- Added directly
-//}
+    public Client getClient() {
+        return client;
+    }
+
+    public void setClient(Client client) {
+        this.client = client;
+    }
+
+    public Freelancer getFreelancer() {
+        return freelancer;
+    }
+
+    public void setFreelancer(Freelancer freelancer) {
+        this.freelancer = freelancer;
+    }
+}

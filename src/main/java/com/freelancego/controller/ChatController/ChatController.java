@@ -5,10 +5,10 @@ import com.freelancego.exception.InternalServerErrorException;
 import com.freelancego.service.ChatService.ChatService;
 import io.ably.lib.rest.Auth.TokenRequest;
 import io.ably.lib.types.AblyException;
-import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
@@ -37,8 +37,8 @@ public class ChatController {
     }
 
     @GetMapping("/history/{senderId}/{receiverId}")
-    public ResponseEntity<Page<ChatDto>> getHistory(@PathVariable int senderId, @PathVariable int receiverId, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "5") int size, Authentication auth) {
-        Page<ChatDto> history = chatService.getHistory(senderId, receiverId, page, size, auth.getName());
+    public ResponseEntity<List<ChatDto>> getHistory(@PathVariable int senderId, @PathVariable int receiverId, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "5") int size, Authentication auth) {
+        List<ChatDto> history = chatService.getHistory(senderId, receiverId, page, size, auth.getName());
         return ResponseEntity.ok(history);
     }
 

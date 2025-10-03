@@ -14,6 +14,7 @@ import com.freelancego.repo.ChatMessageRepository;
 import com.freelancego.repo.UserRepository;
 import com.freelancego.service.ChatService.ChatHistoryService;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -38,51 +39,68 @@ public class ChatHistoryServiceImpl implements ChatHistoryService {
         this.chatMapper = chatMapper;
     }
 
-    public ChatHistoryDto createChatHistory(ChatHistoryDto history, String email) {
+    public ChatHistoryDto createChatHistory(int senderId,int receiverId, String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException("user not found"));
 
-        ChatHistory chatHistory = chatHistoryMapper.toEntity(history);
-        User owner = chatHistory.getOwner();
-        User opponent = chatHistory.getOpponent();
-
-        if(user.getId() != owner.getId()){
-            throw  new UnauthorizedAccessException("Unauthorized request, user does not belongs to chat history");
+        if (receiverId <= 0) {
+            throw new UnauthorizedAccessException("senderId and receiverId are required");
+        }
+        if (user.getId() != senderId) {
+            throw new UnauthorizedAccessException("Logged-in user does not match senderId");
         }
 
-        boolean status = chatHistoryRepository.existsByOwnerAndOpponent(owner,opponent);
-        if(!status) {
-            ChatHistory newChatHistory = new ChatHistory();
-            newChatHistory.setOwner(opponent);
-            newChatHistory.setOpponent(owner);
-            chatHistoryRepository.save(newChatHistory);
-            chatHistoryRepository.save(chatHistory);
+        User receiver = userRepository.findById(receiverId)
+                .orElseThrow(() -> new UserNotFoundException("Receiver not found with Id " + receiverId));
+
+        if (receiver.getId() <= 0) {
+            throw new UserNotFoundException("Receiver not found with Id " + receiverId);
         }
-        return chatHistoryMapper.toDTO(chatHistory);
+
+        boolean status = chatHistoryRepository.existsByOwnerAndOpponent(user, receiver);
+        ChatHistory newChatHistory1 = new ChatHistory();
+        ChatHistory newChatHistory2 = new ChatHistory();
+
+        if (!status) {
+
+            newChatHistory1.setOwner(user);
+            newChatHistory1.setOpponent(receiver);
+            chatHistoryRepository.save(newChatHistory1);
+
+            newChatHistory2.setOwner(user);
+            newChatHistory2.setOpponent(receiver);
+            chatHistoryRepository.save(newChatHistory2);
+
+        }
+        return chatHistoryMapper.toDTO(newChatHistory1);
     }
 
-    public List<ChatHistoryDto> getConversationById(int id, String email) {
+    public List<ChatHistoryDto> getConversationById(int id,int page, int size, String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException("user not found"));
         if(user.getId() != id){
             throw  new UnauthorizedAccessException("Unauthorized request, user does not belongs to chat history");
         }
-        // Add pagination for this
-        List<ChatHistory> histories = chatHistoryRepository.findByOwner(user);
+
+        Pageable pageable = PageRequest.of(page,size);
+        List<ChatHistory> histories = chatHistoryRepository.findByOwner(user,pageable);
 
         List<ChatHistoryDto> dto = new ArrayList<>();
 
         for(ChatHistory history : histories){
-            List<ChatMessage> last5 =
-                    chatMessageRepository.findBySenderIdAndReceiverIdOrderByTimestampDesc(
+            ChatMessage last5 =
+                    (ChatMessage) chatMessageRepository.findBySenderIdAndReceiverIdOrderByTimestampDesc(
                             history.getOwner().getId(),
                             history.getOpponent().getId(),
-                            PageRequest.of(0, 5)
+                            PageRequest.of(0, 1)
                     ).getContent();
-            ChatHistoryDto dto1 = new ChatHistoryDto(history.getId(),userMapper.toDTO(history.getOwner()), userMapper.toDTO(history.getOpponent()),history.getCreatedAt(),chatMapper.toDtoList(last5));
+            ChatHistoryDto dto1 = new ChatHistoryDto(history.getId(),userMapper.toDTO(history.getOwner()), userMapper.toDTO(history.getOpponent()),history.getCreatedAt(),chatMapper.toDTO(last5));
             dto.add(dto1);
         }
+        histories.stream().map(chatHistoryMapper::toDTO).toList();
+
         return dto;
+
     }
 
 }

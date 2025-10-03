@@ -2,10 +2,12 @@ package com.freelancego.service.ClientService.impl;
 
 import com.freelancego.dto.client.JobDto;
 import com.freelancego.dto.client.response.DashBoardResponseDto;
+import com.freelancego.dto.user.ContractDto;
 import com.freelancego.enums.JobPhase;
 import com.freelancego.enums.JobStatus;
 import com.freelancego.exception.UnauthorizedAccessException;
 import com.freelancego.exception.UserNotFoundException;
+import com.freelancego.mapper.ContractMapper;
 import com.freelancego.mapper.JobMapper;
 import com.freelancego.model.*;
 import com.freelancego.repo.ClientRepository;
@@ -29,13 +31,15 @@ public class JobServiceImpl implements JobService {
     final private ClientRepository clientRepository;
     final private JobRepository jobRepository;
     final private ContractRepository contractRepository;
+    final private ContractMapper contractMapper;
 
-    public JobServiceImpl(UserRepository userRepository, JobMapper jobMapper, ClientRepository clientRepository, JobRepository jobRepository,ContractRepository contractRepository) {
+    public JobServiceImpl(UserRepository userRepository, JobMapper jobMapper, ClientRepository clientRepository, JobRepository jobRepository, ContractRepository contractRepository, ContractMapper contractMapper) {
         this.userRepository = userRepository;
         this.jobMapper = jobMapper;
         this.clientRepository = clientRepository;
         this.jobRepository = jobRepository;
         this.contractRepository = contractRepository;
+        this.contractMapper = contractMapper;
     }
 
     public <T> List<T> limitList(List<T> list, int limit) {
@@ -69,7 +73,6 @@ public class JobServiceImpl implements JobService {
         job.setCreatedAt(OffsetDateTime.now());
         job.setStatus(JobStatus.ACTIVE);
         job.setClient(client);
-        // Bids Phase are still null
         jobRepository.save(job);
 
         return jobMapper.toDto(job);
@@ -163,6 +166,24 @@ public class JobServiceImpl implements JobService {
                 "complete", completedPosts1,
                 "dashboard",dashBoardResponseDto
         );
+    }
+
+    public List<ContractDto> getPostByPhase(String name) {
+        User user = userRepository.findByEmail(name)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        Client client = clientRepository.findByUser(user)
+                .orElseThrow(()-> new UserNotFoundException("Client not found"));
+
+        List<Job> jobs = jobRepository.findByClientIdAndPhase(client.getId(), JobPhase.IN_PROGRESS);
+
+        List<Contract> contractList = new ArrayList<>();
+
+        for (Job job : jobs) {
+            Contract contract = contractRepository.findByJob(job);
+            contractList.add(contract);
+        }
+        return contractMapper.toDtoList(contractList);
     }
 
 }

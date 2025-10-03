@@ -1,6 +1,7 @@
 package com.freelancego.service.ClientService;
 
 import com.freelancego.dto.client.JobDto;
+import com.freelancego.dto.user.ContractDto;
 import org.springframework.data.domain.Page;
 
 import java.util.*;
@@ -15,6 +16,7 @@ public interface JobService {
 
     public Map<String,Object> getDashboardData(String name);
 
+    public List<ContractDto> getPostByPhase(String name);
 }
 
 /*

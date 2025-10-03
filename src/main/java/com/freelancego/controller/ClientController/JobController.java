@@ -1,11 +1,14 @@
 package com.freelancego.controller.ClientController;
 
 import com.freelancego.dto.client.JobDto;
+import com.freelancego.dto.user.ContractDto;
 import com.freelancego.service.ClientService.JobService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -37,6 +40,11 @@ public class JobController {
     @GetMapping("/get-post-in-progress")
     ResponseEntity<Map<String,Object>> getDashboardInfo(Authentication auth){
         return ResponseEntity.ok(jobService.getDashboardData(auth.getName()));
+    }
+
+    @GetMapping("/get-in-progress-post")
+    ResponseEntity<List<ContractDto>> getPostByPhase(Authentication auth){
+        return ResponseEntity.ok(jobService.getPostByPhase(auth.getName()));
     }
 
 }

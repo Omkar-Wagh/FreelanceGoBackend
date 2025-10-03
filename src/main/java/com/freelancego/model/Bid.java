@@ -1,5 +1,6 @@
 package com.freelancego.model;
 
+import com.freelancego.enums.BidStatus;
 import jakarta.persistence.*;
 import java.time.OffsetDateTime;
 
@@ -15,7 +16,18 @@ public class Bid {
     private int id;
 
     private Double amount;
+
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String coverLetter;
+
+    private String timeRequired;
+
+    @Enumerated(EnumType.STRING)
+    private BidStatus status;
+
+    private boolean isEditable = true;
+
     private OffsetDateTime submittedAt;
 
     @ManyToOne
@@ -25,6 +37,11 @@ public class Bid {
     @ManyToOne
     @JoinColumn(name = "freelancer_id", nullable = false)
     private Freelancer freelancer;
+
+    @PrePersist
+    protected void onCreate() {
+        this.submittedAt = OffsetDateTime.now();
+    }
 
     public int getId() {
         return id;
@@ -50,12 +67,28 @@ public class Bid {
         this.coverLetter = coverLetter;
     }
 
+    public BidStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(BidStatus status) {
+        this.status = status;
+    }
+
     public OffsetDateTime getSubmittedAt() {
         return submittedAt;
     }
 
     public void setSubmittedAt(OffsetDateTime submittedAt) {
         this.submittedAt = submittedAt;
+    }
+
+    public String getTimeRequired() {
+        return timeRequired;
+    }
+
+    public void setTimeRequired(String timeRequired) {
+        this.timeRequired = timeRequired;
     }
 
     public Job getJob() {
@@ -72,5 +105,13 @@ public class Bid {
 
     public void setFreelancer(Freelancer freelancer) {
         this.freelancer = freelancer;
+    }
+
+    public boolean isEditable() {
+        return isEditable;
+    }
+
+    public void setEditable(boolean editable) {
+        isEditable = editable;
     }
 }
