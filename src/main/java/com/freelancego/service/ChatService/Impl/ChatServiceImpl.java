@@ -59,8 +59,8 @@ public class ChatServiceImpl implements ChatService {
             throw new UserNotFoundException("Receiver not found with Id " + dto.receiverId());
         }
 
-        int id1 = Math.min(user.getId(), message.getId());
-        int id2 = Math.max(user.getId(), message.getId());
+        int id1 = Math.min(user.getId(), message.getReceiverId());
+        int id2 = Math.max(user.getId(), message.getReceiverId());
         String channelName = "chat-" + id1 + "-" + id2;
 
         messageRepository.save(message);
