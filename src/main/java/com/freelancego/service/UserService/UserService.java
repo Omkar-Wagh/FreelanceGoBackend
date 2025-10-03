@@ -18,6 +18,9 @@ import com.freelancego.model.User;
 import com.freelancego.repo.ClientRepository;
 import com.freelancego.repo.FreelancerRepository;
 import com.freelancego.repo.UserRepository;
+import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -129,3 +132,24 @@ public class UserService {
     }
 
 }
+
+
+
+//import jakarta.transaction.Transactional;
+//import org.springframework.beans.factory.annotation.Autowired;
+//import org.springframework.scheduling.annotation.Scheduled;
+//import org.springframework.stereotype.Service;
+//
+//@Service
+//public class CleanupService {
+//
+//    @Autowired
+//    private VerificationTokenService tokenService;
+//
+//    @Scheduled(fixedRate = 300000)
+//    @Transactional
+//    public void cleanExpiredTokens() {
+//        tokenService.deleteExpiredTokens();
+//    }
+//}
+

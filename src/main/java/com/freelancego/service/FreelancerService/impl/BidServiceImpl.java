@@ -1,6 +1,7 @@
 package com.freelancego.service.FreelancerService.impl;
 
 import com.freelancego.dto.freelancer.BidDto;
+import com.freelancego.enums.BidStatus;
 import com.freelancego.exception.InternalServerErrorException;
 import com.freelancego.exception.InvalidIdException;
 import com.freelancego.exception.UserNotFoundException;
@@ -50,12 +51,12 @@ public class BidServiceImpl implements BidService {
 
         bid.setJob(job);
         bid.setFreelancer(freelancer);
+        bid.setStatus(BidStatus.PENDING);
 
         if (bidRepository.existsByJobIdAndFreelancerId(job.getId(), freelancer.getId())) {
             throw new InvalidIdException("You already placed a bid on this job.");
         }
         try{
-
             bidRepository.save(bid);
         }
         catch (Exception e){

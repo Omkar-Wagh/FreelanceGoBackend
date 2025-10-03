@@ -65,7 +65,7 @@ public class ChatServiceImpl implements ChatService {
 
         messageRepository.save(message);
         try {
-            ably.channels.get(channelName).publish("message", dto.content());
+            ably.channels.get(channelName).publish("message", message);
         }catch (Exception e){
             throw new InternalServerErrorException("Problem in Sending Message");
         }

@@ -13,8 +13,6 @@ import com.freelancego.repo.*;
 import com.freelancego.service.ContractService.ContractService;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-
 @Service
 public class ContractServiceImpl implements ContractService {
 
