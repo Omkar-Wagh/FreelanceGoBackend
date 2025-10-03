@@ -1,5 +1,6 @@
 package com.freelancego.service.ChatService.Impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.freelancego.dto.user.ChatDto;
 import com.freelancego.exception.BadRequestException;
 import com.freelancego.exception.InternalServerErrorException;
@@ -19,7 +20,10 @@ import io.ably.lib.types.ClientOptions;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
+import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class ChatServiceImpl implements ChatService {
@@ -28,11 +32,13 @@ public class ChatServiceImpl implements ChatService {
     private final UserRepository userRepository;
     private final ChatMapper chatMapper;
     private final AblyRealtime ably;
+    private final ObjectMapper objectMapper;
 
-    public ChatServiceImpl(ChatMessageRepository messageRepository, UserRepository userRepository, ChatMapper chatMapper) throws AblyException {
+    public ChatServiceImpl(ChatMessageRepository messageRepository, UserRepository userRepository, ChatMapper chatMapper, ObjectMapper objectMapper) throws AblyException {
         this.messageRepository = messageRepository;
         this.userRepository = userRepository;
         this.chatMapper = chatMapper;
+        this.objectMapper = objectMapper;
         ClientOptions options = new ClientOptions("OtSgGA.cAWR0g:rv1IQX4OtdQJLwINZeD4_v4JB3WpW26PZMlzjQ2UVLQ");
         this.ably = new AblyRealtime(options);
     }
@@ -63,9 +69,15 @@ public class ChatServiceImpl implements ChatService {
         int id2 = Math.max(user.getId(), message.getReceiverId());
         String channelName = "chat-" + id1 + "-" + id2;
 
-        messageRepository.save(message);
+        ChatMessage savedMessage = messageRepository.save(message);
         try {
-            ably.channels.get(channelName).publish("message", message);
+            String stringifiedMessage = objectMapper.writeValueAsString(Map.of(
+                    "senderId", savedMessage.getSenderId(),
+                    "receivedId", savedMessage.getReceiverId(),
+                    "timestamp", savedMessage.getTimestamp(),
+                    "content", savedMessage.getContent()
+            ));
+            ably.channels.get(channelName).publish("message", stringifiedMessage);
         }catch (Exception e){
             throw new InternalServerErrorException("Problem in Sending Message");
         }
