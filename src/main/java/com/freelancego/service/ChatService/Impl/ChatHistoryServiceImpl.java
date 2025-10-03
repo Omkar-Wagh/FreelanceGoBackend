@@ -13,6 +13,7 @@ import com.freelancego.repo.ChatHistoryRepository;
 import com.freelancego.repo.ChatMessageRepository;
 import com.freelancego.repo.UserRepository;
 import com.freelancego.service.ChatService.ChatHistoryService;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -75,32 +76,41 @@ public class ChatHistoryServiceImpl implements ChatHistoryService {
         return chatHistoryMapper.toDTO(newChatHistory1);
     }
 
-    public List<ChatHistoryDto> getConversationById(int id,int page, int size, String email) {
+    public List<ChatHistoryDto> getConversationById(int id, int page, int size, String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException("user not found"));
         if(user.getId() != id){
-            throw  new UnauthorizedAccessException("Unauthorized request, user does not belongs to chat history");
+            throw new UnauthorizedAccessException("Unauthorized request, user does not belong to chat history");
         }
 
-        Pageable pageable = PageRequest.of(page,size);
-        List<ChatHistory> histories = chatHistoryRepository.findByOwner(user,pageable);
+        Pageable pageable = PageRequest.of(page, size);
+        List<ChatHistory> histories = chatHistoryRepository.findByOwner(user, pageable);
 
         List<ChatHistoryDto> dto = new ArrayList<>();
 
         for(ChatHistory history : histories){
-            ChatMessage last5 =
-                    (ChatMessage) chatMessageRepository.findBySenderIdAndReceiverIdOrderByTimestampDesc(
+            Page<ChatMessage> lastMessagePage =
+                    chatMessageRepository.findLatestMessageBetweenUsers(
                             history.getOwner().getId(),
                             history.getOpponent().getId(),
                             PageRequest.of(0, 1)
-                    ).getContent();
-            ChatHistoryDto dto1 = new ChatHistoryDto(history.getId(),userMapper.toDTO(history.getOwner()), userMapper.toDTO(history.getOpponent()),history.getCreatedAt(),chatMapper.toDTO(last5));
+                    );
+
+            ChatMessage lastMessage = lastMessagePage.hasContent() ? lastMessagePage.getContent().get(0) : null;
+
+            ChatHistoryDto dto1 = new ChatHistoryDto(
+                    history.getId(),
+                    userMapper.toDTO(history.getOwner()),
+                    userMapper.toDTO(history.getOpponent()),
+                    history.getCreatedAt(),
+                    lastMessage != null ? chatMapper.toDTO(lastMessage) : null
+            );
+
             dto.add(dto1);
         }
-        histories.stream().map(chatHistoryMapper::toDTO).toList();
 
         return dto;
-
     }
+
 
 }
