@@ -16,4 +16,6 @@ public interface JobRepository extends JpaRepository<Job, Integer> {
     List<Job> findByClientIdAndStatusAndPhase(int id, JobStatus status, JobPhase phases);
     List<Job> findByClientIdAndStatus(int clientId, JobStatus status);
     List<Job> findByClientIdAndPhase(int id, JobPhase jobPhase);
+    Page<Job> findByStatus(Pageable pageable, JobStatus jobStatus);
+    Page<Job> findJobByClientAndStatus(Client client, JobStatus jobStatus, Pageable pageable);
 }

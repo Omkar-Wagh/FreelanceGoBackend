@@ -13,7 +13,7 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Intege
     @Query("SELECT m FROM ChatMessage m WHERE " +
             "(m.senderId = :senderId AND m.receiverId = :receiverId) OR " +
             "(m.senderId = :receiverId AND m.receiverId = :senderId) " +
-            "ORDER BY m.timestamp ASC")
+            "ORDER BY m.timestamp DESC")
     Page<ChatMessage> findConversation(@Param("senderId") int senderId, @Param("receiverId") int receiverId, Pageable pageable);
 
 //    Page<ChatMessage> findBySenderIdAndReceiverIdOrderByTimestampDesc(int senderId, int receiverId, Pageable pageable);

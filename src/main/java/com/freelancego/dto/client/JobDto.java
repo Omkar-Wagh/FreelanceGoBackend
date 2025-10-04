@@ -46,5 +46,7 @@ public record JobDto(
 
         ClientDto clientDto,
 
-        List<BidDto> bidDto
+        List<BidDto> bidDto,
+
+        boolean alreadyBid
 ) { }

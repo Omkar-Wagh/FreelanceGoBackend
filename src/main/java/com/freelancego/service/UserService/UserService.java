@@ -20,11 +20,15 @@ import com.freelancego.repo.FreelancerRepository;
 import com.freelancego.repo.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
@@ -153,3 +157,11 @@ public class UserService {
 //    }
 //}
 
+//@Modifying
+//@Transactional
+//@Query("DELETE FROM VerificationToken v WHERE v.expiresAt < :now")
+//void deleteByExpiresAtBefore(@Param("now") LocalDateTime now);
+
+//public void deleteExpiredTokens() {
+//    verificationToken.deleteByExpiresAtBefore(LocalDateTime.now());
+//}

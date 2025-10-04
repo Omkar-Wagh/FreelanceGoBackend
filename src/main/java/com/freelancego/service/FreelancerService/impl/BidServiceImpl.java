@@ -54,14 +54,14 @@ public class BidServiceImpl implements BidService {
         Freelancer freelancer = freelancerRepository.findById(user.getId()).orElseThrow(
                 () -> new UserNotFoundException("Freelancer not found for Id " + bid.getFreelancer().getId()));
 
-        bid.setJob(job);
-        bid.setFreelancer(freelancer);
-        bid.setStatus(BidStatus.PENDING);
 
         if (bidRepository.existsByJobIdAndFreelancerId(job.getId(), freelancer.getId())) {
             throw new InvalidIdException("You already placed a bid on this job.");
         }
         try{
+            bid.setJob(job);
+            bid.setFreelancer(freelancer);
+            bid.setStatus(BidStatus.PENDING);
             bidRepository.save(bid);
         }
         catch (Exception e){

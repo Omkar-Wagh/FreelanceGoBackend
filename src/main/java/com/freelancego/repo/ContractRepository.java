@@ -1,9 +1,12 @@
 package com.freelancego.repo;
 
+import com.freelancego.enums.ContractStatus;
 import com.freelancego.model.Client;
 import com.freelancego.model.Contract;
 import com.freelancego.model.Freelancer;
 import com.freelancego.model.Job;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -22,4 +25,7 @@ public interface ContractRepository extends JpaRepository<Contract,Integer> {
     Optional<Contract> findContract(@Param("jobId") int jobId, @Param("clientId") int clientId, @Param("freelancerId") int freelancerId);
 
     boolean existsByJobId(int jobId);
+
+    Page<Contract> findByClientAndStatus(Client client, ContractStatus status,Pageable pageable);
+
 }

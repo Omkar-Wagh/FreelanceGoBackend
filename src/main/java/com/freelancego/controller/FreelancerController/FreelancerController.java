@@ -1,15 +1,13 @@
 package com.freelancego.controller.FreelancerController;
 
+import com.freelancego.dto.freelancer.BrowseJobDto;
 import com.freelancego.dto.freelancer.FreelancerDto;
 import com.freelancego.service.FreelancerService.FreelancerService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -27,8 +25,10 @@ public class FreelancerController {
         return ResponseEntity.ok(freelancerService.createFreelancer(freelancerDto,auth.getName()));
     }
 
-//    @PostMapping("/create-bid")
-//    ResponseEntity<?> createBid(@RequestBody BidDto bidDto, Authentication auth){
-//        return freelancerService.createBid();
-//    }
+    @GetMapping("/browse-job/")
+    ResponseEntity<List<BrowseJobDto>> getBrowseJobs(@RequestParam(defaultValue = "0") int page,
+                                                     @RequestParam(defaultValue = "5") int size, Authentication auth){
+        return ResponseEntity.ok(freelancerService.getBrowseJobs(page,size,auth.getName()));
+    }
+
 }

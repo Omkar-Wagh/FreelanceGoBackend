@@ -5,6 +5,7 @@ import com.freelancego.enums.JobPhase;
 import com.freelancego.enums.JobStatus;
 import jakarta.persistence.*;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -37,11 +38,27 @@ public class Job {
     private JobStatus status;
     @Enumerated(EnumType.STRING)
     private JobPhase phase;
+
     @ManyToOne
     private Client client;
 
     @OneToMany(mappedBy = "job", cascade = CascadeType.ALL)
-    private List<Bid> bids;
+    private List<Bid> bids = new ArrayList<>();
+
+    private boolean alreadyBid;
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = OffsetDateTime.now();
+    }
+
+    public boolean isAlreadyBid() {
+        return alreadyBid;
+    }
+
+    public void setAlreadyBid(boolean alreadyBid) {
+        this.alreadyBid = alreadyBid;
+    }
 
     public int getId() {
         return id;

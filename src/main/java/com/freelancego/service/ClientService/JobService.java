@@ -17,10 +17,13 @@ public interface JobService {
     public Map<String,Object> getDashboardData(String name);
 
     public List<ContractDto> getPostByPhase(String name);
+
+    public Page<JobDto> getPostByStatus(int page, int size, String name);
+
+    Page<ContractDto> getHiredFreelancer(int page, int size, String name);
 }
 
 /*
-
 
 //
 

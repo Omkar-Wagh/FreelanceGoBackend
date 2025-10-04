@@ -3,6 +3,7 @@ package com.freelancego.service.ClientService.impl;
 import com.freelancego.dto.client.JobDto;
 import com.freelancego.dto.client.response.DashBoardResponseDto;
 import com.freelancego.dto.user.ContractDto;
+import com.freelancego.enums.ContractStatus;
 import com.freelancego.enums.JobPhase;
 import com.freelancego.enums.JobStatus;
 import com.freelancego.exception.UnauthorizedAccessException;
@@ -20,7 +21,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import java.time.OffsetDateTime;
 import java.util.*;
 
 @Service
@@ -70,7 +70,6 @@ public class JobServiceImpl implements JobService {
                 .orElseThrow(()-> new UserNotFoundException("Client not found"));
 
         Job job = jobMapper.toEntity(jobDto);
-        job.setCreatedAt(OffsetDateTime.now());
         job.setStatus(JobStatus.ACTIVE);
         job.setClient(client);
         jobRepository.save(job);
@@ -87,7 +86,6 @@ public class JobServiceImpl implements JobService {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         Page<Job> jobs = jobRepository.findJobByClient(client, pageable);
-
         return jobs.map(jobMapper::toDto);
     }
 
@@ -184,6 +182,29 @@ public class JobServiceImpl implements JobService {
             contractList.add(contract);
         }
         return contractMapper.toDtoList(contractList);
+    }
+
+    public Page<JobDto> getPostByStatus(int page, int size, String name) {
+        User user = userRepository.findByEmail(name)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        Client client = clientRepository.findByUser(user)
+                .orElseThrow(() -> new UserNotFoundException("Client not found"));
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        Page<Job> jobs = jobRepository.findJobByClientAndStatus(client,JobStatus.ACTIVE ,pageable);
+        return jobs.map(jobMapper::toDto);
+    }
+
+    public Page<ContractDto> getHiredFreelancer(int page, int size, String name) {
+        User user = userRepository.findByEmail(name)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        Client client = clientRepository.findByUser(user)
+                .orElseThrow(() -> new UserNotFoundException("Client not found"));
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        Page<Contract> contracts = contractRepository.findByClientAndStatus(client, ContractStatus.COMPLETED,pageable);
+        return contracts.map(contractMapper::toDTO);
     }
 
 }

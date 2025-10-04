@@ -14,7 +14,7 @@ public class Contract {
     @Enumerated(EnumType.STRING)
     private ContractStatus status; // ACTIVE, COMPLETED, CANCELLED
 
-    private OffsetDateTime createAt;
+    private OffsetDateTime createdAt;
 
     @OneToOne(optional = false, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "bid_id")
@@ -32,7 +32,7 @@ public class Contract {
 
     @PrePersist
     protected void onCreate() {
-        this.createAt = OffsetDateTime.now();
+        this.createdAt = OffsetDateTime.now();
     }
     public int getId() {
         return id;
@@ -51,11 +51,11 @@ public class Contract {
     }
 
     public OffsetDateTime getCreateAt() {
-        return createAt;
+        return createdAt;
     }
 
-    public void setCreateAt(OffsetDateTime createAt) {
-        this.createAt = createAt;
+    public void setCreateAt(OffsetDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 
     public Bid getAcceptedBid() {

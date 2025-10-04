@@ -18,7 +18,7 @@ public class ChatHistoryController {
         this.chatHistoryService = chatHistoryService;
     }
 
-    @PostMapping("/create")
+    @PostMapping("/create/{senderId}/{receiverId}")
     public ResponseEntity<ChatHistoryDto> createChatHistory(@PathVariable("senderId") int senderId, @PathVariable("receiverId") int receiverId, Authentication auth) {
         ChatHistoryDto saved = chatHistoryService.createChatHistory(senderId,receiverId,auth.getName());
         return ResponseEntity.ok(saved);
