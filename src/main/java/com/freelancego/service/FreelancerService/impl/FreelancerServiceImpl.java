@@ -166,7 +166,11 @@ public class FreelancerServiceImpl implements FreelancerService {
                 .flatMap(job -> job.getBids().stream())
                 .toList();
 
-        List<Contract> contracts = contractRepository.findByAcceptedBid(myBids);
+        List<Contract> contracts = new ArrayList<>();
+        for (Bid bid : myBids){
+            Contract contract = contractRepository.findByAcceptedBid(bid);
+            contracts.add(contract);
+        }
 
         long hired = contracts.size();
         long inReview = contracts.stream()

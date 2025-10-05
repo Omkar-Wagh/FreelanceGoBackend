@@ -45,19 +45,9 @@ public class Job {
     @OneToMany(mappedBy = "job", cascade = CascadeType.ALL)
     private List<Bid> bids = new ArrayList<>();
 
-    private boolean alreadyBid;
-
     @PrePersist
     protected void onCreate() {
         this.createdAt = OffsetDateTime.now();
-    }
-
-    public boolean isAlreadyBid() {
-        return alreadyBid;
-    }
-
-    public void setAlreadyBid(boolean alreadyBid) {
-        this.alreadyBid = alreadyBid;
     }
 
     public int getId() {
