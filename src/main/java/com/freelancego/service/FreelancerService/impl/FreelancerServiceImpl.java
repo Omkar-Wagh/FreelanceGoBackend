@@ -36,11 +36,10 @@ public class FreelancerServiceImpl implements FreelancerService {
     final private JobRepository jobRepository;
     final private BidRepository bidRepository;
     final private JobMapper jobMapper;
-    final private BrowseJobDto browseJobDto;
     final private ContractRepository contractRepository;
     final private ContractMapper contractMapper;
 
-    public FreelancerServiceImpl(UserRepository userRepository, JWTService jwtService, FreelancerRepository freelancerRepository, FreelancerMapper freelancerMapper, JobRepository jobRepository, BidRepository bidRepository, JobMapper jobMapper, BrowseJobDto browseJobDto, ContractRepository contractRepository, ContractMapper contractMapper) {
+    public FreelancerServiceImpl(UserRepository userRepository, JWTService jwtService, FreelancerRepository freelancerRepository, FreelancerMapper freelancerMapper, JobRepository jobRepository, BidRepository bidRepository, JobMapper jobMapper, ContractRepository contractRepository, ContractMapper contractMapper) {
         this.userRepository = userRepository;
         this.jwtService = jwtService;
         this.freelancerRepository = freelancerRepository;
@@ -48,7 +47,6 @@ public class FreelancerServiceImpl implements FreelancerService {
         this.jobRepository = jobRepository;
         this.bidRepository = bidRepository;
         this.jobMapper = jobMapper;
-        this.browseJobDto = browseJobDto;
         this.contractRepository = contractRepository;
         this.contractMapper = contractMapper;
     }
