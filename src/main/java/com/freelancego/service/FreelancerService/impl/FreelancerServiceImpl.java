@@ -86,8 +86,10 @@ public class FreelancerServiceImpl implements FreelancerService {
 
         for (Job job : jobs) {
             BrowseJobDto dto = new BrowseJobDto();
-            jobMapper.toDto(job);
+
+            dto.setJob(jobMapper.toDto(job));
             dto.setAlreadyBid(bidRepository.existsByJobIdAndFreelancerId(job.getId(), user.getId()));
+
             browseJobDtoList.add(dto);
         }
 

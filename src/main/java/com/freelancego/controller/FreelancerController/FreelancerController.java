@@ -5,8 +5,6 @@ import com.freelancego.dto.freelancer.BrowseJobDto;
 import com.freelancego.dto.freelancer.FreelancerDto;
 import com.freelancego.dto.user.ContractDto;
 import com.freelancego.service.FreelancerService.FreelancerService;
-import io.ably.lib.rest.Auth;
-import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -31,7 +29,7 @@ public class FreelancerController {
     }
 
     // Browse Jobs
-    @GetMapping("/browse-job/")
+    @GetMapping("/browse-job")
     ResponseEntity<List<BrowseJobDto>> getBrowseJobs(@RequestParam(defaultValue = "0") int page,
                                                      @RequestParam(defaultValue = "5") int size, Authentication auth){
         return ResponseEntity.ok(freelancerService.getBrowseJobs(page,size,auth.getName()));
