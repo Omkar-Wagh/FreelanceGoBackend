@@ -21,6 +21,8 @@ public interface JobService {
     public Page<JobDto> getPostByStatus(int page, int size, String name);
 
     Page<ContractDto> getHiredFreelancer(int page, int size, String name);
+
+    Map<String, Object> getAnalytics(String name);
 }
 
 /*

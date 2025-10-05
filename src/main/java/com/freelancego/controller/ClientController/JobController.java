@@ -2,7 +2,6 @@ package com.freelancego.controller.ClientController;
 
 import com.freelancego.dto.client.JobDto;
 import com.freelancego.dto.user.ContractDto;
-import com.freelancego.model.Contract;
 import com.freelancego.service.ClientService.JobService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -59,11 +58,19 @@ public class JobController {
                                                 @RequestParam(defaultValue = "5") int size,Authentication auth){
         return ResponseEntity.ok(jobService.getPostByStatus(page, size, auth.getName()));
     }
+
     // Hired Freelancer
     @GetMapping("/hired-freelancers")
     ResponseEntity<Page<ContractDto>> getHiredFreelancer(@RequestParam(defaultValue = "0") int page,
                                                          @RequestParam(defaultValue = "5") int size,Authentication auth){
         return ResponseEntity.ok(jobService.getHiredFreelancer(page, size, auth.getName()));
     }
+
+    // Analytics
+    @GetMapping("/client-analytics")
+    ResponseEntity<Map<String, Object>> getAnalytics(Authentication auth){
+        return ResponseEntity.ok(jobService.getAnalytics(auth.getName()));
+    }
+
 
 }
