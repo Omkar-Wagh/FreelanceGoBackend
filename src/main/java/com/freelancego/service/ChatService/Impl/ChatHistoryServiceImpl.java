@@ -44,9 +44,6 @@ public class ChatHistoryServiceImpl implements ChatHistoryService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException("user not found"));
 
-        if (receiverId <= 0) {
-            throw new UnauthorizedAccessException("senderId and receiverId are required");
-        }
         if (user.getId() != senderId) {
             throw new UnauthorizedAccessException("Logged-in user does not match senderId");
         }
@@ -54,11 +51,11 @@ public class ChatHistoryServiceImpl implements ChatHistoryService {
         User receiver = userRepository.findById(receiverId)
                 .orElseThrow(() -> new UserNotFoundException("Receiver not found with Id " + receiverId));
 
-        if (receiver.getId() <= 0) {
-            throw new UserNotFoundException("Receiver not found with Id " + receiverId);
+        boolean status = chatHistoryRepository.existsByOwnerAndOpponent(user, receiver);
+        if (status) {
+            return chatHistoryMapper.toDTO(new ChatHistory());
         }
 
-        boolean status = chatHistoryRepository.existsByOwnerAndOpponent(user, receiver);
         ChatHistory newChatHistory1 = new ChatHistory();
         ChatHistory newChatHistory2 = new ChatHistory();
 
@@ -68,35 +65,12 @@ public class ChatHistoryServiceImpl implements ChatHistoryService {
             newChatHistory1.setOpponent(receiver);
             chatHistoryRepository.save(newChatHistory1);
 
-            newChatHistory2.setOwner(user);
-            newChatHistory2.setOpponent(receiver);
+            newChatHistory2.setOwner(receiver);
+            newChatHistory2.setOpponent(user);
             chatHistoryRepository.save(newChatHistory2);
 
         }
         return chatHistoryMapper.toDTO(newChatHistory1);
-    }
-
-    public ChatHistoryDto createChatHistory(ChatHistoryDto history, String email) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserNotFoundException("user not found"));
-
-        ChatHistory chatHistory = chatHistoryMapper.toEntity(history);
-        User owner = chatHistory.getOwner();
-        User opponent = chatHistory.getOpponent();
-
-        if(user.getId() != owner.getId()){
-            throw  new UnauthorizedAccessException("Unauthorized request, user does not belongs to chat history");
-        }
-
-        boolean status = chatHistoryRepository.existsByOwnerAndOpponent(owner,opponent);
-        if(!status) {
-            ChatHistory newChatHistory = new ChatHistory();
-            newChatHistory.setOwner(opponent);
-            newChatHistory.setOpponent(owner);
-            chatHistoryRepository.save(newChatHistory);
-            chatHistoryRepository.save(chatHistory);
-        }
-        return chatHistoryMapper.toDTO(chatHistory);
     }
 
     public List<ChatHistoryDto> getConversationById(int id, int page, int size, String email) {
@@ -134,7 +108,5 @@ public class ChatHistoryServiceImpl implements ChatHistoryService {
 
         return dto;
     }
-
-
 
 }

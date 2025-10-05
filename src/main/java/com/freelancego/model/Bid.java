@@ -15,7 +15,7 @@ public class Bid {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    private Double amount;
+    private long amount;
 
     @Lob
     @Column(columnDefinition = "TEXT")
@@ -51,11 +51,11 @@ public class Bid {
         this.id = id;
     }
 
-    public Double getAmount() {
+    public long getAmount() {
         return amount;
     }
 
-    public void setAmount(Double amount) {
+    public void setAmount(long amount) {
         this.amount = amount;
     }
 

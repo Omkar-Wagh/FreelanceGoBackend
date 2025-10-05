@@ -10,7 +10,10 @@ public class ChatMessage {
     private int id;
     private int senderId;
     private int receiverId;
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String content;
+
     @Column(columnDefinition = "TIMESTAMP WITH TIME ZONE", updatable = false, nullable = false)
     private OffsetDateTime timestamp;
 

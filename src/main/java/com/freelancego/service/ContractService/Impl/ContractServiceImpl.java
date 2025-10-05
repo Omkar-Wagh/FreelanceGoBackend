@@ -35,7 +35,7 @@ public class ContractServiceImpl implements ContractService {
     }
 
 
-    public void getContract(int jobId, int freelancerId, int clientId, String name) {
+    public ContractDto getContract(int jobId, int freelancerId, int clientId, String name) {
 
         User user = userRepository.findByEmail(name)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
@@ -58,10 +58,12 @@ public class ContractServiceImpl implements ContractService {
 
         Freelancer freelancer = freelancerRepository.findById(freelancerId).orElseThrow(
                 ()-> new UserNotFoundException("Freelancer not found with Id " + freelancerId));
+        if (user.getId() != client.getUser().getId() && user.getId() != freelancer.getUser().getId()) {
+            throw new UnauthorizedAccessException("You are not authorized to view this contract.");
+        }
 
         Contract contract = contractRepository.findByJobAndClientAndFreelancer(job,client,freelancer);
-
-        contractMapper.toDTO(contract);
+        return contractMapper.toDTO(contract);
     }
 
     public ContractDto createContract(int bidId, int jobId, int freelancerId, int clientId, String name) {
@@ -77,12 +79,15 @@ public class ContractServiceImpl implements ContractService {
         Bid bid = bidRepository.findById(bidId)
                 .orElseThrow(() -> new UserNotFoundException("Bid not found"));
 
-        if (user.getId() == job.getClient().getUser().getId()) {
+        if (user.getId() != job.getClient().getUser().getId()) {
             throw new UnauthorizedAccessException("Only the client can create a contract for this job.");
         }
 
         if (contractRepository.existsByJobId(jobId)) {
             throw new InvalidIdException("A contract already exists for this job.");
+        }
+        if (bid.getJob().getId() != jobId || bid.getFreelancer().getId() != freelancerId) {
+            throw new InvalidIdException("Bid does not belong to the provided job or freelancer.");
         }
 
         Contract contract = new Contract();

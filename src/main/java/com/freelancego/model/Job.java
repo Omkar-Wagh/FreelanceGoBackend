@@ -16,8 +16,12 @@ public class Job {
 
     private String jobTitle;
     private String requiredSkills;
+
     @Enumerated(EnumType.STRING)
     private ExperienceLevel experienceLevel;
+
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String jobDescription;
 
     @Lob
@@ -30,12 +34,15 @@ public class Job {
 
     @Column(columnDefinition = "TIMESTAMP WITH TIME ZONE")
     private OffsetDateTime projectEndTime;
+
     @Column(columnDefinition = "TIMESTAMP WITH TIME ZONE", updatable = false, nullable = false)
     private OffsetDateTime createdAt;
 
-    private Double budget;
+    private long budget;
+
     @Enumerated(EnumType.STRING)
     private JobStatus status;
+
     @Enumerated(EnumType.STRING)
     private JobPhase phase;
 
@@ -130,11 +137,11 @@ public class Job {
         this.createdAt = createdAt;
     }
 
-    public Double getBudget() {
+    public long getBudget() {
         return budget;
     }
 
-    public void setBudget(Double budget) {
+    public void setBudget(long budget) {
         this.budget = budget;
     }
 

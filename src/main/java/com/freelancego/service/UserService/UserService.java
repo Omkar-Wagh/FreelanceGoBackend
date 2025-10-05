@@ -65,7 +65,14 @@ public class UserService {
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         if (user.getId() == loggedInUser.getId()) {
+            if (image == null || image.isEmpty()) {
+                throw new BadRequestException("No image file provided");
+            }
             user.setImageData(image.getBytes());
+            String contentType = image.getContentType();
+            if (contentType == null || !contentType.startsWith("image/")) {
+                throw new BadRequestException("Invalid file type. Only images are allowed");
+            }
             userRepository.save(user);
             return userMapper.toDTO(user);
         } else {
@@ -92,6 +99,10 @@ public class UserService {
         }
 
         try {
+            List<Role> allowedRoles = List.of(Role.CLIENT, Role.FREELANCER);
+            if (!allowedRoles.contains(newRole)) {
+                throw new UnauthorizedAccessException("You cannot switch to role: " + newRole);
+            }
             user.setRole(newRole);
             userRepository.save(user);
             return jwtService.generateToken(user.getEmail(), newRole.name());
@@ -105,34 +116,23 @@ public class UserService {
         User user = userRepository.findByEmail(username)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
-        Freelancer freelancer = freelancerRepository.findByUser(user)
-                .orElse(null);
-        Client client = clientRepository.findByUser(user)
-                .orElse(null);
+        Freelancer freelancer = freelancerRepository.findByUser(user).orElseThrow(
+                ()-> new UserNotFoundException("freelancer not found"));
+
+        Client client = clientRepository.findByUser(user).orElseThrow(
+                ()-> new UserNotFoundException("client not found"));
 
         Map<String, Object> response = new HashMap<>();
 
         response.put("user",userMapper.toDTO(user));
-        if (client != null) {
-            response.put("client",clientMapper.toDTO(client));
-        } else {
-            response.put("client", null);
-        }
-
-        if (freelancer != null) {
-            response.put("freelancer",freelancerMapper.toDTO(freelancer));
-        } else {
-            response.put("freelancer", null);
-        }
+        response.put("client", client != null ? clientMapper.toDTO(client) : null);
+        response.put("freelancer", freelancer != null ? freelancerMapper.toDTO(freelancer) : null);
 
         return response;
     }
 
     public boolean getIsAuthenticated(Authentication auth) {
-        User user = userRepository.findByEmail(auth.getName())
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
-//        userRepository.findByEmail(auth.getName()).isPresent();
-        return true;
+        return userRepository.findByEmail(auth.getName()).isPresent();
     }
 
 }

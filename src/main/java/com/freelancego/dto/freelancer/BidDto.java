@@ -5,7 +5,7 @@ import java.time.OffsetDateTime;
 
 public record BidDto(
         int id,
-        Double amount,
+        long amount,
         String coverLetter,
         OffsetDateTime submittedAt,
         String timeRequired,

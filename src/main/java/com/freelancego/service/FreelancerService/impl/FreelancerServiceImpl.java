@@ -78,6 +78,9 @@ public class FreelancerServiceImpl implements FreelancerService {
     public List<BrowseJobDto> getBrowseJobs(int page, int size, String name) {
         User user = userRepository.findByEmail(name)
                 .orElseThrow(() -> new UserNotFoundException("user not found"));
+        Freelancer freelancer = freelancerRepository.findByUser(user).orElseThrow(
+                ()-> new UserNotFoundException("freelancer not found")
+        );
 
         Pageable pageable = PageRequest.of(page, size);
         List<Job> jobs = jobRepository.findByStatus(pageable, JobStatus.ACTIVE).getContent();
@@ -88,7 +91,7 @@ public class FreelancerServiceImpl implements FreelancerService {
             BrowseJobDto dto = new BrowseJobDto();
 
             dto.setJob(jobMapper.toDto(job));
-            dto.setAlreadyBid(bidRepository.existsByJobIdAndFreelancerId(job.getId(), user.getId()));
+            dto.setAlreadyBid(bidRepository.existsByJobIdAndFreelancerId(job.getId(), freelancer.getId()));
 
             browseJobDtoList.add(dto);
         }
@@ -169,7 +172,9 @@ public class FreelancerServiceImpl implements FreelancerService {
         List<Contract> contracts = new ArrayList<>();
         for (Bid bid : myBids){
             Contract contract = contractRepository.findByAcceptedBid(bid);
-            contracts.add(contract);
+            if(contract != null){
+                contracts.add(contract);
+            }
         }
 
         long hired = contracts.size();
@@ -207,17 +212,17 @@ public class FreelancerServiceImpl implements FreelancerService {
 
         double totalEarnings = allContracts.stream()
                 .filter(c -> c.getStatus() == ContractStatus.COMPLETED)
-                .mapToDouble(c -> c.getAcceptedBid().getAmount())
+                .mapToLong(c -> c.getAcceptedBid().getAmount())
                 .sum();
 
         double inEscrow = allContracts.stream()
                 .filter(c -> c.getStatus() == ContractStatus.ACTIVE)
-                .mapToDouble(c -> c.getAcceptedBid().getAmount())
+                .mapToLong(c -> c.getAcceptedBid().getAmount())
                 .sum();
 
         double avgEarningsPerProject = allContracts.stream()
                 .filter(c -> c.getStatus() == ContractStatus.COMPLETED)
-                .mapToDouble(c -> c.getAcceptedBid().getAmount())
+                .mapToLong(c -> c.getAcceptedBid().getAmount())
                 .average()
                 .orElse(0);
 
@@ -248,9 +253,9 @@ public class FreelancerServiceImpl implements FreelancerService {
         double totalEarnings = contracts == null ? 0.0 :
                 contracts.stream()
                         .filter(c -> c.getAcceptedBid() != null)
-                        .mapToDouble(c -> {
-                            Double amt = c.getAcceptedBid().getAmount();
-                            return amt == null ? 0.0 : amt;
+                        .mapToLong(c -> {
+                            Long amt = c.getAcceptedBid().getAmount();
+                            return amt == null ? 0 : amt;
                         })
                         .sum();
 
@@ -283,9 +288,9 @@ public class FreelancerServiceImpl implements FreelancerService {
                 bids.stream()
                         .map(Bid::getAmount)
                         .filter(Objects::nonNull)
-                        .mapToDouble(Double::doubleValue)
+                        .mapToLong(Long::longValue)
                         .average()
-                        .orElse(0.0);
+                        .orElse(0);
 
         double winRatePercent = totalBids == 0 ? 0.0 :
                 ((double) totalContracts * 100.0) / totalBids;
@@ -307,7 +312,7 @@ public class FreelancerServiceImpl implements FreelancerService {
                         .filter(c -> c.getJob() != null && c.getAcceptedBid() != null)
                         .collect(Collectors.groupingBy(
                                 c -> Optional.ofNullable(c.getJob().getCategory()).orElse("Unspecified"),
-                                Collectors.summingDouble(c -> Optional.ofNullable(c.getAcceptedBid().getAmount()).orElse(0.0))
+                                Collectors.summingDouble(c -> Optional.ofNullable(c.getAcceptedBid().getAmount()).orElse(0l))
                         ));
 
         Map<String, Long> jobsWonPerCategory = contracts == null ? Map.of() :

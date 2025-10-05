@@ -11,7 +11,6 @@ public class ChatHistory {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    // saved the user twice for both owner and another history
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id", nullable = false)
     private User owner;

@@ -16,5 +16,10 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Intege
             "ORDER BY m.timestamp DESC")
     Page<ChatMessage> findConversation(@Param("senderId") int senderId, @Param("receiverId") int receiverId, Pageable pageable);
 
+//    @Query("SELECT m FROM ChatMessage m " +
+//            "WHERE m.senderId = :senderId " +
+//            "ORDER BY m.timestamp DESC")
+//    Page<ChatMessage> findMessagesBySender(@Param("senderId") int senderId, Pageable pageable);
+
 //    Page<ChatMessage> findBySenderIdAndReceiverIdOrderByTimestampDesc(int senderId, int receiverId, Pageable pageable);
 }

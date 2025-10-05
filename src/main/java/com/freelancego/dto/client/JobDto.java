@@ -38,7 +38,7 @@ public record JobDto(
 
         @DecimalMin(value = "0.1", message = "Budget must be greater than zero")
         @NotNull(message = "Budget is required")
-        Double budget,
+        long budget,
 
         String status,
 

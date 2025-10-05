@@ -40,20 +40,23 @@ public class BidServiceImpl implements BidService {
         User user = userRepository.findByEmail(name).orElseThrow(
                 ()-> new UserNotFoundException("User not found"));
 
-        if(bid.getFreelancer().getId() <= 0){
-            throw new UserNotFoundException("Freelancer for Bid with Id " + bid.getFreelancer().getId() + "Not Found");
+        if (bid.getFreelancer() == null || bid.getFreelancer().getId() <= 0) {
+            throw new InvalidIdException("Freelancer information is missing in bid request");
         }
 
-        if(bid.getJob().getId() <= 0){
-            throw new UserNotFoundException("Job not found for job Id " + bid.getJob().getId());
+        if (bid.getJob() == null || bid.getJob().getId() <= 0) {
+            throw new InvalidIdException("Job information is missing in bid request");
         }
 
         Job job = jobRepository.findById(bid.getJob().getId()).orElseThrow(
                 () -> new UserNotFoundException("Job Not Found For Id" + bid.getJob().getId()));
 
-        Freelancer freelancer = freelancerRepository.findById(user.getId()).orElseThrow(
-                () -> new UserNotFoundException("Freelancer not found for Id " + bid.getFreelancer().getId()));
+        Freelancer freelancer = freelancerRepository.findByUser(user)
+                .orElseThrow(() -> new UserNotFoundException("Freelancer not found for user " + user.getId()));
 
+        if (bid.getFreelancer().getUser().getId() != user.getId()) {
+            throw new InvalidIdException("You are not authorized to place a bid as this freelancer");
+        }
 
         if (bidRepository.existsByJobIdAndFreelancerId(job.getId(), freelancer.getId())) {
             throw new InvalidIdException("You already placed a bid on this job.");
@@ -72,19 +75,29 @@ public class BidServiceImpl implements BidService {
     }
 
     public BidDto updateBid(BidDto bidDto, String name) {
-        if(bidDto.id() <= 0){
-            throw  new InvalidIdException("Bid Id is required");
+        User user = userRepository.findByEmail(name)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        Freelancer freelancer = freelancerRepository.findByUser(user)
+                .orElseThrow(() -> new UserNotFoundException("Freelancer not found for user " + user.getEmail()));
+
+        Bid bid = bidRepository.findById(bidDto.id())
+                .orElseThrow(() -> new UserNotFoundException("Bid not found for Id " + bidDto.id()));
+
+        if (bid.getFreelancer().getId() != freelancer.getId()) {
+            throw new InvalidIdException("You cannot edit someone else's bid");
         }
-        Bid bid = bidRepository.findById(bidDto.id()).orElseThrow(
-                () -> new UserNotFoundException("Bid not found for Id " + bidDto.id())
-        );
-        if(bid.isEditable()){
-            bid.setCoverLetter(bidDto.coverLetter());
-            bid.setTimeRequired(bidDto.timeRequired());
-            bid.setAmount(bidDto.amount());
-            bidRepository.save(bid);
+
+        if (!bid.isEditable()) {
+            throw new InvalidIdException("This bid is locked and cannot be edited");
         }
+
+        bid.setCoverLetter(bidDto.coverLetter());
+        bid.setTimeRequired(bidDto.timeRequired());
+        bid.setAmount(bidDto.amount());
+        bidRepository.save(bid);
         return bidMapper.toDto(bid);
+
     }
 
 }

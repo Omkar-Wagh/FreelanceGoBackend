@@ -18,10 +18,9 @@ public class ContractController {
 
 
     @GetMapping("/contract")
-    ResponseEntity<String> getContract(@PathVariable("jobId") int jobId, @PathVariable("freelancerId") int freelancerId,
+    ResponseEntity<ContractDto> getContract(@PathVariable("jobId") int jobId, @PathVariable("freelancerId") int freelancerId,
                                        @PathVariable("clientId") int clientId, Authentication auth){
-        contractService.getContract(jobId,freelancerId,clientId,auth.getName());
-        return ResponseEntity.ok("Contract");
+        return ResponseEntity.ok(contractService.getContract(jobId,freelancerId,clientId,auth.getName()));
     }
 
     @PostMapping("/create-contract/{bidId}/{jobId}/{clientId}/{freelancerId}")
