@@ -7,6 +7,7 @@ public record BidDto(
         int id,
         long amount,
         String coverLetter,
+        String category,
         OffsetDateTime submittedAt,
         String timeRequired,
         String status,
