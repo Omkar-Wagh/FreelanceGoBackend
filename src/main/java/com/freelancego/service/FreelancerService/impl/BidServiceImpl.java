@@ -6,16 +6,17 @@ import com.freelancego.exception.InternalServerErrorException;
 import com.freelancego.exception.InvalidIdException;
 import com.freelancego.exception.UserNotFoundException;
 import com.freelancego.mapper.BidMapper;
-import com.freelancego.model.Bid;
-import com.freelancego.model.Freelancer;
-import com.freelancego.model.Job;
-import com.freelancego.model.User;
+import com.freelancego.model.*;
 import com.freelancego.repo.BidRepository;
 import com.freelancego.repo.FreelancerRepository;
 import com.freelancego.repo.JobRepository;
 import com.freelancego.repo.UserRepository;
 import com.freelancego.service.FreelancerService.BidService;
+import com.freelancego.utils.SupabaseUtil;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.Objects;
 
 @Service
 public class BidServiceImpl implements BidService {
@@ -25,16 +26,18 @@ public class BidServiceImpl implements BidService {
     final private FreelancerRepository freelancerRepository;
     final private BidRepository bidRepository;
     final private UserRepository userRepository;
+    final private SupabaseUtil supabaseUtil;
 
-    public BidServiceImpl(BidMapper bidMapper, JobRepository jobRepository, FreelancerRepository freelancerRepository, BidRepository bidRepository, UserRepository userRepository) {
+    public BidServiceImpl(BidMapper bidMapper, JobRepository jobRepository, FreelancerRepository freelancerRepository, BidRepository bidRepository, UserRepository userRepository, SupabaseUtil supabaseUtil) {
         this.bidMapper = bidMapper;
         this.jobRepository = jobRepository;
         this.freelancerRepository = freelancerRepository;
         this.bidRepository = bidRepository;
         this.userRepository = userRepository;
+        this.supabaseUtil = supabaseUtil;
     }
 
-    public BidDto createBid(BidDto bidDto, String name) {
+    public BidDto createBid(BidDto bidDto, MultipartFile file, String name) {
         Bid bid = bidMapper.toEntity(bidDto);
 
         User user = userRepository.findByEmail(name).orElseThrow(
@@ -65,6 +68,12 @@ public class BidServiceImpl implements BidService {
             bid.setJob(job);
             bid.setFreelancer(freelancer);
             bid.setStatus(BidStatus.PENDING);
+
+            if (file != null && Objects.requireNonNull(file.getOriginalFilename()).matches(".*\\.(pdf|png|jpg|jpeg|pptx|docx)$")) {
+                String attachmentPublicUrl = supabaseUtil.uploadFile(file);
+                bid.setAttachmentPublicUrl(attachmentPublicUrl);
+            }
+
             bidRepository.save(bid);
         }
         catch (Exception e){

@@ -38,6 +38,16 @@ public class Bid {
     @JoinColumn(name = "freelancer_id", nullable = false)
     private Freelancer freelancer;
 
+    private String attachmentPublicUrl;
+
+    public String getAttachmentPublicUrl() {
+        return attachmentPublicUrl;
+    }
+
+    public void setAttachmentPublicUrl(String attachmentPublicUrl) {
+        this.attachmentPublicUrl = attachmentPublicUrl;
+    }
+
     @PrePersist
     protected void onCreate() {
         this.submittedAt = OffsetDateTime.now();
