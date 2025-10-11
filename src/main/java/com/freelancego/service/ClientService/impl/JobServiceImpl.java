@@ -105,10 +105,6 @@ public class JobServiceImpl implements JobService {
         Job job = jobRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("Job not found"));
 
-        if (job.getClient().getId() != client.getId()) {
-            throw new UnauthorizedAccessException("Unauthorized access to this Job Post");
-        }
-
         JobDto jobDto = jobMapper.toDto(job);
 
         List<BidDto> allBids = job.getBids().stream()
