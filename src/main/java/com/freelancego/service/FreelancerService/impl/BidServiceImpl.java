@@ -38,26 +38,21 @@ public class BidServiceImpl implements BidService {
     }
 
     public BidDto createBid(BidDto bidDto, MultipartFile file, String name) {
-        Bid bid = bidMapper.toEntity(bidDto);
+//        Bid bid = bidMapper.toEntity(bidDto);
+        Bid bid = bidMapper.toMapEntity(bidDto);
+        int freelancerId = bidDto.freelancerDto().id();
+        int jobId = bidDto.jobDto().id();
 
         User user = userRepository.findByEmail(name).orElseThrow(
                 ()-> new UserNotFoundException("User not found"));
 
-        if (bid.getFreelancer() == null || bid.getFreelancer().getId() <= 0) {
-            throw new InvalidIdException("Freelancer information is missing in bid request");
-        }
-
-        if (bid.getJob() == null || bid.getJob().getId() <= 0) {
-            throw new InvalidIdException("Job information is missing in bid request");
-        }
-
-        Job job = jobRepository.findById(bid.getJob().getId()).orElseThrow(
+        Job job = jobRepository.findById(jobId).orElseThrow(
                 () -> new UserNotFoundException("Job Not Found For Id" + bid.getJob().getId()));
 
         Freelancer freelancer = freelancerRepository.findByUser(user)
                 .orElseThrow(() -> new UserNotFoundException("Freelancer not found for user " + user.getId()));
 
-        if (bid.getFreelancer().getUser().getId() != user.getId()) {
+        if (freelancerId != user.getId()) {
             throw new InvalidIdException("You are not authorized to place a bid as this freelancer");
         }
 

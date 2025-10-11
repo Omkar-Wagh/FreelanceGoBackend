@@ -27,4 +27,21 @@ public interface BidMapper {
     static String mapContractStatusToString(BidStatus status) {
         return (status == null) ? null : status.name();
     }
+
+    default Bid toMapEntity(BidDto bidDto) {
+
+        if ( bidDto == null ) {
+            return null;
+        }
+
+        Bid bid = new Bid();
+
+        bid.setId( bidDto.id() );
+        bid.setFreelancer(null);
+        bid.setJob(null);
+        bid.setAmount( bidDto.amount() );
+        bid.setCoverLetter( bidDto.coverLetter() );
+        bid.setTimeRequired( bidDto.timeRequired() );
+        return bid;
+    }
 }

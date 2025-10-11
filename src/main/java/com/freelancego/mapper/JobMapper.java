@@ -62,17 +62,17 @@ public interface JobMapper {
         return (level == null) ? null : level.name();
     }
 
-    @Named("stringToJobPostStatus")
-    static JobStatus mapStringToJobPostStatus(String status) {
-        if (status == null || status.isBlank()) {
-            throw new BadRequestException("Status is required");
-        }
-        try {
-            return JobStatus.valueOf(status.trim().toUpperCase());
-        } catch (IllegalArgumentException e) {
-            throw new BadRequestException("Invalid status: " + status);
-        }
-    }
+//    @Named("stringToJobPostStatus")
+//    static JobStatus mapStringToJobPostStatus(String status) {
+//        if (status == null || status.isBlank()) {
+//            throw new BadRequestException("Status is required");
+//        }
+//        try {
+//            return JobStatus.valueOf(status.trim().toUpperCase());
+//        } catch (IllegalArgumentException e) {
+//            throw new BadRequestException("Invalid status: " + status);
+//        }
+//    }
 
     @Named("jobPostStatusToString")
     static String mapJobPostStatusToString(JobStatus status) {

@@ -18,7 +18,7 @@ public class BidController {
     }
 
     @PostMapping("/create-bid")
-    ResponseEntity<BidDto> createBid(@RequestPart("bid") BidDto bidDto, @RequestPart("file") MultipartFile file, Authentication auth){
+    ResponseEntity<BidDto> createBid(@RequestPart("bid") BidDto bidDto, @RequestPart(value = "file", required = false) MultipartFile file, @RequestPart("freelancerId") int freelancerId,@RequestPart("jobId") int jobId , Authentication auth){
         return ResponseEntity.ok(bidService.createBid(bidDto, file,auth.getName()));
     }
     @PostMapping("/update-bid")
