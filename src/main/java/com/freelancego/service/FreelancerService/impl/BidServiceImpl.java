@@ -38,7 +38,6 @@ public class BidServiceImpl implements BidService {
     }
 
     public BidDto createBid(BidDto bidDto, MultipartFile file, String name) {
-//        Bid bid = bidMapper.toEntity(bidDto);
         Bid bid = bidMapper.toMapEntity(bidDto);
         int freelancerId = bidDto.freelancerDto().id();
         int jobId = bidDto.jobDto().id();
