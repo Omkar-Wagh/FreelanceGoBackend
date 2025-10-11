@@ -111,22 +111,17 @@ public class UserService {
         }
     }
 
-    public Map<String,Object> checkRoles(String username) {
-
+    public Map<String, Object> checkRoles(String username) {
         User user = userRepository.findByEmail(username)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
-        Freelancer freelancer = freelancerRepository.findByUser(user).orElseThrow(
-                ()-> new UserNotFoundException("freelancer not found"));
-
-        Client client = clientRepository.findByUser(user).orElseThrow(
-                ()-> new UserNotFoundException("client not found"));
+        Optional<Freelancer> freelancerOpt = freelancerRepository.findByUser(user);
+        Optional<Client> clientOpt = clientRepository.findByUser(user);
 
         Map<String, Object> response = new HashMap<>();
-
-        response.put("user",userMapper.toDTO(user));
-        response.put("client", client != null ? clientMapper.toDTO(client) : null);
-        response.put("freelancer", freelancer != null ? freelancerMapper.toDTO(freelancer) : null);
+        response.put("user", userMapper.toDTO(user));
+        response.put("freelancer", freelancerOpt.map(freelancerMapper::toDTO).orElse(null));
+        response.put("client", clientOpt.map(clientMapper::toDTO).orElse(null));
 
         return response;
     }
