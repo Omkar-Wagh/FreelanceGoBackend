@@ -9,7 +9,7 @@ import org.mapstruct.Named;
 
 import java.util.List;
 
-@Mapper(componentModel = "spring", uses = {JobMapper.class, FreelancerMapper.class})
+@Mapper(componentModel = "spring", uses = {FreelancerMapper.class})
 public interface BidMapper {
 
     @Mapping(target = "status", source = "status", qualifiedByName = "bidStatusToString")
