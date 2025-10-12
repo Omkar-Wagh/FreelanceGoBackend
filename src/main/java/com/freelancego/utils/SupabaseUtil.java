@@ -38,13 +38,13 @@ public class SupabaseUtil {
      * @param file MultipartFile
      * @return Public URL of uploaded file
      */
-    public String uploadFile(MultipartFile file) throws Exception {
-        String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+    public String uploadFile(MultipartFile file, String urlEncodeName) throws Exception {
+        String fileName = UUID.randomUUID() + "_" + urlEncodeName;
 
         ByteArrayResource resource = new ByteArrayResource(file.getBytes()) {
             @Override
             public String getFilename() {
-                return file.getOriginalFilename();
+                return urlEncodeName;
             }
         };
 

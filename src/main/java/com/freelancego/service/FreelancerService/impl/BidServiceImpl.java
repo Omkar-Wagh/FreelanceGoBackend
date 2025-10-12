@@ -18,6 +18,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Objects;
 
+import static java.util.regex.Pattern.matches;
+
 @Service
 public class BidServiceImpl implements BidService {
 
@@ -51,20 +53,26 @@ public class BidServiceImpl implements BidService {
         Freelancer freelancer = freelancerRepository.findByUser(user)
                 .orElseThrow(() -> new UserNotFoundException("Freelancer not found for user " + user.getId()));
 
-        if (freelancerId != user.getId()) {
+        if (freelancerId == user.getId()) {
             throw new InvalidIdException("You are not authorized to place a bid as this freelancer");
         }
 
         if (bidRepository.existsByJobIdAndFreelancerId(job.getId(), freelancer.getId())) {
             throw new InvalidIdException("You already placed a bid on this job.");
         }
+
         try{
             bid.setJob(job);
             bid.setFreelancer(freelancer);
             bid.setStatus(BidStatus.PENDING);
 
-            if (file != null && Objects.requireNonNull(file.getOriginalFilename()).matches(".*\\.(pdf|png|jpg|jpeg|pptx|docx)$")) {
-                String attachmentPublicUrl = supabaseUtil.uploadFile(file);
+            String regex = ".*\\.(pdf|png|jpg|jpeg|pptx|docx)$";
+
+            String originalFilename = file.getOriginalFilename();
+            String cleanedFilename = originalFilename.replaceAll("[^a-zA-Z0-9\\.\\-_]", "_");
+
+            if (file != null && file.getOriginalFilename().matches(regex)) {
+                String attachmentPublicUrl = supabaseUtil.uploadFile(file,cleanedFilename);
                 bid.setAttachmentPublicUrl(attachmentPublicUrl);
             }
 
