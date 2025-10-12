@@ -5,6 +5,8 @@ import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+
+import javax.xml.transform.sax.SAXResult;
 import java.time.OffsetDateTime;
 import java.util.List;
 
@@ -39,6 +41,8 @@ public record JobDto(
         @DecimalMin(value = "0.1", message = "Budget must be greater than zero")
         @NotNull(message = "Budget is required")
         long budget,
+
+        String file,
 
         String status,
 

@@ -95,11 +95,6 @@
 			<version>${mapstruct.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>com.pusher</groupId>
-			<artifactId>pusher-http-java</artifactId>
-			<version>1.2.0</version>
-		</dependency>
-		<dependency>
 			<groupId>io.ably</groupId>
 			<artifactId>ably-java</artifactId>
 			<version>1.2.52</version>

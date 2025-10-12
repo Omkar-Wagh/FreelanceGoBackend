@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
@@ -23,8 +24,8 @@ public class JobController {
 
     // Post a Job
     @PostMapping("/create-post")
-    ResponseEntity<JobDto> createPost(@RequestBody JobDto jobDto,Authentication auth){
-        return ResponseEntity.ok(jobService.createPost(jobDto,auth.getName()));
+    ResponseEntity<JobDto> createPost(@RequestBody JobDto jobDto, @RequestPart(value = "file", required = false) MultipartFile file, Authentication auth){
+        return ResponseEntity.ok(jobService.createPost(jobDto,file,auth.getName()));
     }
 
     // My Job Posts

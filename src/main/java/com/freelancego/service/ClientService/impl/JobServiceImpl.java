@@ -7,6 +7,7 @@ import com.freelancego.dto.user.ContractDto;
 import com.freelancego.enums.ContractStatus;
 import com.freelancego.enums.JobPhase;
 import com.freelancego.enums.JobStatus;
+import com.freelancego.exception.InternalServerErrorException;
 import com.freelancego.exception.UnauthorizedAccessException;
 import com.freelancego.exception.UserNotFoundException;
 import com.freelancego.mapper.BidMapper;
@@ -18,11 +19,14 @@ import com.freelancego.repo.ContractRepository;
 import com.freelancego.repo.JobRepository;
 import com.freelancego.repo.UserRepository;
 import com.freelancego.service.ClientService.JobService;
+import com.freelancego.utils.SupabaseUtil;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -36,8 +40,9 @@ public class JobServiceImpl implements JobService {
     final private ContractRepository contractRepository;
     final private ContractMapper contractMapper;
     final private BidMapper bidMapper;
+    final private SupabaseUtil supabaseUtil;
 
-    public JobServiceImpl(UserRepository userRepository, JobMapper jobMapper, ClientRepository clientRepository, JobRepository jobRepository, ContractRepository contractRepository, ContractMapper contractMapper, BidMapper bidMapper) {
+    public JobServiceImpl(UserRepository userRepository, JobMapper jobMapper, ClientRepository clientRepository, JobRepository jobRepository, ContractRepository contractRepository, ContractMapper contractMapper, BidMapper bidMapper, SupabaseUtil supabaseUtil) {
         this.userRepository = userRepository;
         this.jobMapper = jobMapper;
         this.clientRepository = clientRepository;
@@ -45,6 +50,7 @@ public class JobServiceImpl implements JobService {
         this.contractRepository = contractRepository;
         this.contractMapper = contractMapper;
         this.bidMapper = bidMapper;
+        this.supabaseUtil = supabaseUtil;
     }
 
     public <T> List<T> limitList(List<T> list, int limit) {
@@ -67,7 +73,7 @@ public class JobServiceImpl implements JobService {
         return result;
     }
 
-    public JobDto createPost(JobDto jobDto, String auth) {
+    public JobDto createPost(JobDto jobDto, MultipartFile file, String auth) {
         User user = userRepository.findByEmail(auth)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
@@ -77,6 +83,20 @@ public class JobServiceImpl implements JobService {
         Job job = jobMapper.toEntity(jobDto);
         job.setStatus(JobStatus.ACTIVE);
         job.setClient(client);
+
+        String regex = ".*\\.(pdf|png|jpg|jpeg|pptx|docx)$";
+        String originalFilename = file.getOriginalFilename();
+        String cleanedFilename = originalFilename.replaceAll("[^a-zA-Z0-9\\.\\-_]", "_");
+
+        try{
+            if (file != null && file.getOriginalFilename().matches(regex)) {
+                String attachmentPublicUrl = supabaseUtil.uploadFile(file,cleanedFilename);
+                job.setFile(attachmentPublicUrl);
+            }
+        }catch (Exception e){
+            throw new InternalServerErrorException("Something went wrong while creating the Job " + e.getMessage());
+        }
+
         jobRepository.save(job);
 
         return jobMapper.toDto(job);

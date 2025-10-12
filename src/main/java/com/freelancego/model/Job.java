@@ -40,6 +40,8 @@ public class Job {
 
     private long budget;
 
+    private String file;
+
     @Enumerated(EnumType.STRING)
     private JobStatus status;
 
@@ -143,6 +145,14 @@ public class Job {
 
     public void setBudget(long budget) {
         this.budget = budget;
+    }
+
+    public String getFile() {
+        return file;
+    }
+
+    public void setFile(String file) {
+        this.file = file;
     }
 
     public JobStatus getStatus() {
