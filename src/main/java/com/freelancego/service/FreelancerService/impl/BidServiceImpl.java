@@ -71,9 +71,9 @@ public class BidServiceImpl implements BidService {
             bidRepository.save(bid);
         }
         catch (Exception e){
-            e.printStackTrace();
-            throw new InternalServerErrorException("Something went wrong while creating the bid");
+            throw new InternalServerErrorException("Something went wrong while creating the bid " + e.getMessage());
         }
+
         return bidMapper.toDto(bid);
     }
 
