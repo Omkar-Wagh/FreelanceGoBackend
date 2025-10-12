@@ -131,32 +131,3 @@ public class UserService {
     }
 
 }
-
-
-
-//import jakarta.transaction.Transactional;
-//import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.scheduling.annotation.Scheduled;
-//import org.springframework.stereotype.Service;
-//
-//@Service
-//public class CleanupService {
-//
-//    @Autowired
-//    private VerificationTokenService tokenService;
-//
-//    @Scheduled(fixedRate = 300000)
-//    @Transactional
-//    public void cleanExpiredTokens() {
-//        tokenService.deleteExpiredTokens();
-//    }
-//}
-
-//@Modifying
-//@Transactional
-//@Query("DELETE FROM VerificationToken v WHERE v.expiresAt < :now")
-//void deleteByExpiresAtBefore(@Param("now") LocalDateTime now);
-
-//public void deleteExpiredTokens() {
-//    verificationToken.deleteByExpiresAtBefore(LocalDateTime.now());
-//}

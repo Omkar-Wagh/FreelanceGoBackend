@@ -11,6 +11,9 @@ import com.freelancego.repo.ClientRepository;
 import com.freelancego.repo.UserRepository;
 import com.freelancego.service.ClientService.ClientService;
 import com.freelancego.security.service.JWTService;
+import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import java.util.*;
 

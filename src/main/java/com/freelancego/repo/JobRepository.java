@@ -5,12 +5,15 @@ import com.freelancego.enums.JobStatus;
 import com.freelancego.model.Client;
 import com.freelancego.model.Freelancer;
 import com.freelancego.model.Job;
+import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 
 public interface JobRepository extends JpaRepository<Job, Integer> {
@@ -36,5 +39,11 @@ public interface JobRepository extends JpaRepository<Job, Integer> {
 
     @Query("SELECT COUNT(j) FROM Job j JOIN j.bids b WHERE j.status = :status AND b.freelancer.id = :freelancerId")
     long countByActiveBids(@Param("status") JobStatus status, @Param("freelancerId") int freelancerId);
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE Job j SET j.status = :inactiveStatus WHERE j.createdAt <= :thresholdDate")
+    void setJobStatusToInactive(@Param("thresholdDate") OffsetDateTime thresholdDate,
+                                @Param("inactiveStatus") JobStatus inactiveStatus);
 
 }
