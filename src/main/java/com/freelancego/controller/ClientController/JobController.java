@@ -24,7 +24,7 @@ public class JobController {
 
     // Post a Job
     @PostMapping("/create-post")
-    ResponseEntity<JobDto> createPost(@RequestBody JobDto jobDto, @RequestPart(value = "file", required = false) MultipartFile file, Authentication auth){
+    ResponseEntity<JobDto> createPost(@RequestPart(value = "job") JobDto jobDto, @RequestPart(value = "file", required = false) MultipartFile file, Authentication auth){
         return ResponseEntity.ok(jobService.createPost(jobDto,file,auth.getName()));
     }
 
