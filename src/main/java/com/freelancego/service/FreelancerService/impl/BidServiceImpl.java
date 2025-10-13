@@ -45,13 +45,18 @@ public class BidServiceImpl implements BidService {
                 ()-> new UserNotFoundException("User not found"));
 
         Job job = jobRepository.findById(jobId).orElseThrow(
-                () -> new UserNotFoundException("Job Not Found For Id" + bid.getJob().getId()));
+                () -> new UserNotFoundException("Job Not Found For Id" + jobId));
 
         Freelancer freelancer = freelancerRepository.findByUser(user)
                 .orElseThrow(() -> new UserNotFoundException("Freelancer not found for user " + user.getId()));
 
-        if (freelancerId == user.getId()) {
+
+        if (freelancer.getUser().getId() != user.getId()) {
             throw new InvalidIdException("You are not authorized to place a bid as this freelancer");
+        }
+
+        if (job.getClient().getUser().getId() == user.getId()) {
+            throw new InvalidIdException("You cannot place a bid on your own job.");
         }
 
         if (bidRepository.existsByJobIdAndFreelancerId(job.getId(), freelancer.getId())) {
