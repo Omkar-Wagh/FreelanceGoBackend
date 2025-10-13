@@ -80,5 +80,4 @@ public class JobController {
         return ResponseEntity.ok(jobService.getAnalytics(auth.getName()));
     }
 
-
 }
