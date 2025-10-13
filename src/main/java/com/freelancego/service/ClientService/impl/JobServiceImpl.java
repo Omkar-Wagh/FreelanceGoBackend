@@ -1,6 +1,7 @@
 package com.freelancego.service.ClientService.impl;
 
 import com.freelancego.common.utils.SupabaseUtil;
+import com.freelancego.dto.client.ClientDto;
 import com.freelancego.dto.client.JobDto;
 import com.freelancego.dto.client.response.DashBoardResponseDto;
 import com.freelancego.dto.freelancer.BidDto;
@@ -11,21 +12,25 @@ import com.freelancego.enums.JobStatus;
 import com.freelancego.exception.InternalServerErrorException;
 import com.freelancego.exception.UserNotFoundException;
 import com.freelancego.mapper.BidMapper;
+import com.freelancego.mapper.ClientMapper;
 import com.freelancego.mapper.ContractMapper;
 import com.freelancego.mapper.JobMapper;
 import com.freelancego.model.*;
-import com.freelancego.repo.ClientRepository;
-import com.freelancego.repo.ContractRepository;
-import com.freelancego.repo.JobRepository;
-import com.freelancego.repo.UserRepository;
+import com.freelancego.repo.*;
 import com.freelancego.service.ClientService.JobService;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -40,8 +45,10 @@ public class JobServiceImpl implements JobService {
     final private ContractMapper contractMapper;
     final private BidMapper bidMapper;
     final private SupabaseUtil supabaseUtil;
+    final private BidRepository bidRepository;
+    final private ClientMapper clientMapper;
 
-    public JobServiceImpl(UserRepository userRepository, JobMapper jobMapper, ClientRepository clientRepository, JobRepository jobRepository, ContractRepository contractRepository, ContractMapper contractMapper, BidMapper bidMapper, SupabaseUtil supabaseUtil) {
+    public JobServiceImpl(UserRepository userRepository, JobMapper jobMapper, ClientRepository clientRepository, JobRepository jobRepository, ContractRepository contractRepository, ContractMapper contractMapper, BidMapper bidMapper, SupabaseUtil supabaseUtil, BidRepository bidRepository, ClientMapper clientMapper) {
         this.userRepository = userRepository;
         this.jobMapper = jobMapper;
         this.clientRepository = clientRepository;
@@ -50,6 +57,8 @@ public class JobServiceImpl implements JobService {
         this.contractMapper = contractMapper;
         this.bidMapper = bidMapper;
         this.supabaseUtil = supabaseUtil;
+        this.bidRepository = bidRepository;
+        this.clientMapper = clientMapper;
     }
 
     public <T> List<T> limitList(List<T> list, int limit) {
@@ -99,7 +108,7 @@ public class JobServiceImpl implements JobService {
         return jobMapper.toDto(job);
     }
 
-    public Page<JobDto> getPostByClient(int page, int size, String email) {
+    public List<JobDto> getPostByClient(int page, int size, String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
@@ -107,10 +116,39 @@ public class JobServiceImpl implements JobService {
                 .orElseThrow(() -> new UserNotFoundException("Client not found"));
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        Page<Job> jobs = jobRepository.findJobByClient(client, pageable);
-        return jobs.map(jobMapper::toDto);
-    }
+        List<Job> jobs = jobRepository.findJobByClient(client, pageable).getContent();
+        List<JobDto> jobDtoList = new ArrayList<>();
+        for(Job job : jobs){
+            int proposalsCount = bidRepository.countBidsByJobId(job.getId());
+            List<String> requiredSkillsList = (job.getRequiredSkills() == null || job.getRequiredSkills().isBlank())
+                    ? List.of()
+                    : Arrays.stream(job.getRequiredSkills().split(","))
+                    .map(String::trim)
+                    .toList();
 
+                    JobDto jobDto = new JobDto(
+                    job.getId(),
+                    job.getJobTitle(),
+                    requiredSkillsList,
+                    job.getExperienceLevel().name(),
+                    job.getJobDescription(),
+                    job.getRequirement(),
+                    job.getProjectStartTime(),
+                    job.getProjectEndTime(),
+                    job.getCreatedAt(),
+                    job.getBudget(),
+                    job.getFile(),
+                    job.getStatus().name(),
+                    job.getPhase().name(),
+                    clientMapper.toDTO(job.getClient()),
+                    proposalsCount,
+                    false
+            );
+                    jobDtoList.add(jobDto);
+
+        }
+        return jobDtoList;
+    }
 
     public Map<String, Object> getPostById(int id, String email) {
         User user = userRepository.findByEmail(email)
@@ -124,15 +162,26 @@ public class JobServiceImpl implements JobService {
 
         JobDto jobDto = jobMapper.toDto(job);
 
-        List<BidDto> allBids = job.getBids().stream()
-                .map(bidMapper::toDto)
-                .collect(Collectors.toList());
+        int proposalsCount = bidRepository.countBidsByJobId(job.getId());
 
         Map<String,Object> response = new HashMap<>();
         response.put("job", jobDto);
-        response.put("bids", allBids);
+        response.put("proposalsCount", proposalsCount);
 
         return response;
+    }
+
+    public Page<BidDto> getBids(int jobId, int page, int size, String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        Job job = jobRepository.findById(jobId)
+                .orElseThrow(() -> new UserNotFoundException("Job not found"));
+
+        Pageable pageable = PageRequest.of(page,size,Sort.by("submittedAt").descending());
+        Page<Bid> bids = bidRepository.findByJob(job,pageable);
+
+        return bids.map(bidMapper::toDto);
     }
 
 
@@ -208,7 +257,7 @@ public class JobServiceImpl implements JobService {
         return contractMapper.toDtoList(contractList);
     }
 
-    public Page<JobDto> getPostByStatus(int page, int size, String name) {
+    public List<JobDto> getPostByStatus(int page, int size, String name) {
         User user = userRepository.findByEmail(name)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
@@ -216,8 +265,39 @@ public class JobServiceImpl implements JobService {
                 .orElseThrow(() -> new UserNotFoundException("Client not found"));
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        Page<Job> jobs = jobRepository.findJobByClientAndStatus(client,JobStatus.ACTIVE ,pageable);
-        return jobs.map(jobMapper::toDto);
+        List<Job> jobs = jobRepository.findJobByClientAndStatus(client,JobStatus.ACTIVE ,pageable).getContent();
+
+        List<JobDto> jobDtoList = new ArrayList<>();
+        for(Job job : jobs){
+            int proposalsCount = bidRepository.countBidsByJobId(job.getId());
+            List<String> requiredSkillsList = (job.getRequiredSkills() == null || job.getRequiredSkills().isBlank())
+                    ? List.of()
+                    : Arrays.stream(job.getRequiredSkills().split(","))
+                    .map(String::trim)
+                    .toList();
+
+            JobDto jobDto = new JobDto(
+                    job.getId(),
+                    job.getJobTitle(),
+                    requiredSkillsList,
+                    job.getExperienceLevel().name(),
+                    job.getJobDescription(),
+                    job.getRequirement(),
+                    job.getProjectStartTime(),
+                    job.getProjectEndTime(),
+                    job.getCreatedAt(),
+                    job.getBudget(),
+                    job.getFile(),
+                    job.getStatus().name(),
+                    job.getPhase().name(),
+                    clientMapper.toDTO(job.getClient()),
+                    proposalsCount,
+                    false
+            );
+            jobDtoList.add(jobDto);
+
+        }
+        return jobDtoList;
     }
 
     public Page<ContractDto> getHiredFreelancer(int page, int size, String name) {

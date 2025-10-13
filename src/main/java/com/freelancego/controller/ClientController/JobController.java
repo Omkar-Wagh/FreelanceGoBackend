@@ -1,6 +1,7 @@
 package com.freelancego.controller.ClientController;
 
 import com.freelancego.dto.client.JobDto;
+import com.freelancego.dto.freelancer.BidDto;
 import com.freelancego.dto.user.ContractDto;
 import com.freelancego.service.ClientService.JobService;
 import org.springframework.data.domain.Page;
@@ -30,7 +31,7 @@ public class JobController {
 
     // My Job Posts
     @GetMapping("/get-post")
-    ResponseEntity<Page<JobDto>> getPost(@RequestParam(defaultValue = "0") int page,
+    ResponseEntity<List<JobDto>> getPost(@RequestParam(defaultValue = "0") int page,
                                          @RequestParam(defaultValue = "5") int size,Authentication auth){
         return ResponseEntity.ok(jobService.getPostByClient(page, size, auth.getName()));
     }
@@ -39,6 +40,12 @@ public class JobController {
     @GetMapping("/get-post/{id}")
     ResponseEntity<Map<String,Object>> getPostById(@PathVariable("id") int id, Authentication auth){
         return ResponseEntity.ok(jobService.getPostById(id,auth.getName()));
+    }
+
+    @GetMapping("/get-bids")
+    ResponseEntity<Page<BidDto>> getBidsByJob(@RequestParam("jobId") int jobId,@RequestParam(defaultValue = "0") int page,
+                                              @RequestParam(defaultValue = "5") int size,Authentication auth){
+        return ResponseEntity.ok(jobService.getBids(jobId,page,size,auth.getName()));
     }
 
     // Dashboard data
@@ -55,7 +62,7 @@ public class JobController {
 
     // Review Proposals
     @GetMapping("/review-proposals")
-    ResponseEntity<Page<JobDto>> getJobByStatus(@RequestParam(defaultValue = "0") int page,
+    ResponseEntity<List<JobDto>> getJobByStatus(@RequestParam(defaultValue = "0") int page,
                                                 @RequestParam(defaultValue = "5") int size,Authentication auth){
         return ResponseEntity.ok(jobService.getPostByStatus(page, size, auth.getName()));
     }

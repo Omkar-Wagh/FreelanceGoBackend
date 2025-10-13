@@ -50,7 +50,7 @@ public record JobDto(
 
         ClientDto clientDto,
 
-        List<BidDto> bidDto,
+        int proposalsCount,
 
         boolean alreadyBid
 ) { }
