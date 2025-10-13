@@ -28,6 +28,7 @@ public interface JobMapper {
     @Mapping(target = "clientDto", source = "client")
 //    @Mapping(target = "bidDto", ignore = true)
     @Mapping(target = "bidDto", source = "bids")// 👈 ignore bids to break recursion
+
     JobDto toDto(Job job);
 
     List<JobDto> toDtoList(List<Job> jobs);
@@ -62,18 +63,6 @@ public interface JobMapper {
     static String mapExperienceLevelToString(ExperienceLevel level) {
         return (level == null) ? null : level.name();
     }
-
-//    @Named("stringToJobPostStatus")
-//    static JobStatus mapStringToJobPostStatus(String status) {
-//        if (status == null || status.isBlank()) {
-//            throw new BadRequestException("Status is required");
-//        }
-//        try {
-//            return JobStatus.valueOf(status.trim().toUpperCase());
-//        } catch (IllegalArgumentException e) {
-//            throw new BadRequestException("Invalid status: " + status);
-//        }
-//    }
 
     @Named("jobPostStatusToString")
     static String mapJobPostStatusToString(JobStatus status) {

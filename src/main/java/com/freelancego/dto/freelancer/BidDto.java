@@ -10,6 +10,7 @@ public record BidDto(
         String category,
         OffsetDateTime submittedAt,
         String timeRequired,
+        String attachmentPublicUrl,
         String status,
         JobDto jobDto,
         FreelancerDto freelancerDto
