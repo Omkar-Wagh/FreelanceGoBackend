@@ -27,8 +27,7 @@ public interface JobMapper {
     @Mapping(target = "phase", source = "phase", qualifiedByName = "jobPostPhaseToString")
     @Mapping(target = "clientDto", source = "client")
 //    @Mapping(target = "bidDto", ignore = true)
-    @Mapping(target = "bidDto", source = "bids")// 👈 ignore bids to break recursion
-
+    @Mapping(target = "bidDto", source = "bids")
     JobDto toDto(Job job);
 
     List<JobDto> toDtoList(List<Job> jobs);

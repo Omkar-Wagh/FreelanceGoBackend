@@ -14,11 +14,11 @@ public interface BidMapper {
 
     @Mapping(target = "status", source = "status", qualifiedByName = "bidStatusToString")
     @Mapping(source = "freelancer", target = "freelancerDto")
-    @Mapping(source = "job", target = "jobDto",ignore = true) // 👈 don’t map job into dto
+    @Mapping(source = "job", target = "jobDto",ignore = true)
     BidDto toDto(Bid bid);
 
     @Mapping(source = "freelancerDto", target = "freelancer")
-    @Mapping(source = "jobDto", target = "job")   // 👈 allow job mapping from dto to entity
+    @Mapping(source = "jobDto", target = "job",ignore = true)
     Bid toEntity(BidDto bidDto);
 
     List<BidDto> toDtoList(List<Bid> bids);
