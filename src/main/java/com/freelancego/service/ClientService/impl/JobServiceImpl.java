@@ -1,5 +1,6 @@
 package com.freelancego.service.ClientService.impl;
 
+import com.freelancego.common.utils.SupabaseUtil;
 import com.freelancego.dto.client.JobDto;
 import com.freelancego.dto.client.response.DashBoardResponseDto;
 import com.freelancego.dto.freelancer.BidDto;
@@ -8,7 +9,6 @@ import com.freelancego.enums.ContractStatus;
 import com.freelancego.enums.JobPhase;
 import com.freelancego.enums.JobStatus;
 import com.freelancego.exception.InternalServerErrorException;
-import com.freelancego.exception.UnauthorizedAccessException;
 import com.freelancego.exception.UserNotFoundException;
 import com.freelancego.mapper.BidMapper;
 import com.freelancego.mapper.ContractMapper;
@@ -19,7 +19,6 @@ import com.freelancego.repo.ContractRepository;
 import com.freelancego.repo.JobRepository;
 import com.freelancego.repo.UserRepository;
 import com.freelancego.service.ClientService.JobService;
-import com.freelancego.utils.SupabaseUtil;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -85,12 +84,10 @@ public class JobServiceImpl implements JobService {
         job.setClient(client);
 
         String regex = ".*\\.(pdf|png|jpg|jpeg|pptx|docx)$";
-        String originalFilename = file.getOriginalFilename();
-        String cleanedFilename = originalFilename.replaceAll("[^a-zA-Z0-9\\.\\-_]", "_");
 
         try{
             if (file != null && file.getOriginalFilename().matches(regex)) {
-                String attachmentPublicUrl = supabaseUtil.uploadFile(file,cleanedFilename);
+                String attachmentPublicUrl = supabaseUtil.uploadFile(file);
                 job.setFile(attachmentPublicUrl);
             }
         }catch (Exception e){

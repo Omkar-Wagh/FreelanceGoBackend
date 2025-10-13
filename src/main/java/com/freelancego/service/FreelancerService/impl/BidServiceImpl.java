@@ -1,5 +1,6 @@
 package com.freelancego.service.FreelancerService.impl;
 
+import com.freelancego.common.utils.SupabaseUtil;
 import com.freelancego.dto.freelancer.BidDto;
 import com.freelancego.enums.BidStatus;
 import com.freelancego.exception.InternalServerErrorException;
@@ -12,7 +13,6 @@ import com.freelancego.repo.FreelancerRepository;
 import com.freelancego.repo.JobRepository;
 import com.freelancego.repo.UserRepository;
 import com.freelancego.service.FreelancerService.BidService;
-import com.freelancego.utils.SupabaseUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -65,11 +65,8 @@ public class BidServiceImpl implements BidService {
 
             String regex = ".*\\.(pdf|png|jpg|jpeg|pptx|docx)$";
 
-            String originalFilename = file.getOriginalFilename();
-            String cleanedFilename = originalFilename.replaceAll("[^a-zA-Z0-9\\.\\-_]", "_");
-
             if (file != null && file.getOriginalFilename().matches(regex)) {
-                String attachmentPublicUrl = supabaseUtil.uploadFile(file,cleanedFilename);
+                String attachmentPublicUrl = supabaseUtil.uploadFile(file);
                 bid.setAttachmentPublicUrl(attachmentPublicUrl);
             }
 
@@ -105,7 +102,6 @@ public class BidServiceImpl implements BidService {
         bid.setAmount(bidDto.amount());
         bidRepository.save(bid);
         return bidMapper.toDto(bid);
-
     }
 
 }
