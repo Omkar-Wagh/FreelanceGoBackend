@@ -125,6 +125,12 @@ public class JobServiceImpl implements JobService {
                     : Arrays.stream(job.getRequiredSkills().split(","))
                     .map(String::trim)
                     .toList();
+            String phase;
+            if(job.getPhase() == null){
+                phase = null;
+            }else{
+                phase = job.getPhase().name();
+            }
 
                     JobDto jobDto = new JobDto(
                     job.getId(),
@@ -139,7 +145,7 @@ public class JobServiceImpl implements JobService {
                     job.getBudget(),
                     job.getFile(),
                     job.getStatus().name(),
-                    job.getPhase().name(),
+                    phase,
                     clientMapper.toDTO(job.getClient()),
                     proposalsCount,
                     false
