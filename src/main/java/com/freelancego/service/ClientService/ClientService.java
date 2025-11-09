@@ -9,5 +9,5 @@ public interface ClientService {
 
     public Map<String,Object> createClient(ClientDto clientDto, String username);
 
-    Object getProfile(int id, Authentication auth);
+    public Map<String,Object> getProfile(int id, Authentication auth);
 }

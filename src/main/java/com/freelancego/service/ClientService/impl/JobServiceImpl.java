@@ -318,6 +318,8 @@ public class JobServiceImpl implements JobService {
                     .map(String::trim)
                     .toList();
 
+            String phase = (job.getPhase() == null) ? null : job.getPhase().name();
+
             JobDto jobDto = new JobDto(
                     job.getId(),
                     job.getJobTitle(),
@@ -331,7 +333,7 @@ public class JobServiceImpl implements JobService {
                     job.getBudget(),
                     job.getFile(),
                     job.getStatus().name(),
-                    job.getPhase().name(),
+                    phase,
                     clientMapper.toDTO(job.getClient()),
                     proposalsCount,
                     false

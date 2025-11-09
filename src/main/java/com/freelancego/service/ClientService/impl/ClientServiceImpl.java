@@ -64,7 +64,7 @@ public class ClientServiceImpl implements ClientService {
         return response;
     }
 
-    public Object getProfile(int id, Authentication auth) {
+    public Map<String,Object> getProfile(int id, Authentication auth) {
         User user = userRepository.findByEmail(auth.getName())
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
@@ -75,8 +75,8 @@ public class ClientServiceImpl implements ClientService {
         response.put("user", userMapper.toDTO(user));
         response.put("freelancer", freelancerOpt.map(freelancerMapper::toDTO).orElse(null));
         response.put("client", clientOpt.map(clientMapper::toDTO).orElse(null));
-        
-        return null;
+
+        return response;
     }
 
 }
