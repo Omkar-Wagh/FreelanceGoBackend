@@ -25,5 +25,4 @@ public class BidController {
     ResponseEntity<BidDto> updateBid(@RequestBody BidDto bidDto, Authentication auth){
         return ResponseEntity.ok(bidService.updateBid(bidDto,auth.getName()));
     }
-
 }

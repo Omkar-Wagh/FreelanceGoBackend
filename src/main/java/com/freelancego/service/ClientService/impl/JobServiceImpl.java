@@ -1,7 +1,6 @@
 package com.freelancego.service.ClientService.impl;
 
 import com.freelancego.common.utils.SupabaseUtil;
-import com.freelancego.dto.client.ClientDto;
 import com.freelancego.dto.client.JobDto;
 import com.freelancego.dto.client.response.DashBoardResponseDto;
 import com.freelancego.dto.freelancer.BidDto;
@@ -18,19 +17,13 @@ import com.freelancego.mapper.JobMapper;
 import com.freelancego.model.*;
 import com.freelancego.repo.*;
 import com.freelancego.service.ClientService.JobService;
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
