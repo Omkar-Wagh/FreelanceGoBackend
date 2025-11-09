@@ -6,6 +6,7 @@ public class BrowseJobDto {
 
     private JobDto job;
     private boolean alreadyBid;
+    private boolean isOwnPost;
 
     public JobDto getJob() {
         return job;
@@ -21,5 +22,13 @@ public class BrowseJobDto {
 
     public void setAlreadyBid(boolean alreadyBid) {
         this.alreadyBid = alreadyBid;
+    }
+
+    public boolean isOwnPost() {
+        return isOwnPost;
+    }
+
+    public void setOwnPost(boolean ownPost) {
+        isOwnPost = ownPost;
     }
 }

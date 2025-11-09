@@ -8,6 +8,7 @@ import com.freelancego.enums.ContractStatus;
 import com.freelancego.enums.JobStatus;
 import com.freelancego.enums.Role;
 import com.freelancego.exception.ConflictException;
+import com.freelancego.exception.InvalidIdException;
 import com.freelancego.exception.UserNotFoundException;
 import com.freelancego.mapper.ContractMapper;
 import com.freelancego.mapper.FreelancerMapper;
@@ -91,7 +92,12 @@ public class FreelancerServiceImpl implements FreelancerService {
             BrowseJobDto dto = new BrowseJobDto();
 
             dto.setJob(jobMapper.toDto(job));
-            dto.setAlreadyBid(bidRepository.existsByJobIdAndFreelancerId(job.getId(), freelancer.getId()));
+            boolean alreadyBid = bidRepository.existsByJobIdAndFreelancerId(job.getId(), freelancer.getId());
+            dto.setAlreadyBid(alreadyBid);
+
+            if (job.getClient().getUser().getId() == user.getId()) {
+                dto.setOwnPost(true);
+            }
 
             browseJobDtoList.add(dto);
         }

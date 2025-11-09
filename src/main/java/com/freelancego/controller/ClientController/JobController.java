@@ -31,7 +31,7 @@ public class JobController {
 
     // My Job Posts
     @GetMapping("/get-post")
-    ResponseEntity<List<JobDto>> getPost(@RequestParam(defaultValue = "0") int page,
+    ResponseEntity<Page<JobDto>> getPost(@RequestParam(defaultValue = "0") int page,
                                          @RequestParam(defaultValue = "5") int size,Authentication auth){
         return ResponseEntity.ok(jobService.getPostByClient(page, size, auth.getName()));
     }

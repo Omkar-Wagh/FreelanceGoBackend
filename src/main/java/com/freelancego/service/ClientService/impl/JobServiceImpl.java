@@ -17,10 +17,7 @@ import com.freelancego.mapper.JobMapper;
 import com.freelancego.model.*;
 import com.freelancego.repo.*;
 import com.freelancego.service.ClientService.JobService;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -101,7 +98,54 @@ public class JobServiceImpl implements JobService {
         return jobMapper.toDto(job);
     }
 
-    public List<JobDto> getPostByClient(int page, int size, String email) {
+//    public List<JobDto> getPostByClient(int page, int size, String email) {
+//        User user = userRepository.findByEmail(email)
+//                .orElseThrow(() -> new UserNotFoundException("User not found"));
+//
+//        Client client = clientRepository.findByUser(user)
+//                .orElseThrow(() -> new UserNotFoundException("Client not found"));
+//
+//        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+//        List<Job> jobs = jobRepository.findJobByClient(client, pageable).getContent();
+//        List<JobDto> jobDtoList = new ArrayList<>();
+//        for(Job job : jobs){
+//            int proposalsCount = bidRepository.countBidsByJobId(job.getId());
+//            List<String> requiredSkillsList = (job.getRequiredSkills() == null || job.getRequiredSkills().isBlank())
+//                    ? List.of()
+//                    : Arrays.stream(job.getRequiredSkills().split(","))
+//                    .map(String::trim)
+//                    .toList();
+//            String phase;
+//            if(job.getPhase() == null){
+//                phase = null;
+//            }else{
+//                phase = job.getPhase().name();
+//            }
+//                    JobDto jobDto = new JobDto(
+//                    job.getId(),
+//                    job.getJobTitle(),
+//                    requiredSkillsList,
+//                    job.getExperienceLevel().name(),
+//                    job.getJobDescription(),
+//                    job.getRequirement(),
+//                    job.getProjectStartTime(),
+//                    job.getProjectEndTime(),
+//                    job.getCreatedAt(),
+//                    job.getBudget(),
+//                    job.getFile(),
+//                    job.getStatus().name(),
+//                    phase,
+//                    clientMapper.toDTO(job.getClient()),
+//                    proposalsCount,
+//                    false
+//            );
+//                    jobDtoList.add(jobDto);
+//
+//        }
+//        return jobDtoList;
+//    }
+
+    public Page<JobDto> getPostByClient(int page, int size, String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
@@ -109,23 +153,22 @@ public class JobServiceImpl implements JobService {
                 .orElseThrow(() -> new UserNotFoundException("Client not found"));
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        List<Job> jobs = jobRepository.findJobByClient(client, pageable).getContent();
+        Page<Job> jobPage = jobRepository.findJobByClient(client, pageable);
+
         List<JobDto> jobDtoList = new ArrayList<>();
-        for(Job job : jobs){
+
+        for (Job job : jobPage.getContent()) {
             int proposalsCount = bidRepository.countBidsByJobId(job.getId());
+
             List<String> requiredSkillsList = (job.getRequiredSkills() == null || job.getRequiredSkills().isBlank())
                     ? List.of()
                     : Arrays.stream(job.getRequiredSkills().split(","))
                     .map(String::trim)
                     .toList();
-            String phase;
-            if(job.getPhase() == null){
-                phase = null;
-            }else{
-                phase = job.getPhase().name();
-            }
 
-                    JobDto jobDto = new JobDto(
+            String phase = (job.getPhase() == null) ? null : job.getPhase().name();
+
+            JobDto jobDto = new JobDto(
                     job.getId(),
                     job.getJobTitle(),
                     requiredSkillsList,
@@ -143,11 +186,12 @@ public class JobServiceImpl implements JobService {
                     proposalsCount,
                     false
             );
-                    jobDtoList.add(jobDto);
-
+            jobDtoList.add(jobDto);
         }
-        return jobDtoList;
+
+        return new PageImpl<>(jobDtoList, pageable, jobPage.getTotalElements());
     }
+
 
     public Map<String, Object> getPostById(int id, String email) {
         User user = userRepository.findByEmail(email)

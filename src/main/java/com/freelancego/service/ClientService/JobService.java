@@ -12,7 +12,7 @@ public interface JobService {
 
     public JobDto createPost(JobDto jobDto, MultipartFile file,String auth);
 
-    public List<JobDto> getPostByClient(int page, int size, String email);
+    public Page<JobDto> getPostByClient(int page, int size, String email);
 
     public Map<String,Object> getPostById(int id, String email);
 
