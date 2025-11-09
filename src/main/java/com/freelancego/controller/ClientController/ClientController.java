@@ -22,5 +22,8 @@ public class ClientController {
     ResponseEntity<Map<String,Object>> createClientProfile(@RequestBody ClientDto clientDto, Authentication auth){
         return ResponseEntity.ok(clientService.createClient(clientDto, auth.getName()));
     }
-
+    @GetMapping("/get-profile/{id}")
+    ResponseEntity<?> getProfile(@PathVariable("id") int id, Authentication auth){
+        return ResponseEntity.ok(clientService.getProfile(id,auth));
+    }
 }

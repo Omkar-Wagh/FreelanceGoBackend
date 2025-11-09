@@ -1,6 +1,7 @@
 package com.freelancego.service.FreelancerService.impl;
 
 import com.freelancego.dto.client.JobDto;
+import com.freelancego.dto.freelancer.BidDto;
 import com.freelancego.dto.freelancer.BrowseJobDto;
 import com.freelancego.dto.freelancer.FreelancerDto;
 import com.freelancego.dto.user.ContractDto;
@@ -8,8 +9,8 @@ import com.freelancego.enums.ContractStatus;
 import com.freelancego.enums.JobStatus;
 import com.freelancego.enums.Role;
 import com.freelancego.exception.ConflictException;
-import com.freelancego.exception.InvalidIdException;
 import com.freelancego.exception.UserNotFoundException;
+import com.freelancego.mapper.BidMapper;
 import com.freelancego.mapper.ContractMapper;
 import com.freelancego.mapper.FreelancerMapper;
 import com.freelancego.mapper.JobMapper;
@@ -39,8 +40,9 @@ public class FreelancerServiceImpl implements FreelancerService {
     final private JobMapper jobMapper;
     final private ContractRepository contractRepository;
     final private ContractMapper contractMapper;
+    final private BidMapper bidMapper;
 
-    public FreelancerServiceImpl(UserRepository userRepository, JWTService jwtService, FreelancerRepository freelancerRepository, FreelancerMapper freelancerMapper, JobRepository jobRepository, BidRepository bidRepository, JobMapper jobMapper, ContractRepository contractRepository, ContractMapper contractMapper) {
+    public FreelancerServiceImpl(UserRepository userRepository, JWTService jwtService, FreelancerRepository freelancerRepository, FreelancerMapper freelancerMapper, JobRepository jobRepository, BidRepository bidRepository, JobMapper jobMapper, ContractRepository contractRepository, ContractMapper contractMapper, BidMapper bidMapper) {
         this.userRepository = userRepository;
         this.jwtService = jwtService;
         this.freelancerRepository = freelancerRepository;
@@ -50,6 +52,7 @@ public class FreelancerServiceImpl implements FreelancerService {
         this.jobMapper = jobMapper;
         this.contractRepository = contractRepository;
         this.contractMapper = contractMapper;
+        this.bidMapper = bidMapper;
     }
 
     public Map<String,Object> createFreelancer(FreelancerDto freelancerDto, String username) {
@@ -150,57 +153,77 @@ public class FreelancerServiceImpl implements FreelancerService {
         Freelancer freelancer = freelancerRepository.findByUser(user)
                 .orElseThrow(() -> new UserNotFoundException("Freelancer not found"));
 
-        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        List<Job> allJobs = jobRepository.findAll(pageable).getContent();
+        // Compute full stats + get all jobs where this freelancer has bids
+        Map<String, Object> globalStats = calculateBidStatsForFreelancer(freelancer);
+        List<Job> freelancerJobs = (List<Job>) globalStats.get("FreelancerJobs");
 
-        List<Job> filteredJobs = allJobs.stream()
+        // Paginate only over freelancer’s bid jobs
+        int start = Math.min(page * size, freelancerJobs.size());
+        int end = Math.min(start + size, freelancerJobs.size());
+        List<Job> pagedJobs = freelancerJobs.subList(start, end);
+
+        // Prepare job-with-bid data
+        List<Map<String, Object>> jobWithBids = pagedJobs.stream()
+                .map(job -> {
+                    Map<String, Object> jobMap = new HashMap<>();
+                    jobMap.put("job", jobMapper.toDto(job));
+                    List<BidDto> bids = job.getBids().stream().map(bidMapper::toDto).toList();
+                    if (!bids.isEmpty()) jobMap.put("myBid", bids.get(0));
+                    return jobMap;
+                })
+                .toList();
+
+        // Final response: global stats + paginated results
+        Map<String, Object> response = new HashMap<>(globalStats);
+        response.put("Current Page", page);
+        response.put("Page Size", size);
+        response.put("Total Pages", (int) Math.ceil((double) freelancerJobs.size() / size));
+        response.put("JobWithBid", jobWithBids);
+        response.put("Jobs", pagedJobs.stream().map(jobMapper::toDto).toList());
+
+        return response;
+    }
+
+
+    public Map<String, Object> calculateBidStatsForFreelancer(Freelancer freelancer) {
+        List<Job> allJobs = jobRepository.findAll();
+
+        List<Job> freelancerJobs = allJobs.stream()
                 .filter(job -> job.getBids() != null &&
                         job.getBids().stream()
-                                .anyMatch(bid -> bid.getFreelancer().getId() == freelancer.getId()))
+                                .anyMatch(bid -> (bid.getFreelancer().getId() == (freelancer.getId()))))
                 .peek(job -> {
                     List<Bid> myBidOnly = job.getBids().stream()
-                            .filter(b -> b.getFreelancer().getId() == freelancer.getId())
+                            .filter(b -> (b.getFreelancer().getId() == (freelancer.getId())))
                             .toList();
                     job.setBids(myBidOnly);
                 })
                 .toList();
 
-        long totalJobs = filteredJobs.size();
+        long totalJobs = freelancerJobs.size();
+        long totalProposals = freelancerJobs.stream().flatMap(j -> j.getBids().stream()).count();
+        List<Bid> myBids = freelancerJobs.stream().flatMap(j -> j.getBids().stream()).toList();
 
-        long totalProposals = filteredJobs.stream()
-                .flatMap(job -> job.getBids().stream())
-                .count();
-
-        List<Bid> myBids = filteredJobs.stream()
-                .flatMap(job -> job.getBids().stream())
+        List<Contract> contracts = myBids.stream()
+                .map(contractRepository::findByAcceptedBid)
+                .filter(Objects::nonNull)
                 .toList();
 
-        List<Contract> contracts = new ArrayList<>();
-        for (Bid bid : myBids){
-            Contract contract = contractRepository.findByAcceptedBid(bid);
-            if(contract != null){
-                contracts.add(contract);
-            }
-        }
-
         long hired = contracts.size();
-        long inReview = contracts.stream()
-                .filter(c -> c.getStatus() == ContractStatus.ACTIVE)
-                .count();
-        long completed = contracts.stream()
-                .filter(c -> c.getStatus() == ContractStatus.COMPLETED)
-                .count();
+        long inReview = contracts.stream().filter(c -> c.getStatus() == ContractStatus.ACTIVE).count();
+        long completed = contracts.stream().filter(c -> c.getStatus() == ContractStatus.COMPLETED).count();
 
-        Map<String, Object> response = new HashMap<>();
-        response.put("Total Jobs", totalJobs);
-        response.put("Hired", hired);
-        response.put("In Review", inReview);
-        response.put("Completed", completed);
-        response.put("Total Proposals", totalProposals);
-        response.put("Jobs", filteredJobs.stream().map(jobMapper::toDto).toList());
-
-        return response;
+        Map<String, Object> stats = new HashMap<>();
+        stats.put("Total Jobs", totalJobs);
+        stats.put("Total Proposals", totalProposals);
+        stats.put("Hired", hired);
+        stats.put("In Review", inReview);
+        stats.put("Completed", completed);
+        stats.put("FreelancerJobs", freelancerJobs); // temporarily store for reuse
+        return stats;
     }
+
+
 
     public Map<String, Object> getEarningsDashboard(int page, int size, String email) {
         User user = userRepository.findByEmail(email)

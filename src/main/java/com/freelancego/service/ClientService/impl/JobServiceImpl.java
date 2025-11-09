@@ -227,7 +227,6 @@ public class JobServiceImpl implements JobService {
         return bids.map(bidMapper::toDto);
     }
 
-
     public List<JobDto> getPostByProgress(Client client) {
         List<Job> jobs = jobRepository.findByClientIdAndStatusAndPhaseIn(client.getId(), JobStatus.INACTIVE, Arrays.asList(JobPhase.IN_PROGRESS, JobPhase.PENDING));
         List<JobDto> jobDto = new ArrayList<>();
