@@ -51,7 +51,7 @@ public class FreelancerController {
 
     // Bid History
     @GetMapping("/bid-history")
-    ResponseEntity<?> getBidHistoryOfFreelancer(@RequestParam(defaultValue = "0") int page,
+    ResponseEntity<Map<String, Object>> getBidHistoryOfFreelancer(@RequestParam(defaultValue = "0") int page,
                                                 @RequestParam(defaultValue = "5") int size, Authentication auth){
         return ResponseEntity.ok(freelancerService.getBidHistory(page,size,auth.getName()));
     }
