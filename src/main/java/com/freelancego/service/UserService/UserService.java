@@ -2,9 +2,8 @@ package com.freelancego.service.UserService;
 
 import com.freelancego.mapper.ClientMapper;
 import com.freelancego.mapper.FreelancerMapper;
+import com.freelancego.model.*;
 import com.freelancego.security.service.JWTService;
-import com.freelancego.dto.client.ClientDto;
-import com.freelancego.dto.freelancer.FreelancerDto;
 import com.freelancego.dto.user.UserDto;
 import com.freelancego.enums.Role;
 import com.freelancego.exception.BadRequestException;
@@ -12,23 +11,13 @@ import com.freelancego.exception.InternalServerErrorException;
 import com.freelancego.exception.UnauthorizedAccessException;
 import com.freelancego.exception.UserNotFoundException;
 import com.freelancego.mapper.UserMapper;
-import com.freelancego.model.Client;
-import com.freelancego.model.Freelancer;
-import com.freelancego.model.User;
 import com.freelancego.repo.ClientRepository;
 import com.freelancego.repo.FreelancerRepository;
 import com.freelancego.repo.UserRepository;
-import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
