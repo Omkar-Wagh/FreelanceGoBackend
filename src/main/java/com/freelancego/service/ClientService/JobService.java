@@ -20,7 +20,7 @@ public interface JobService {
 
     public List<ContractDto> getPostByPhase(String name);
 
-    public List<JobDto> getPostByStatus(int page, int size, String name);
+    public Page<JobDto> getPostByStatus(int page, int size, String name);
 
     Page<ContractDto> getHiredFreelancer(int page, int size, String name);
 

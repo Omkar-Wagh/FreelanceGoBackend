@@ -197,9 +197,6 @@ public class JobServiceImpl implements JobService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
-        Client client = clientRepository.findByUser(user)
-                .orElseThrow(() -> new UserNotFoundException("Client not found"));
-
         Job job = jobRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("Job not found"));
 
@@ -299,7 +296,7 @@ public class JobServiceImpl implements JobService {
         return contractMapper.toDtoList(contractList);
     }
 
-    public List<JobDto> getPostByStatus(int page, int size, String name) {
+    public Page<JobDto> getPostByStatus(int page, int size, String name) {
         User user = userRepository.findByEmail(name)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
@@ -307,10 +304,10 @@ public class JobServiceImpl implements JobService {
                 .orElseThrow(() -> new UserNotFoundException("Client not found"));
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        List<Job> jobs = jobRepository.findJobByClientAndStatus(client,JobStatus.ACTIVE ,pageable).getContent();
+        Page<Job> jobs = jobRepository.findJobByClientAndStatus(client,JobStatus.ACTIVE ,pageable);
 
         List<JobDto> jobDtoList = new ArrayList<>();
-        for(Job job : jobs){
+        for(Job job : jobs.getContent()){
             int proposalsCount = bidRepository.countBidsByJobId(job.getId());
             List<String> requiredSkillsList = (job.getRequiredSkills() == null || job.getRequiredSkills().isBlank())
                     ? List.of()
@@ -341,7 +338,8 @@ public class JobServiceImpl implements JobService {
             jobDtoList.add(jobDto);
 
         }
-        return jobDtoList;
+//        return jobDtoList;
+        return  new PageImpl<>(jobDtoList, pageable, jobs.getTotalElements());
     }
 
     public Page<ContractDto> getHiredFreelancer(int page, int size, String name) {

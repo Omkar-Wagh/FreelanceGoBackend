@@ -16,8 +16,6 @@ import com.freelancego.repo.FreelancerRepository;
 import com.freelancego.repo.UserRepository;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
-import java.io.IOException;
 import java.util.*;
 
 @Service
@@ -46,29 +44,6 @@ public class UserService {
                .orElseThrow(() -> new UserNotFoundException("User not found"));
         return userMapper.toDTO(user);
     }
-
-    public UserDto uploadProfileImage(int id, MultipartFile image, Authentication auth) throws IOException {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
-        User loggedInUser = userRepository.findByEmail(auth.getName())
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
-
-        if (user.getId() == loggedInUser.getId()) {
-            if (image == null || image.isEmpty()) {
-                throw new BadRequestException("No image file provided");
-            }
-            user.setImageData(image.getBytes());
-            String contentType = image.getContentType();
-            if (contentType == null || !contentType.startsWith("image/")) {
-                throw new BadRequestException("Invalid file type. Only images are allowed");
-            }
-            userRepository.save(user);
-            return userMapper.toDTO(user);
-        } else {
-            throw new UnauthorizedAccessException("Unauthorized to modify this profile.");
-        }
-    }
-
 
     public String updateRole(String role, String authHeader) {
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {

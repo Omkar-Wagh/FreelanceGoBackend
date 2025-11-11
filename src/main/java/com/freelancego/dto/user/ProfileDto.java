@@ -1,10 +1,13 @@
 package com.freelancego.dto.user;
 
+import com.freelancego.dto.client.ClientDto;
+import com.freelancego.dto.freelancer.FreelancerDto;
+
 public class ProfileDto {
     private int id;
-    private int userId;
-    private int clientId;
-    private int freelancerId;
+    private UserDto user;
+    private ClientDto client;
+    private FreelancerDto freelancer;
 
     private ProfileDetailsDto clientProfile;
     private ProfileDetailsDto freelancerProfile;
@@ -15,6 +18,8 @@ public class ProfileDto {
     private CertificationDetailsDto clientCertificationDetails;
     private CertificationDetailsDto freelancerCertificationDetails;
 
+    private boolean isOwnProfile;
+
     public int getId() {
         return id;
     }
@@ -23,28 +28,28 @@ public class ProfileDto {
         this.id = id;
     }
 
-    public int getUserId() {
-        return userId;
+    public UserDto getUser() {
+        return user;
     }
 
-    public void setUserId(int userId) {
-        this.userId = userId;
+    public void setUser(UserDto user) {
+        this.user = user;
     }
 
-    public int getClientId() {
-        return clientId;
+    public ClientDto getClient() {
+        return client;
     }
 
-    public void setClientId(int clientId) {
-        this.clientId = clientId;
+    public void setClient(ClientDto client) {
+        this.client = client;
     }
 
-    public int getFreelancerId() {
-        return freelancerId;
+    public FreelancerDto getFreelancer() {
+        return freelancer;
     }
 
-    public void setFreelancerId(int freelancerId) {
-        this.freelancerId = freelancerId;
+    public void setFreelancer(FreelancerDto freelancer) {
+        this.freelancer = freelancer;
     }
 
     public ProfileDetailsDto getClientProfile() {
@@ -93,5 +98,13 @@ public class ProfileDto {
 
     public void setFreelancerCertificationDetails(CertificationDetailsDto freelancerCertificationDetails) {
         this.freelancerCertificationDetails = freelancerCertificationDetails;
+    }
+
+    public boolean isOwnProfile() {
+        return isOwnProfile;
+    }
+
+    public void setOwnProfile(boolean ownProfile) {
+        isOwnProfile = ownProfile;
     }
 }

@@ -18,6 +18,7 @@ import com.freelancego.model.*;
 import com.freelancego.repo.*;
 import com.freelancego.service.FreelancerService.FreelancerService;
 import com.freelancego.security.service.JWTService;
+import com.freelancego.service.ProfileService.ProfileService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -41,8 +42,9 @@ public class FreelancerServiceImpl implements FreelancerService {
     final private ContractRepository contractRepository;
     final private ContractMapper contractMapper;
     final private BidMapper bidMapper;
+    final private ProfileService profileService;
 
-    public FreelancerServiceImpl(UserRepository userRepository, JWTService jwtService, FreelancerRepository freelancerRepository, FreelancerMapper freelancerMapper, JobRepository jobRepository, BidRepository bidRepository, JobMapper jobMapper, ContractRepository contractRepository, ContractMapper contractMapper, BidMapper bidMapper) {
+    public FreelancerServiceImpl(UserRepository userRepository, JWTService jwtService, FreelancerRepository freelancerRepository, FreelancerMapper freelancerMapper, JobRepository jobRepository, BidRepository bidRepository, JobMapper jobMapper, ContractRepository contractRepository, ContractMapper contractMapper, BidMapper bidMapper, ProfileService profileService) {
         this.userRepository = userRepository;
         this.jwtService = jwtService;
         this.freelancerRepository = freelancerRepository;
@@ -53,6 +55,7 @@ public class FreelancerServiceImpl implements FreelancerService {
         this.contractRepository = contractRepository;
         this.contractMapper = contractMapper;
         this.bidMapper = bidMapper;
+        this.profileService = profileService;
     }
 
     public Map<String,Object> createFreelancer(FreelancerDto freelancerDto, String username) {
@@ -64,7 +67,6 @@ public class FreelancerServiceImpl implements FreelancerService {
             throw new ConflictException("freelancer profile already exists");
         }
 
-
         Map<String,Object> response = new HashMap<>();
 
         Freelancer freelancer = freelancerMapper.toEntity(freelancerDto);
@@ -72,6 +74,7 @@ public class FreelancerServiceImpl implements FreelancerService {
         freelancerRepository.save(freelancer);
         user.setRole(Role.FREELANCER);
         userRepository.save(user);
+        profileService.createProfile(user);
 
         String token = jwtService.generateToken(user.getEmail(),Role.FREELANCER.name());
         response.put("freelancer",freelancerMapper.toDTO(freelancer));

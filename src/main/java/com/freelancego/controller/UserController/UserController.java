@@ -31,11 +31,6 @@ public class UserController {
         return ResponseEntity.ok(result);
     }
 
-    @PostMapping("/profile/{id}/upload-image")
-    public ResponseEntity<UserDto> uploadImageForUser(@PathVariable("id") int id, @RequestParam("file") MultipartFile image, Authentication auth) throws IOException {
-        return ResponseEntity.ok(userService.uploadProfileImage(id, image, auth));
-    }
-
     @PostMapping("/update-role")
     @PreAuthorize("hasAnyRole('CLIENT', 'FREELANCER')")
     public ResponseEntity<String> updateRole(@RequestParam String role, @RequestHeader("Authorization") String authHeader) {

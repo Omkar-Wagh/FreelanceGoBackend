@@ -62,7 +62,7 @@ public class JobController {
 
     // Review Proposals
     @GetMapping("/review-proposals")
-    ResponseEntity<List<JobDto>> getJobByStatus(@RequestParam(defaultValue = "0") int page,
+    ResponseEntity<Page<JobDto>> getJobByStatus(@RequestParam(defaultValue = "0") int page,
                                                 @RequestParam(defaultValue = "5") int size,Authentication auth){
         return ResponseEntity.ok(jobService.getPostByStatus(page, size, auth.getName()));
     }
