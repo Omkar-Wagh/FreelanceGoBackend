@@ -2,6 +2,7 @@ package com.freelancego.dto.user;
 
 import com.freelancego.dto.client.ClientDto;
 import com.freelancego.dto.freelancer.FreelancerDto;
+import java.util.List;
 
 public class ProfileDto {
     private int id;
@@ -12,13 +13,13 @@ public class ProfileDto {
     private ProfileDetailsDto clientProfile;
     private ProfileDetailsDto freelancerProfile;
 
-    private PortfolioDetailsDto clientPortfolioDetails;
-    private PortfolioDetailsDto freelancerPortfolioDetails;
+    private List<PortfolioDetailsDto> clientPortfolioDetails;
+    private List<PortfolioDetailsDto> freelancerPortfolioDetails;
 
-    private CertificationDetailsDto clientCertificationDetails;
-    private CertificationDetailsDto freelancerCertificationDetails;
+    private List<CertificationDetailsDto> clientCertificationDetails;
+    private List<CertificationDetailsDto> freelancerCertificationDetails;
 
-    private boolean isOwnProfile;
+    private boolean ownProfile;
 
     public int getId() {
         return id;
@@ -68,43 +69,43 @@ public class ProfileDto {
         this.freelancerProfile = freelancerProfile;
     }
 
-    public PortfolioDetailsDto getClientPortfolioDetails() {
+    public List<PortfolioDetailsDto> getClientPortfolioDetails() {
         return clientPortfolioDetails;
     }
 
-    public void setClientPortfolioDetails(PortfolioDetailsDto clientPortfolioDetails) {
+    public void setClientPortfolioDetails(List<PortfolioDetailsDto> clientPortfolioDetails) {
         this.clientPortfolioDetails = clientPortfolioDetails;
     }
 
-    public PortfolioDetailsDto getFreelancerPortfolioDetails() {
+    public List<PortfolioDetailsDto> getFreelancerPortfolioDetails() {
         return freelancerPortfolioDetails;
     }
 
-    public void setFreelancerPortfolioDetails(PortfolioDetailsDto freelancerPortfolioDetails) {
+    public void setFreelancerPortfolioDetails(List<PortfolioDetailsDto> freelancerPortfolioDetails) {
         this.freelancerPortfolioDetails = freelancerPortfolioDetails;
     }
 
-    public CertificationDetailsDto getClientCertificationDetails() {
+    public List<CertificationDetailsDto> getClientCertificationDetails() {
         return clientCertificationDetails;
     }
 
-    public void setClientCertificationDetails(CertificationDetailsDto clientCertificationDetails) {
+    public void setClientCertificationDetails(List<CertificationDetailsDto> clientCertificationDetails) {
         this.clientCertificationDetails = clientCertificationDetails;
     }
 
-    public CertificationDetailsDto getFreelancerCertificationDetails() {
+    public List<CertificationDetailsDto> getFreelancerCertificationDetails() {
         return freelancerCertificationDetails;
     }
 
-    public void setFreelancerCertificationDetails(CertificationDetailsDto freelancerCertificationDetails) {
+    public void setFreelancerCertificationDetails(List<CertificationDetailsDto> freelancerCertificationDetails) {
         this.freelancerCertificationDetails = freelancerCertificationDetails;
     }
 
     public boolean isOwnProfile() {
-        return isOwnProfile;
+        return ownProfile;
     }
 
     public void setOwnProfile(boolean ownProfile) {
-        isOwnProfile = ownProfile;
+        this.ownProfile = ownProfile;
     }
 }

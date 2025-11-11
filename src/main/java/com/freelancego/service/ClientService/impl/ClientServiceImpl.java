@@ -5,17 +5,13 @@ import com.freelancego.enums.Role;
 import com.freelancego.exception.ConflictException;
 import com.freelancego.exception.UserNotFoundException;
 import com.freelancego.mapper.ClientMapper;
-import com.freelancego.mapper.FreelancerMapper;
-import com.freelancego.mapper.UserMapper;
 import com.freelancego.model.Client;
-import com.freelancego.model.Freelancer;
 import com.freelancego.model.User;
 import com.freelancego.repo.ClientRepository;
-import com.freelancego.repo.FreelancerRepository;
 import com.freelancego.repo.UserRepository;
 import com.freelancego.service.ClientService.ClientService;
 import com.freelancego.security.service.JWTService;
-import org.springframework.security.core.Authentication;
+import com.freelancego.service.ProfileService.ProfileService;
 import org.springframework.stereotype.Service;
 import java.util.*;
 
@@ -26,18 +22,14 @@ public class ClientServiceImpl implements ClientService {
     final private ClientRepository clientRepository;
     final private JWTService jwtService;
     final private ClientMapper clientMapper;
-    final private UserMapper userMapper;
-    final private FreelancerMapper freelancerMapper;
-    final private FreelancerRepository freelancerRepository;
+    final private ProfileService profileService;
 
-    public ClientServiceImpl(UserRepository userRepository, ClientRepository clientRepository, JWTService jwtService, ClientMapper clientMapper, UserMapper userMapper, FreelancerMapper freelancerMapper, FreelancerRepository freelancerRepository) {
+    public ClientServiceImpl(UserRepository userRepository, ClientRepository clientRepository, JWTService jwtService, ClientMapper clientMapper, ProfileService profileService) {
         this.userRepository = userRepository;
         this.clientRepository = clientRepository;
         this.jwtService = jwtService;
         this.clientMapper = clientMapper;
-        this.userMapper = userMapper;
-        this.freelancerMapper = freelancerMapper;
-        this.freelancerRepository = freelancerRepository;
+        this.profileService = profileService;
     }
 
     public Map<String,Object> createClient(ClientDto clientDto, String username) {
@@ -57,26 +49,12 @@ public class ClientServiceImpl implements ClientService {
         user.setRole(Role.CLIENT);
         userRepository.save(user);
 
+        profileService.createProfile(user);
+
         String token = jwtService.generateToken(user.getEmail(),Role.CLIENT.name());
         response.put("client",clientMapper.toDTO(client));
         response.put("token",token);
 
         return response;
     }
-
-    public Map<String,Object> getProfile(int id, Authentication auth) {
-        User user = userRepository.findByEmail(auth.getName())
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
-
-        Optional<Freelancer> freelancerOpt = freelancerRepository.findByUser(user);
-        Optional<Client> clientOpt = clientRepository.findByUser(user);
-
-        Map<String, Object> response = new HashMap<>();
-        response.put("user", userMapper.toDTO(user));
-        response.put("freelancer", freelancerOpt.map(freelancerMapper::toDTO).orElse(null));
-        response.put("client", clientOpt.map(clientMapper::toDTO).orElse(null));
-
-        return response;
-    }
-
 }

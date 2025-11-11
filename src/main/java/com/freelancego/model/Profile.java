@@ -1,6 +1,7 @@
 package com.freelancego.model;
 
 import jakarta.persistence.*;
+import java.util.List;
 
 @Entity
 public class Profile {
@@ -34,7 +35,7 @@ public class Profile {
     private ProfileDetails freelancerProfile;
 
     @Embedded
-    private PortfolioDetails clientPortfolioDetails;
+    private List<PortfolioDetails> clientPortfolioDetails;
 
     @Embedded
     @AttributeOverrides({
@@ -43,10 +44,10 @@ public class Profile {
             @AttributeOverride(name = "title", column = @Column(name = "freelancer_title")),
             @AttributeOverride(name = "description", column = @Column(name = "freelancer_description")),
     })
-    private PortfolioDetails freelancerPortfolioDetails;
+    private List<PortfolioDetails> freelancerPortfolioDetails;
 
     @Embedded
-    private CertificationsDetails clientCertificationDetails;
+    private List<CertificationsDetails> clientCertificationDetails;
 
     @Embedded
     @AttributeOverrides({
@@ -54,7 +55,7 @@ public class Profile {
             @AttributeOverride(name = "provider", column = @Column(name = "freelancer_provider")),
             @AttributeOverride(name = "certificateUrl", column = @Column(name = "freelancer_certificateUrl")),
     })
-    private CertificationsDetails freelancerCertificationDetails;
+    private List<CertificationsDetails> freelancerCertificationDetails;
 
     public int getId() {
         return id;
@@ -104,35 +105,35 @@ public class Profile {
         this.freelancerProfile = freelancerProfile;
     }
 
-    public PortfolioDetails getClientPortfolioDetails() {
+    public List<PortfolioDetails> getClientPortfolioDetails() {
         return clientPortfolioDetails;
     }
 
-    public void setClientPortfolioDetails(PortfolioDetails clientPortfolioDetails) {
+    public void setClientPortfolioDetails(List<PortfolioDetails> clientPortfolioDetails) {
         this.clientPortfolioDetails = clientPortfolioDetails;
     }
 
-    public PortfolioDetails getFreelancerPortfolioDetails() {
+    public List<PortfolioDetails> getFreelancerPortfolioDetails() {
         return freelancerPortfolioDetails;
     }
 
-    public void setFreelancerPortfolioDetails(PortfolioDetails freelancerPortfolioDetails) {
+    public void setFreelancerPortfolioDetails(List<PortfolioDetails> freelancerPortfolioDetails) {
         this.freelancerPortfolioDetails = freelancerPortfolioDetails;
     }
 
-    public CertificationsDetails getClientCertificationDetails() {
+    public List<CertificationsDetails> getClientCertificationDetails() {
         return clientCertificationDetails;
     }
 
-    public void setClientCertificationDetails(CertificationsDetails clientCertificationDetails) {
+    public void setClientCertificationDetails(List<CertificationsDetails> clientCertificationDetails) {
         this.clientCertificationDetails = clientCertificationDetails;
     }
 
-    public CertificationsDetails getFreelancerCertificationDetails() {
+    public List<CertificationsDetails> getFreelancerCertificationDetails() {
         return freelancerCertificationDetails;
     }
 
-    public void setFreelancerCertificationDetails(CertificationsDetails freelancerCertificationDetails) {
+    public void setFreelancerCertificationDetails(List<CertificationsDetails> freelancerCertificationDetails) {
         this.freelancerCertificationDetails = freelancerCertificationDetails;
     }
 }

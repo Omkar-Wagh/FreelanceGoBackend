@@ -10,7 +10,8 @@ import java.io.IOException;
 
 public interface ProfileService {
     ProfileDto getProfile(int id, Authentication auth);
-    ProfileDto uploadProfileImage(int id, MultipartFile image, Authentication auth) throws IOException;
-
     void createProfile(User user);
+    ProfileDto updateFreelancerProfileOneSection(ProfileDto profileDto,MultipartFile profileFile, MultipartFile coverFile, Authentication auth) throws IOException;
+    ProfileDto updateFreelancerProfileTwoSection(ProfileDto profileDto, String name);
+    ProfileDto updateFreelancerProfileThreeSection(ProfileDto profileDto, MultipartFile portfolioFile, String name);
 }

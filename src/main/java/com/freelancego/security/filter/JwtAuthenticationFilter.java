@@ -59,7 +59,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 UserDetails principal = new org.springframework.security.core.userdetails.User(
                         email, "", authorities);
                 UsernamePasswordAuthenticationToken authToken =
-                        new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities());
+                        new UsernamePasswordAuthenticationToken(principal, 23, principal.getAuthorities());
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }

@@ -24,8 +24,19 @@ public class ProfileController {
         return ResponseEntity.ok(profileService.getProfile(id,auth));
     }
 
-    @PostMapping("/profile/{id}/upload-image")
-    public ResponseEntity<ProfileDto> uploadImageForUser(@PathVariable("id") int id, @RequestParam("file") MultipartFile image, Authentication auth) throws IOException {
-        return ResponseEntity.ok(profileService.uploadProfileImage(id, image, auth));
+    @PostMapping("/profile/update-section-one-for-freelancer")
+    public ResponseEntity<ProfileDto> updateProfileOneSection(@RequestPart(value = "profile") ProfileDto profileDto, @RequestPart(value = "profileImage", required = false) MultipartFile profileFile,@RequestPart(value = "coverPhoto", required = false) MultipartFile coverFile, Authentication auth) throws IOException {
+        return ResponseEntity.ok(profileService.updateFreelancerProfileOneSection(profileDto, profileFile, coverFile, auth));
     }
+
+    @PostMapping("/profile/update-section-two-for-freelancer")
+    public ResponseEntity<ProfileDto> updateProfileTwoSection(ProfileDto profileDto,Authentication auth){
+        return ResponseEntity.ok(profileService.updateFreelancerProfileTwoSection(profileDto,auth.getName()));
+    }
+
+    @PostMapping("/profile/update-section-three-for-freelancer")
+    public ResponseEntity<ProfileDto> updateProfileThreeSection(@RequestPart(value = "profile") ProfileDto profileDto,@RequestPart(value = "portfolio-section",required = false) MultipartFile portfolioFile,Authentication auth){
+        return ResponseEntity.ok(profileService.updateFreelancerProfileThreeSection(profileDto,portfolioFile,auth.getName()));
+    }
+
 }
