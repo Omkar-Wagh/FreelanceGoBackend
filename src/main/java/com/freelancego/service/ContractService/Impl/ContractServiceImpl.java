@@ -4,6 +4,7 @@ import com.freelancego.dto.user.ContractDto;
 import com.freelancego.enums.BidStatus;
 import com.freelancego.enums.ContractStatus;
 import com.freelancego.enums.JobPhase;
+import com.freelancego.enums.JobStatus;
 import com.freelancego.exception.InvalidIdException;
 import com.freelancego.exception.UnauthorizedAccessException;
 import com.freelancego.exception.UserNotFoundException;
@@ -98,6 +99,7 @@ public class ContractServiceImpl implements ContractService {
         contract.setStatus(ContractStatus.ACTIVE);
 
         job.setPhase(JobPhase.IN_PROGRESS);
+        job.setStatus(JobStatus.INACTIVE);
 
         job.getBids().forEach(currentBid -> {
             if (currentBid.getId() != bid.getId()) {
