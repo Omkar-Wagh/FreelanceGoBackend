@@ -13,10 +13,7 @@ public class ProfileDto {
     private ProfileDetailsDto clientProfile;
     private ProfileDetailsDto freelancerProfile;
 
-    private List<PortfolioDetailsDto> clientPortfolioDetails;
     private List<PortfolioDetailsDto> freelancerPortfolioDetails;
-
-    private List<CertificationDetailsDto> clientCertificationDetails;
     private List<CertificationDetailsDto> freelancerCertificationDetails;
 
     private boolean ownProfile;
@@ -69,28 +66,12 @@ public class ProfileDto {
         this.freelancerProfile = freelancerProfile;
     }
 
-    public List<PortfolioDetailsDto> getClientPortfolioDetails() {
-        return clientPortfolioDetails;
-    }
-
-    public void setClientPortfolioDetails(List<PortfolioDetailsDto> clientPortfolioDetails) {
-        this.clientPortfolioDetails = clientPortfolioDetails;
-    }
-
     public List<PortfolioDetailsDto> getFreelancerPortfolioDetails() {
         return freelancerPortfolioDetails;
     }
 
     public void setFreelancerPortfolioDetails(List<PortfolioDetailsDto> freelancerPortfolioDetails) {
         this.freelancerPortfolioDetails = freelancerPortfolioDetails;
-    }
-
-    public List<CertificationDetailsDto> getClientCertificationDetails() {
-        return clientCertificationDetails;
-    }
-
-    public void setClientCertificationDetails(List<CertificationDetailsDto> clientCertificationDetails) {
-        this.clientCertificationDetails = clientCertificationDetails;
     }
 
     public List<CertificationDetailsDto> getFreelancerCertificationDetails() {

@@ -355,7 +355,7 @@ public class FreelancerServiceImpl implements FreelancerService {
                                 Collectors.counting()
                         ));
 
-        Map<String, Object> response = new LinkedHashMap<>();
+        Map<String, Object> response = new HashMap<>();
         response.put("totalEarnings", totalEarnings);
         response.put("activeProjects", activeProjects);
         response.put("completedProjects", completedProjects);
