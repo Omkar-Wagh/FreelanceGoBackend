@@ -85,7 +85,7 @@ public class ProfileServiceImpl implements ProfileService {
         User loggedInUser = userRepository.findByEmail(auth.getName())
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
-        if (profileDto.getId() != loggedInUser.getId()) {
+        if (profileDto.getUser().id() != loggedInUser.getId()) {
             throw new UnauthorizedAccessException("Unauthorized to modify this profile.");
         }
 
@@ -152,7 +152,7 @@ public class ProfileServiceImpl implements ProfileService {
         User loggedInUser = userRepository.findByEmail(name)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
-        if (profileDto.getId() != loggedInUser.getId()) {
+        if (profileDto.getUser().id() != loggedInUser.getId()) {
             throw new UnauthorizedAccessException("Unauthorized to modify this profile.");
         }
 
@@ -184,7 +184,7 @@ public class ProfileServiceImpl implements ProfileService {
         User loggedInUser = userRepository.findByEmail(name)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
-        if (profileDto.getId() != loggedInUser.getId()) {
+        if (profileDto.getUser().id() != loggedInUser.getId()) {
             throw new UnauthorizedAccessException("Unauthorized to modify this profile.");
         }
 
@@ -243,7 +243,7 @@ public class ProfileServiceImpl implements ProfileService {
         User loggedInUser = userRepository.findByEmail(name)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
-        if (profileDto.getId() != loggedInUser.getId()) {
+        if (profileDto.getUser().id() != loggedInUser.getId()) {
             throw new UnauthorizedAccessException("Unauthorized to modify this profile.");
         }
 
@@ -293,7 +293,7 @@ public class ProfileServiceImpl implements ProfileService {
         User loggedInUser = userRepository.findByEmail(auth.getName())
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
-        if (profileDto.getId() != loggedInUser.getId()) {
+        if (profileDto.getUser().id() != loggedInUser.getId()) {
             throw new UnauthorizedAccessException("Unauthorized to modify this profile.");
         }
 
@@ -360,7 +360,7 @@ public class ProfileServiceImpl implements ProfileService {
         User loggedInUser = userRepository.findByEmail(name)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
-        if (profileDto.getId() != loggedInUser.getId()) {
+        if (profileDto.getUser().id() != loggedInUser.getId()) {
             throw new UnauthorizedAccessException("Unauthorized to modify this profile.");
         }
 

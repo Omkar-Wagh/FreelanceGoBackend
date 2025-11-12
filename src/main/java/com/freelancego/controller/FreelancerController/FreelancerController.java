@@ -35,7 +35,6 @@ public class FreelancerController {
         return ResponseEntity.ok(freelancerService.getBrowseJobs(page,size,auth.getName()));
     }
 
-
     // My Proposals
     @GetMapping("/review-my-proposals")
     ResponseEntity<List<JobDto>> getJobByStatus(@RequestParam(defaultValue = "0") int page,
@@ -43,7 +42,7 @@ public class FreelancerController {
         return ResponseEntity.ok(freelancerService.getPostByStatus(page, size, auth.getName()));
     }
 
-    // Active Post
+    // Active Projects
     @GetMapping("/active-projects-for-freelancer")
     ResponseEntity<List<ContractDto>> getPostByPhase(Authentication auth){
         return ResponseEntity.ok(freelancerService.getPostByPhase(auth.getName()));
