@@ -36,7 +36,9 @@ public class ProfileServiceImpl implements ProfileService {
     final private ClientMapper clientMapper;
     final private BidRepository bidRepository;
 
-    public ProfileServiceImpl(ProfileRepository profileRepository, ProfileMapper profileMapper, UserRepository userRepository, ClientRepository clientRepository, FreelancerRepository freelancerRepository, SupabaseUtil supabaseUtil, ContractRepository contractRepository, ClientMapper clientMapper, BidRepository bidRepository) {
+    public ProfileServiceImpl(ProfileRepository profileRepository, ProfileMapper profileMapper, UserRepository userRepository,
+                              ClientRepository clientRepository, FreelancerRepository freelancerRepository, SupabaseUtil supabaseUtil,
+                              ContractRepository contractRepository, ClientMapper clientMapper, BidRepository bidRepository) {
         this.profileRepository = profileRepository;
         this.profileMapper = profileMapper;
         this.userRepository = userRepository;
@@ -78,7 +80,8 @@ public class ProfileServiceImpl implements ProfileService {
         return dto;
     }
 
-    public ProfileDto updateFreelancerProfileOneSection(ProfileDto profileDto, MultipartFile profileFile, MultipartFile coverFile, Authentication auth) {
+    public ProfileDto updateFreelancerProfileOneSection(ProfileDto profileDto, MultipartFile profileFile,
+                                                        MultipartFile coverFile, Authentication auth) {
         User loggedInUser = userRepository.findByEmail(auth.getName())
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
@@ -176,7 +179,8 @@ public class ProfileServiceImpl implements ProfileService {
         return profileMapper.toDto(profile);
     }
 
-    public ProfileDto updateFreelancerProfileThreeSection(ProfileDto profileDto,MultipartFile imageFile, MultipartFile portfolioFile, String name) {
+    public ProfileDto updateFreelancerProfileThreeSection(ProfileDto profileDto,MultipartFile imageFile,
+                                                          MultipartFile portfolioFile, String name) {
         User loggedInUser = userRepository.findByEmail(name)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
@@ -234,7 +238,8 @@ public class ProfileServiceImpl implements ProfileService {
         return profileMapper.toDto(profile);
     }
 
-    public ProfileDto updateFreelancerProfileFourSection(ProfileDto profileDto, MultipartFile certificationFile, String name) {
+    public ProfileDto updateFreelancerProfileFourSection(ProfileDto profileDto, MultipartFile certificationFile,
+                                                         String name) {
         User loggedInUser = userRepository.findByEmail(name)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
@@ -283,7 +288,8 @@ public class ProfileServiceImpl implements ProfileService {
         return profileMapper.toDto(profile);
     }
 
-    public ProfileDto updateClientProfileOneSection(ProfileDto profileDto, MultipartFile profileFile, MultipartFile coverFile, Authentication auth) {
+    public ProfileDto updateClientProfileOneSection(ProfileDto profileDto, MultipartFile profileFile,
+                                                    MultipartFile coverFile, Authentication auth) {
         User loggedInUser = userRepository.findByEmail(auth.getName())
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
@@ -381,8 +387,8 @@ public class ProfileServiceImpl implements ProfileService {
         return profileMapper.toDto(profile);
     }
 
-    public List<JobDto> updateClientProfileThreeSection(String name) {
-        User user = userRepository.findByEmail(name).orElseThrow(
+    public List<JobDto> updateClientProfileThreeSection(int id,String name) {
+        User user = userRepository.findById(id).orElseThrow(
                 () -> new UserNotFoundException("user not found"));
 
         Client client = clientRepository.findByUser(user).orElseThrow(
@@ -419,7 +425,6 @@ public class ProfileServiceImpl implements ProfileService {
                     false
             );
             jobDtoList.add(jobDto);
-
         }
         return jobDtoList;
     }

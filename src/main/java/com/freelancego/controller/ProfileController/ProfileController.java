@@ -67,9 +67,9 @@ public class ProfileController {
         return ResponseEntity.ok(profileService.updateClientProfileTwoSection(profileDto,auth.getName()));
     }
 
-    @GetMapping("/profile/update-section-three-for-client")
-    public ResponseEntity<List<JobDto>> updateClientProfileThreeSection(Authentication auth){
-        return ResponseEntity.ok(profileService.updateClientProfileThreeSection(auth.getName()));
+    @GetMapping("/profile/update-section-three-for-client/{id}")
+    public ResponseEntity<List<JobDto>> updateClientProfileThreeSection(@PathVariable("userId")int id, Authentication auth){
+        return ResponseEntity.ok(profileService.updateClientProfileThreeSection(id,auth.getName()));
     }
 
 }
