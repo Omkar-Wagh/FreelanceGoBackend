@@ -31,8 +31,8 @@ public class Profile {
             @AttributeOverride(name = "bannerUrl", column = @Column(name = "freelancer_banner_url")),
             @AttributeOverride(name = "linkedinUrl", column = @Column(name = "freelancer_linkedin_url")),
             @AttributeOverride(name = "githubUrl", column = @Column(name = "freelancer_github_url")),
-            @AttributeOverride(name = "location", column = @Column(name = "location")),
-            @AttributeOverride(name = "rating", column = @Column(name = "rating"))
+            @AttributeOverride(name = "location", column = @Column(name = "freelancer_location")),
+            @AttributeOverride(name = "rating", column = @Column(name = "freelancer_rating"))
     })
     private ProfileDetails freelancerProfile;
 
