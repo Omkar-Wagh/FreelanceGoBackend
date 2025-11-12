@@ -26,7 +26,7 @@ public class ProfileController {
         return ResponseEntity.ok(profileService.getProfile(id,auth));
     }
 
-    @PostMapping("/profile/update-section-one-for-freelancer")
+    @PostMapping("/profile/update-freelancer-profile")
     public ResponseEntity<ProfileDto> updateProfileOneSection(@RequestPart(value = "profile") ProfileDto profileDto,
                                                               @RequestPart(value = "profileImage", required = false) MultipartFile profileFile,
                                                               @RequestPart(value = "coverPhoto", required = false) MultipartFile coverFile,
@@ -34,12 +34,12 @@ public class ProfileController {
         return ResponseEntity.ok(profileService.updateFreelancerProfileOneSection(profileDto, profileFile, coverFile, auth));
     }
 
-    @PostMapping("/profile/update-section-two-for-freelancer")
+    @PostMapping("/profile/update-freelancer-social-links")
     public ResponseEntity<ProfileDto> updateProfileTwoSection(ProfileDto profileDto,Authentication auth){
         return ResponseEntity.ok(profileService.updateFreelancerProfileTwoSection(profileDto,auth.getName()));
     }
 
-    @PostMapping("/profile/update-section-three-for-freelancer")
+    @PostMapping("/profile/update-freelancer-portfolio")
     public ResponseEntity<ProfileDto> updateProfileThreeSection(@RequestPart(value = "profile") ProfileDto profileDto,
                                                                 @RequestPart(value = "portfolio-section",required = false) MultipartFile imageFile,
                                                                 @RequestPart(value = "portfolio-section",required = false) MultipartFile portfolioFile,
@@ -47,14 +47,14 @@ public class ProfileController {
         return ResponseEntity.ok(profileService.updateFreelancerProfileThreeSection(profileDto,imageFile,portfolioFile,auth.getName()));
     }
 
-    @PostMapping("/profile/update-section-four-for-freelancer")
+    @PostMapping("/profile/update-freelancer-certification")
     public ResponseEntity<ProfileDto> updateProfileFourSection(@RequestPart(value = "profile") ProfileDto profileDto,
                                                                @RequestPart(value = "certification-section",required = false) MultipartFile certificationFile,
                                                                Authentication auth){
         return ResponseEntity.ok(profileService.updateFreelancerProfileFourSection(profileDto,certificationFile,auth.getName()));
     }
 
-    @PostMapping("/profile/update-section-one-for-client")
+    @PostMapping("/profile/update-client-profile")
     public ResponseEntity<ProfileDto> updateClientProfileOneSection(@RequestPart(value = "profile") ProfileDto profileDto,
                                                                     @RequestPart(value = "profileImage", required = false) MultipartFile profileFile,
                                                                     @RequestPart(value = "coverPhoto", required = false) MultipartFile coverFile,
@@ -62,12 +62,12 @@ public class ProfileController {
         return ResponseEntity.ok(profileService.updateClientProfileOneSection(profileDto, profileFile, coverFile, auth));
     }
 
-    @PostMapping("/profile/update-section-two-for-client")
+    @PostMapping("/profile/update-client-social-links")
     public ResponseEntity<ProfileDto> updateClientProfileTwoSection(ProfileDto profileDto,Authentication auth){
         return ResponseEntity.ok(profileService.updateClientProfileTwoSection(profileDto,auth.getName()));
     }
 
-    @GetMapping("/profile/update-section-three-for-client/{id}")
+    @GetMapping("/profile/get-client-analytics/{id}")
     public ResponseEntity<List<JobDto>> updateClientProfileThreeSection(@PathVariable("userId")int id, Authentication auth){
         return ResponseEntity.ok(profileService.updateClientProfileThreeSection(id,auth.getName()));
     }
