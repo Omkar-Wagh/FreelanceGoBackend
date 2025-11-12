@@ -13,7 +13,7 @@ import java.util.List;
 public interface ProfileService {
     ProfileDto getProfile(int id, Authentication auth);
     void createProfile(User user);
-    ProfileDto updateFreelancerProfileOneSection(ProfileDto profileDto,MultipartFile profileFile, MultipartFile coverFile, Authentication auth) throws IOException;
+    ProfileDto updateFreelancerProfileOneSection(ProfileDto profileDto,MultipartFile profileFile, MultipartFile coverFile, Authentication auth);
     ProfileDto updateFreelancerProfileTwoSection(ProfileDto profileDto, String name);
     ProfileDto updateFreelancerProfileThreeSection(ProfileDto profileDto,MultipartFile imageFile, MultipartFile portfolioFile, String name);
     ProfileDto updateFreelancerProfileFourSection(ProfileDto profileDto, MultipartFile certificationFile, String name);
