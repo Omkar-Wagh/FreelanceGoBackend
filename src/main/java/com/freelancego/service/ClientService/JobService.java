@@ -24,7 +24,7 @@ public interface JobService {
 
     Page<ContractDto> getHiredFreelancer(int page, int size, String name);
 
-    Map<String, Object> getAnalytics(String name);
+    Map<String, Object> getAnalytics(int id,String name);
 
     Page<BidDto> getBids(int jobId, int page, int size,String email);
 }

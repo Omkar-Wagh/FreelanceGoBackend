@@ -353,8 +353,8 @@ public class JobServiceImpl implements JobService {
         return contracts.map(contractMapper::toDTO);
     }
 
-    public Map<String, Object> getAnalytics(String name) {
-        User user = userRepository.findByEmail(name)
+    public Map<String, Object> getAnalytics(int id,String name) {
+        User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         Client client = clientRepository.findByUser(user)

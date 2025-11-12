@@ -75,9 +75,8 @@ public class JobController {
     }
 
     // Analytics
-    @GetMapping("/client-analytics")
-    ResponseEntity<Map<String, Object>> getAnalytics(Authentication auth){
-        return ResponseEntity.ok(jobService.getAnalytics(auth.getName()));
+    @GetMapping("/client-analytics/{userId}")
+    ResponseEntity<Map<String, Object>> getAnalytics(@PathVariable("userId") int id,Authentication auth){
+        return ResponseEntity.ok(jobService.getAnalytics(id,auth.getName()));
     }
-
 }
