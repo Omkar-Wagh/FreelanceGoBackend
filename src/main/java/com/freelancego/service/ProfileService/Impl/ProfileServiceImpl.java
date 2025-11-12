@@ -6,10 +6,7 @@ import com.freelancego.dto.user.CertificationDetailsDto;
 import com.freelancego.dto.user.PortfolioDetailsDto;
 import com.freelancego.dto.user.ProfileDto;
 import com.freelancego.enums.ContractStatus;
-import com.freelancego.exception.BadRequestException;
-import com.freelancego.exception.InternalServerErrorException;
-import com.freelancego.exception.UnauthorizedAccessException;
-import com.freelancego.exception.UserNotFoundException;
+import com.freelancego.exception.*;
 import com.freelancego.mapper.ClientMapper;
 import com.freelancego.mapper.ProfileMapper;
 import com.freelancego.model.*;
@@ -85,6 +82,10 @@ public class ProfileServiceImpl implements ProfileService {
         User loggedInUser = userRepository.findByEmail(auth.getName())
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
+        if (profileDto == null) {
+            throw new InvalidIdException("profile dto is empty, could perform any operation");
+        }
+
         if (profileDto.getUser().id() != loggedInUser.getId()) {
             throw new UnauthorizedAccessException("Unauthorized to modify this profile.");
         }
@@ -152,6 +153,10 @@ public class ProfileServiceImpl implements ProfileService {
         User loggedInUser = userRepository.findByEmail(name)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
+        if (profileDto == null) {
+            throw new InvalidIdException("profile dto is empty, could perform any operation");
+        }
+
         if (profileDto.getUser().id() != loggedInUser.getId()) {
             throw new UnauthorizedAccessException("Unauthorized to modify this profile.");
         }
@@ -183,6 +188,10 @@ public class ProfileServiceImpl implements ProfileService {
                                                           MultipartFile portfolioFile, String name) {
         User loggedInUser = userRepository.findByEmail(name)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        if (profileDto == null) {
+            throw new InvalidIdException("profile dto is empty, could perform any operation");
+        }
 
         if (profileDto.getUser().id() != loggedInUser.getId()) {
             throw new UnauthorizedAccessException("Unauthorized to modify this profile.");
@@ -243,6 +252,10 @@ public class ProfileServiceImpl implements ProfileService {
         User loggedInUser = userRepository.findByEmail(name)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
+        if (profileDto == null) {
+            throw new InvalidIdException("profile dto is empty, could perform any operation");
+        }
+
         if (profileDto.getUser().id() != loggedInUser.getId()) {
             throw new UnauthorizedAccessException("Unauthorized to modify this profile.");
         }
@@ -292,6 +305,10 @@ public class ProfileServiceImpl implements ProfileService {
                                                     MultipartFile coverFile, Authentication auth) {
         User loggedInUser = userRepository.findByEmail(auth.getName())
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        if (profileDto == null) {
+            throw new InvalidIdException("profile dto is empty, could perform any operation");
+        }
 
         if (profileDto.getUser().id() != loggedInUser.getId()) {
             throw new UnauthorizedAccessException("Unauthorized to modify this profile.");
@@ -360,6 +377,10 @@ public class ProfileServiceImpl implements ProfileService {
         User loggedInUser = userRepository.findByEmail(name)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
+        if (profileDto == null) {
+            throw new InvalidIdException("profile dto is empty, could perform any operation");
+        }
+
         if (profileDto.getUser().id() != loggedInUser.getId()) {
             throw new UnauthorizedAccessException("Unauthorized to modify this profile.");
         }
@@ -387,7 +408,7 @@ public class ProfileServiceImpl implements ProfileService {
         return profileMapper.toDto(profile);
     }
 
-    public List<JobDto> updateClientProfileThreeSection(int id,String name) {
+    public List<JobDto> getClientProfileThreeSection(int id,String name) {
         User user = userRepository.findById(id).orElseThrow(
                 () -> new UserNotFoundException("user not found"));
 

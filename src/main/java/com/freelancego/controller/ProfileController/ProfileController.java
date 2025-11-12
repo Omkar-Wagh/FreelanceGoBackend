@@ -68,7 +68,7 @@ public class ProfileController {
 
     @GetMapping("/profile/get-client-analytics/{id}")
     public ResponseEntity<List<JobDto>> updateClientProfileThreeSection(@PathVariable("userId")int id, Authentication auth){
-        return ResponseEntity.ok(profileService.updateClientProfileThreeSection(id,auth.getName()));
+        return ResponseEntity.ok(profileService.getClientProfileThreeSection(id,auth.getName()));
     }
 
 }

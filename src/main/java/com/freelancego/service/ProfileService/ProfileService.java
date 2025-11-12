@@ -20,5 +20,5 @@ public interface ProfileService {
 
     ProfileDto updateClientProfileOneSection(ProfileDto profileDto, MultipartFile profileFile, MultipartFile coverFile, Authentication auth);
     ProfileDto updateClientProfileTwoSection(ProfileDto profileDto, String name);
-    List<JobDto> updateClientProfileThreeSection(int id,String name);
+    List<JobDto> getClientProfileThreeSection(int id,String name);
 }
