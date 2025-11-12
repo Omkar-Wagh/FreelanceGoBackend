@@ -1,4 +1,5 @@
 package com.freelancego.service.ClientService.impl;
+
 import com.freelancego.enums.JobStatus;
 import com.freelancego.repo.JobRepository;
 import org.springframework.scheduling.annotation.Scheduled;
