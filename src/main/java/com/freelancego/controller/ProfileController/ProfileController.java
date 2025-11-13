@@ -34,7 +34,7 @@ public class ProfileController {
     }
 
     @PostMapping("/profile/update-freelancer-social-links")
-    public ResponseEntity<ProfileDto> updateProfileTwoSection(ProfileDto profileDto,Authentication auth){
+    public ResponseEntity<ProfileDto> updateProfileTwoSection(@RequestBody ProfileDto profileDto,Authentication auth){
         return ResponseEntity.ok(profileService.updateFreelancerProfileTwoSection(profileDto,auth.getName()));
     }
 
@@ -62,7 +62,7 @@ public class ProfileController {
     }
 
     @PostMapping("/profile/update-client-social-links")
-    public ResponseEntity<ProfileDto> updateClientProfileTwoSection(ProfileDto profileDto,Authentication auth){
+    public ResponseEntity<ProfileDto> updateClientProfileTwoSection(@RequestBody ProfileDto profileDto,Authentication auth){
         return ResponseEntity.ok(profileService.updateClientProfileTwoSection(profileDto,auth.getName()));
     }
 
