@@ -1,0 +1,62 @@
+package com.freelancego.model;
+
+import com.freelancego.enums.SubmissionStatus;
+import jakarta.persistence.*;
+import java.time.OffsetDateTime;
+
+@Entity
+public class Submission {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
+
+    private String fileUrl;
+    private String notes;
+
+    @Column(columnDefinition = "TIMESTAMP WITH TIME ZONE", updatable = false, nullable = false)
+    private OffsetDateTime submittedAt = OffsetDateTime.now();
+
+    @Enumerated(EnumType.STRING)
+    private SubmissionStatus status = SubmissionStatus.PENDING_REVIEW;
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public String getFileUrl() {
+        return fileUrl;
+    }
+
+    public void setFileUrl(String fileUrl) {
+        this.fileUrl = fileUrl;
+    }
+
+    public String getNotes() {
+        return notes;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = notes;
+    }
+
+    public OffsetDateTime getSubmittedAt() {
+        return submittedAt;
+    }
+
+    public void setSubmittedAt(OffsetDateTime submittedAt) {
+        this.submittedAt = submittedAt;
+    }
+
+    public SubmissionStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(SubmissionStatus status) {
+        this.status = status;
+    }
+}

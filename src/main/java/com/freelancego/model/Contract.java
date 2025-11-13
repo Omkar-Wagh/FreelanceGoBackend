@@ -12,7 +12,7 @@ public class Contract {
     private int id;
 
     @Enumerated(EnumType.STRING)
-    private ContractStatus status; // ACTIVE, COMPLETED, CANCELLED
+    private ContractStatus status = ContractStatus.PENDING;
 
     private OffsetDateTime createdAt;
 

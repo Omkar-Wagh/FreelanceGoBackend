@@ -1,8 +1,9 @@
 package com.freelancego.model;
 
 import com.freelancego.enums.MilestoneStatus;
+import com.freelancego.enums.PaymentStatus;
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 @Entity
 public class Milestone {
@@ -11,21 +12,65 @@ public class Milestone {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
+    private String title;
     private String description;
 
-    private Double amount;
+    @Column(columnDefinition = "TIMESTAMP WITH TIME ZONE", updatable = false, nullable = false)
+    private OffsetDateTime createdAt = OffsetDateTime.now();
 
     @Enumerated(EnumType.STRING)
-    private MilestoneStatus status;
+    private MilestoneStatus status = MilestoneStatus.PENDING;
 
-    private LocalDateTime createdAt;
-    private LocalDateTime releasedAt;
-    private LocalDateTime completedAt;
+    @Enumerated(EnumType.STRING)
+    private PaymentStatus paymentStatus = PaymentStatus.NOT_PAID;
 
     @ManyToOne(optional = false)
+    @JoinColumn(name = "contract_id")
     private Contract contract;
 
-    @OneToOne(optional = true)
-    @JoinColumn(name = "payment_id")
-    private Payment payment;
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "submission_id")
+    private Submission submission;
+
+    public Double getAmountFromBid() {
+        return contract != null && contract.getAcceptedBid() != null
+                ? contract.getAcceptedBid().getAmount()
+                : 0.0;
+    }
+
+    public int getMilestoneProgress(MilestoneStatus status) {
+        return switch (status) {
+            case PENDING -> 0;
+            case IN_PROGRESS -> 25;
+            case SUBMITTED -> 70;
+            case REVISION_REQUESTED -> 50;
+            case APPROVED -> 90;
+            case COMPLETED -> 100;
+            case CANCELLED -> 0;
+        };
+    }
+
+    public int getId() { return id; }
+    public void setId(int id) { this.id = id; }
+
+    public String getTitle() { return title; }
+    public void setTitle(String title) { this.title = title; }
+
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+
+    public OffsetDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(OffsetDateTime createdAt) { this.createdAt = createdAt; }
+
+    public MilestoneStatus getStatus() { return status; }
+    public void setStatus(MilestoneStatus status) { this.status = status; }
+
+    public PaymentStatus getPaymentStatus() { return paymentStatus; }
+    public void setPaymentStatus(PaymentStatus paymentStatus) { this.paymentStatus = paymentStatus; }
+
+    public Contract getContract() { return contract; }
+    public void setContract(Contract contract) { this.contract = contract; }
+
+    public Submission getSubmission() { return submission; }
+    public void setSubmission(Submission submission) { this.submission = submission; }
 }
