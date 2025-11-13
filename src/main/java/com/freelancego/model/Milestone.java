@@ -14,6 +14,9 @@ public class Milestone {
 
     private String title;
     private String description;
+    private double amount;
+    @Column(columnDefinition = "TIMESTAMP WITH TIME ZONE", updatable = false, nullable = false)
+    private OffsetDateTime dueDate;
 
     @Column(columnDefinition = "TIMESTAMP WITH TIME ZONE", updatable = false, nullable = false)
     private OffsetDateTime createdAt = OffsetDateTime.now();
@@ -59,6 +62,12 @@ public class Milestone {
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
 
+    public double getAmount() { return amount; }
+    public void setAmount(double amount) { this.amount = amount; }
+
+    public OffsetDateTime getDueDate() { return dueDate; }
+    public void setDueDate(OffsetDateTime dueDate) { this.dueDate = dueDate; }
+
     public OffsetDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(OffsetDateTime createdAt) { this.createdAt = createdAt; }
 
@@ -73,4 +82,5 @@ public class Milestone {
 
     public Submission getSubmission() { return submission; }
     public void setSubmission(Submission submission) { this.submission = submission; }
+
 }
