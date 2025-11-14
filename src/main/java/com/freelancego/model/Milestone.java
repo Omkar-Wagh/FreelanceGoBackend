@@ -2,7 +2,9 @@ package com.freelancego.model;
 
 import com.freelancego.enums.MilestoneStatus;
 import com.freelancego.enums.PaymentStatus;
+import com.freelancego.enums.VerificationStatus;
 import jakarta.persistence.*;
+
 import java.time.OffsetDateTime;
 
 @Entity
@@ -15,10 +17,11 @@ public class Milestone {
     private String title;
     private String description;
     private double amount;
-    @Column(columnDefinition = "TIMESTAMP WITH TIME ZONE", updatable = false, nullable = false)
+
+    @Column(columnDefinition = "TIMESTAMP WITH TIME ZONE", nullable = false)
     private OffsetDateTime dueDate;
 
-    @Column(columnDefinition = "TIMESTAMP WITH TIME ZONE", updatable = false, nullable = false)
+    @Column(columnDefinition = "TIMESTAMP WITH TIME ZONE", nullable = false, updatable = false)
     private OffsetDateTime createdAt = OffsetDateTime.now();
 
     @Enumerated(EnumType.STRING)
@@ -26,6 +29,9 @@ public class Milestone {
 
     @Enumerated(EnumType.STRING)
     private PaymentStatus paymentStatus = PaymentStatus.NOT_PAID;
+
+    @Enumerated(EnumType.STRING)
+    private VerificationStatus verificationStatus = VerificationStatus.PENDING_REVIEW;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "contract_id")
@@ -35,14 +41,16 @@ public class Milestone {
     @JoinColumn(name = "submission_id")
     private Submission submission;
 
-    public Double getAmountFromBid() {
-        return contract != null && contract.getAcceptedBid() != null
-                ? contract.getAcceptedBid().getAmount()
-                : 0.0;
-    }
+    @Column(length = 1000)
+    private String clientFeedback;
 
-    public int getMilestoneProgress(MilestoneStatus status) {
-        return switch (status) {
+    private boolean locked = false;
+
+    public void lock() { this.locked = true; }
+    public boolean isLocked() { return locked; }
+
+    public int getMilestoneProgress() {
+        return switch (this.status) {
             case PENDING -> 0;
             case IN_PROGRESS -> 25;
             case SUBMITTED -> 70;
@@ -53,34 +61,103 @@ public class Milestone {
         };
     }
 
-    public int getId() { return id; }
-    public void setId(int id) { this.id = id; }
+    public int getId() {
+        return id;
+    }
 
-    public String getTitle() { return title; }
-    public void setTitle(String title) { this.title = title; }
+    public void setId(int id) {
+        this.id = id;
+    }
 
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
+    public String getTitle() {
+        return title;
+    }
 
-    public double getAmount() { return amount; }
-    public void setAmount(double amount) { this.amount = amount; }
+    public void setTitle(String title) {
+        this.title = title;
+    }
 
-    public OffsetDateTime getDueDate() { return dueDate; }
-    public void setDueDate(OffsetDateTime dueDate) { this.dueDate = dueDate; }
+    public String getDescription() {
+        return description;
+    }
 
-    public OffsetDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(OffsetDateTime createdAt) { this.createdAt = createdAt; }
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
-    public MilestoneStatus getStatus() { return status; }
-    public void setStatus(MilestoneStatus status) { this.status = status; }
+    public double getAmount() {
+        return amount;
+    }
 
-    public PaymentStatus getPaymentStatus() { return paymentStatus; }
-    public void setPaymentStatus(PaymentStatus paymentStatus) { this.paymentStatus = paymentStatus; }
+    public void setAmount(double amount) {
+        this.amount = amount;
+    }
 
-    public Contract getContract() { return contract; }
-    public void setContract(Contract contract) { this.contract = contract; }
+    public OffsetDateTime getDueDate() {
+        return dueDate;
+    }
 
-    public Submission getSubmission() { return submission; }
-    public void setSubmission(Submission submission) { this.submission = submission; }
+    public void setDueDate(OffsetDateTime dueDate) {
+        this.dueDate = dueDate;
+    }
 
+    public OffsetDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(OffsetDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public MilestoneStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(MilestoneStatus status) {
+        this.status = status;
+    }
+
+    public PaymentStatus getPaymentStatus() {
+        return paymentStatus;
+    }
+
+    public void setPaymentStatus(PaymentStatus paymentStatus) {
+        this.paymentStatus = paymentStatus;
+    }
+
+    public VerificationStatus getVerificationStatus() {
+        return verificationStatus;
+    }
+
+    public void setVerificationStatus(VerificationStatus verificationStatus) {
+        this.verificationStatus = verificationStatus;
+    }
+
+    public Contract getContract() {
+        return contract;
+    }
+
+    public void setContract(Contract contract) {
+        this.contract = contract;
+    }
+
+    public Submission getSubmission() {
+        return submission;
+    }
+
+    public void setSubmission(Submission submission) {
+        this.submission = submission;
+    }
+
+    public String getClientFeedback() {
+        return clientFeedback;
+    }
+
+    public void setClientFeedback(String clientFeedback) {
+        this.clientFeedback = clientFeedback;
+    }
+
+    public void setLocked(boolean locked) {
+        this.locked = locked;
+    }
 }
