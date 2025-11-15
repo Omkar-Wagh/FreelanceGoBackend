@@ -146,7 +146,12 @@ public class ProfileServiceImpl implements ProfileService {
         if (freelancer != null) freelancerRepository.save(freelancer);
         if (profile != null) profileRepository.save(profile);
 
-        return profileMapper.toDto(profile);
+        ProfileDto dto = profileMapper.toDto(profile);
+
+        if(profileDto.getUser().id() == loggedInUser.getId()){
+            dto.setOwnProfile(true);
+        }
+        return dto;
     }
 
     public ProfileDto updateFreelancerProfileTwoSection(ProfileDto profileDto, String name) {
@@ -181,7 +186,11 @@ public class ProfileServiceImpl implements ProfileService {
         if (freelancer != null) freelancerRepository.save(freelancer);
         if (profile != null) profileRepository.save(profile);
 
-        return profileMapper.toDto(profile);
+        ProfileDto dto = profileMapper.toDto(profile);
+        if(profileDto.getUser().id() == loggedInUser.getId()){
+            dto.setOwnProfile(true);
+        }
+        return dto;
     }
 
     public ProfileDto updateFreelancerProfileThreeSection(ProfileDto profileDto,MultipartFile imageFile,
@@ -244,7 +253,11 @@ public class ProfileServiceImpl implements ProfileService {
             profile.setFreelancerPortfolioDetails(portfolioDetailsList);
             profileRepository.save(profile);
         }
-        return profileMapper.toDto(profile);
+        ProfileDto dto = profileMapper.toDto(profile);
+        if(profileDto.getUser().id() == loggedInUser.getId()){
+            dto.setOwnProfile(true);
+        }
+        return dto;
     }
 
     public ProfileDto updateFreelancerProfileFourSection(ProfileDto profileDto, MultipartFile certificationFile,
@@ -297,8 +310,11 @@ public class ProfileServiceImpl implements ProfileService {
             profile.setFreelancerCertificationDetails(existingCertifications);
             profileRepository.save(profile);
         }
-
-        return profileMapper.toDto(profile);
+        ProfileDto dto = profileMapper.toDto(profile);
+        if(profileDto.getUser().id() == loggedInUser.getId()){
+            dto.setOwnProfile(true);
+        }
+        return dto;
     }
 
     public ProfileDto updateClientProfileOneSection(ProfileDto profileDto, MultipartFile profileFile,
@@ -370,7 +386,11 @@ public class ProfileServiceImpl implements ProfileService {
         if (client != null) clientRepository.save(client);
         if (profile != null) profileRepository.save(profile);
 
-        return profileMapper.toDto(profile);
+        ProfileDto dto = profileMapper.toDto(profile);
+        if(profileDto.getUser().id() == loggedInUser.getId()){
+            dto.setOwnProfile(true);
+        }
+        return dto;
     }
 
     public ProfileDto updateClientProfileTwoSection(ProfileDto profileDto, String name) {
@@ -405,7 +425,11 @@ public class ProfileServiceImpl implements ProfileService {
         if (client != null) clientRepository.save(client);
         if (profile != null) profileRepository.save(profile);
 
-        return profileMapper.toDto(profile);
+        ProfileDto dto = profileMapper.toDto(profile);
+        if(profileDto.getUser().id() == loggedInUser.getId()){
+            dto.setOwnProfile(true);
+        }
+        return dto;
     }
 
     public List<JobDto> getClientProfileThreeSection(int id,String name) {
