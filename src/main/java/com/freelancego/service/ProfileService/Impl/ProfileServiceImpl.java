@@ -71,7 +71,7 @@ public class ProfileServiceImpl implements ProfileService {
 
         Profile profile = profileRepository.findByUser(user).orElse(null);
         ProfileDto dto = profileMapper.toDto(profile);
-        if(loggedInUser.getId() == id){
+        if(loggedInUser.getId() == id && dto != null){
             dto.setOwnProfile(true);
         }
         return dto;
@@ -148,7 +148,7 @@ public class ProfileServiceImpl implements ProfileService {
 
         ProfileDto dto = profileMapper.toDto(profile);
 
-        if(profileDto.getUser().id() == loggedInUser.getId()){
+        if(profileDto.getUser().id() == loggedInUser.getId() && dto != null){
             dto.setOwnProfile(true);
         }
         return dto;
@@ -187,7 +187,7 @@ public class ProfileServiceImpl implements ProfileService {
         if (profile != null) profileRepository.save(profile);
 
         ProfileDto dto = profileMapper.toDto(profile);
-        if(profileDto.getUser().id() == loggedInUser.getId()){
+        if(profileDto.getUser().id() == loggedInUser.getId() && dto != null){
             dto.setOwnProfile(true);
         }
         return dto;
@@ -254,7 +254,7 @@ public class ProfileServiceImpl implements ProfileService {
             profileRepository.save(profile);
         }
         ProfileDto dto = profileMapper.toDto(profile);
-        if(profileDto.getUser().id() == loggedInUser.getId()){
+        if(profileDto.getUser().id() == loggedInUser.getId() && dto != null){
             dto.setOwnProfile(true);
         }
         return dto;
@@ -311,7 +311,7 @@ public class ProfileServiceImpl implements ProfileService {
             profileRepository.save(profile);
         }
         ProfileDto dto = profileMapper.toDto(profile);
-        if(profileDto.getUser().id() == loggedInUser.getId()){
+        if(profileDto.getUser().id() == loggedInUser.getId() && dto != null){
             dto.setOwnProfile(true);
         }
         return dto;
@@ -387,7 +387,7 @@ public class ProfileServiceImpl implements ProfileService {
         if (profile != null) profileRepository.save(profile);
 
         ProfileDto dto = profileMapper.toDto(profile);
-        if(profileDto.getUser().id() == loggedInUser.getId()){
+        if(profileDto.getUser().id() == loggedInUser.getId() && dto != null){
             dto.setOwnProfile(true);
         }
         return dto;
@@ -426,7 +426,7 @@ public class ProfileServiceImpl implements ProfileService {
         if (profile != null) profileRepository.save(profile);
 
         ProfileDto dto = profileMapper.toDto(profile);
-        if(profileDto.getUser().id() == loggedInUser.getId()){
+        if(profileDto.getUser().id() == loggedInUser.getId() && dto != null){
             dto.setOwnProfile(true);
         }
         return dto;
