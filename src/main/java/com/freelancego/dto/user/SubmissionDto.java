@@ -9,6 +9,7 @@ public class SubmissionDto {
     private String notes;
     private OffsetDateTime submittedAt;
     private String status;
+    private String clientRemark;
 
 
     public int getId() {
@@ -49,5 +50,13 @@ public class SubmissionDto {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getClientRemark() {
+        return clientRemark;
+    }
+
+    public void setClientRemark(String clientRemark) {
+        this.clientRemark = clientRemark;
     }
 }

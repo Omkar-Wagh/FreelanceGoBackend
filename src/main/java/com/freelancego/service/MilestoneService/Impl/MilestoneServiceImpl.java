@@ -1,9 +1,13 @@
 package com.freelancego.service.MilestoneService.Impl;
 
+import com.freelancego.common.utils.SupabaseUtil;
 import com.freelancego.dto.user.MilestoneDto;
+import com.freelancego.dto.user.SubmissionDto;
 import com.freelancego.enums.MilestoneStatus;
+import com.freelancego.enums.SubmissionStatus;
 import com.freelancego.enums.VerificationStatus;
 import com.freelancego.exception.BadRequestException;
+import com.freelancego.exception.InternalServerErrorException;
 import com.freelancego.exception.UnauthorizedAccessException;
 import com.freelancego.exception.UserNotFoundException;
 import com.freelancego.mapper.MilestoneMapper;
@@ -12,6 +16,7 @@ import com.freelancego.model.*;
 import com.freelancego.repo.*;
 import com.freelancego.service.MilestoneService.MilestoneService;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -26,8 +31,9 @@ public class MilestoneServiceImpl implements MilestoneService {
     final private SubmissionMapper submissionMapper;
     final private ClientRepository clientRepository;
     final private FreelancerRepository freelancerRepository;
+    final private SupabaseUtil supabaseUtil;
 
-    public MilestoneServiceImpl(UserRepository userRepository, ContractRepository contractRepository, MilestoneRepository milestoneRepository, MilestoneMapper milestoneMapper, SubmissionRepository submissionRepository, SubmissionMapper submissionMapper, ClientRepository clientRepository, FreelancerRepository freelancerRepository) {
+    public MilestoneServiceImpl(UserRepository userRepository, ContractRepository contractRepository, MilestoneRepository milestoneRepository, MilestoneMapper milestoneMapper, SubmissionRepository submissionRepository, SubmissionMapper submissionMapper, ClientRepository clientRepository, FreelancerRepository freelancerRepository, SupabaseUtil supabaseUtil) {
         this.userRepository = userRepository;
         this.contractRepository = contractRepository;
         this.milestoneRepository = milestoneRepository;
@@ -36,6 +42,7 @@ public class MilestoneServiceImpl implements MilestoneService {
         this.submissionMapper = submissionMapper;
         this.clientRepository = clientRepository;
         this.freelancerRepository = freelancerRepository;
+        this.supabaseUtil = supabaseUtil;
     }
 
     public List<MilestoneDto> getMileStone(int contractId,String name) {
@@ -181,6 +188,171 @@ public class MilestoneServiceImpl implements MilestoneService {
             milestone.setLocked(true);
         }
         if(milestone != null) milestoneRepository.save(milestone);
+        return milestoneMapper.toDTO(milestone);
+    }
+
+    public SubmissionDto getSubmission(int milestoneId, int clientId, String name) {
+        User user = userRepository.findByEmail(name)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        Client client = clientRepository.findByUser(user)
+                .orElseThrow(()-> new UserNotFoundException("client not found"));
+
+        if(clientId != client.getId()){
+            throw new UnauthorizedAccessException("your are not authorised to view submission");
+        }
+        Milestone milestone = milestoneRepository.findById(milestoneId)
+                .orElseThrow(()-> new UserNotFoundException("milestone not found"));
+        Submission submission = null;
+        if(milestone != null){
+            submission = milestone.getSubmission();
+        }
+        return submissionMapper.toDTO(submission);
+    }
+
+    public SubmissionDto createSubmission(SubmissionDto submissionDto, MultipartFile file,int milestoneId, int freelancerId, String name) {
+        User user = userRepository.findByEmail(name)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        Freelancer freelancer = freelancerRepository.findByUser(user)
+                .orElseThrow(() -> new UserNotFoundException("freelancer not found"));
+
+        if (freelancerId != freelancer.getId()) {
+            throw new UnauthorizedAccessException("your are not authorised to create submission");
+        }
+        Milestone milestone = milestoneRepository.findById(milestoneId)
+                .orElseThrow(() -> new UserNotFoundException("milestone not found"));
+
+        if (milestone.getContract().getFreelancer().getId() != freelancer.getId()) {
+            throw new BadRequestException("unauthorised to perform submission operation");
+        }
+        Submission submission = submissionMapper.toEntity(submissionDto);
+
+        String fileUrl = null;
+        if (file != null && !file.isEmpty()) {
+            String filename = file.getOriginalFilename();
+            String regex = "(?i).*\\.(pdf|png|jpg|jpeg|pptx|docx)$";
+            if (filename != null && filename.matches(regex)) {
+                try {
+                    fileUrl = supabaseUtil.uploadFile(file);
+                } catch (Exception e) {
+                    throw new InternalServerErrorException("Error while uploading file: " + e.getMessage());
+                }
+            }
+        }
+        submission.setFileUrl(fileUrl);
+        submission.setStatus(SubmissionStatus.PENDING_REVIEW);
+        submissionRepository.save(submission);
+        milestone.setStatus(MilestoneStatus.SUBMITTED);
+        milestone.setSubmission(submission);
+        milestoneRepository.save(milestone);
+        return submissionMapper.toDTO(submission);
+    }
+
+    public SubmissionDto updateSubmission(SubmissionDto submissionDto, MultipartFile file, int milestoneId, int freelancerId, String name) {
+        User user = userRepository.findByEmail(name)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        Freelancer freelancer = freelancerRepository.findByUser(user)
+                .orElseThrow(() -> new UserNotFoundException("freelancer not found"));
+
+        if (freelancerId != freelancer.getId()) {
+            throw new UnauthorizedAccessException("your are not authorised to create submission");
+        }
+        Milestone milestone = milestoneRepository.findById(milestoneId)
+                .orElseThrow(() -> new UserNotFoundException("milestone not found"));
+
+        if (milestone.getContract().getFreelancer().getId() != freelancer.getId()) {
+            throw new BadRequestException("unauthorised to perform submission operation");
+        }
+        Submission submission = submissionRepository.findById(submissionDto.getId()).orElse(null);
+
+        String fileUrl = null;
+        if (file != null && !file.isEmpty()) {
+            String filename = file.getOriginalFilename();
+            String regex = "(?i).*\\.(pdf|png|jpg|jpeg|pptx|docx)$";
+            if (filename != null && filename.matches(regex)) {
+                try {
+                    fileUrl = supabaseUtil.uploadFile(file);
+                } catch (Exception e) {
+                    throw new InternalServerErrorException("Error while uploading file: " + e.getMessage());
+                }
+            }
+        }
+
+        if(submission != null && submission.getStatus() != SubmissionStatus.APPROVED){
+            submission.setNotes(submissionDto.getNotes());
+            submission.setFileUrl(fileUrl);
+            submission.setStatus(SubmissionStatus.PENDING_REVIEW);
+            submissionRepository.save(submission);
+            milestone.setStatus(MilestoneStatus.SUBMITTED);
+            milestone.setSubmission(submission);
+            milestoneRepository.save(milestone);
+        }
+        return submissionMapper.toDTO(submission);
+    }
+
+    public SubmissionDto editSubmission(SubmissionDto submissionDto, int clientId, String name) {
+        User user = userRepository.findByEmail(name)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        Client client = clientRepository.findByUser(user)
+                .orElseThrow(()-> new UserNotFoundException("client not found"));
+
+        if(clientId != client.getId()){
+            throw new UnauthorizedAccessException("your are not authorised to provide remark");
+        }
+
+        Submission submission = submissionRepository.findById(submissionDto.getId())
+                .orElseThrow(() -> new UserNotFoundException("submission not found"));
+
+        Milestone milestone = milestoneRepository.findById(submission.getId())
+                .orElseThrow(()-> new UserNotFoundException("milestone not found"));
+
+        if (milestone.getContract().getClient().getId() != client.getId()) {
+            throw new BadRequestException("unauthorised to provide submission remark");
+        }
+
+        if(submissionDto != null && submission.getStatus() != SubmissionStatus.APPROVED){
+            submission.setClientRemark(submissionDto.getClientRemark());
+            submission.setStatus(SubmissionStatus.REVISION_REQUESTED);
+            submissionRepository.save(submission);
+            milestone.setSubmission(submission);
+            milestone.setStatus(MilestoneStatus.REVISION_REQUESTED);
+            milestoneRepository.save(milestone);
+        }
+
+        return submissionMapper.toDTO(submission);
+    }
+
+    public MilestoneDto approveSubmission(int submissionId, int clientId, String name) {
+        User user = userRepository.findByEmail(name)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        Client client = clientRepository.findByUser(user)
+                .orElseThrow(()-> new UserNotFoundException("client not found"));
+
+        if(clientId != client.getId()){
+            throw new UnauthorizedAccessException("your are not authorised to approve submission");
+        }
+
+        Submission submission = submissionRepository.findById(submissionId)
+                .orElseThrow(() -> new UserNotFoundException("submission not found"));
+
+        Milestone milestone = milestoneRepository.findById(submission.getId())
+                .orElseThrow(()-> new UserNotFoundException("milestone not found"));
+
+        if (milestone.getContract().getClient().getId() != client.getId()) {
+            throw new BadRequestException("unauthorised to provide submission approval");
+        }
+
+        submission.setStatus(SubmissionStatus.APPROVED);
+
+        if(submission != null) submissionRepository.save(submission);
+        milestone.setSubmission(submission);
+        milestone.setStatus(MilestoneStatus.SUBMITTED);
+        if(milestone != null) milestoneRepository.save(milestone);
+
         return milestoneMapper.toDTO(milestone);
     }
 

@@ -20,6 +20,9 @@ public class Submission {
     @Enumerated(EnumType.STRING)
     private SubmissionStatus status = SubmissionStatus.PENDING_REVIEW;
 
+    @Column(length = 1000)
+    private String clientRemark;
+
     public int getId() {
         return id;
     }
@@ -58,5 +61,13 @@ public class Submission {
 
     public void setStatus(SubmissionStatus status) {
         this.status = status;
+    }
+
+    public String getClientRemark() {
+        return clientRemark;
+    }
+
+    public void setClientRemark(String clientRemark) {
+        this.clientRemark = clientRemark;
     }
 }
