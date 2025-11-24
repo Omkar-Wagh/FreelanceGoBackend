@@ -51,6 +51,7 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
             existingUser.setImageData(image);
             existingUser.setRole(Role.ROLE_USER_PENDING);
             userRepository.save(existingUser);
+
         }
         // Generate JWT token
         String role = existingUser.getRole().name();

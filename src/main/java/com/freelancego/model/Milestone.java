@@ -14,6 +14,7 @@ public class Milestone {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
+    private int milestoneNumber;
     private String title;
     private String description;
     private double amount;
@@ -67,6 +68,14 @@ public class Milestone {
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    public int getMilestoneNumber() {
+        return milestoneNumber;
+    }
+
+    public void setMilestoneNumber(int milestoneNumber) {
+        this.milestoneNumber = milestoneNumber;
     }
 
     public String getTitle() {
