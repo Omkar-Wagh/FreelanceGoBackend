@@ -9,3 +9,4 @@ public enum MilestoneStatus {
     COMPLETED,            // Payment released and milestone closed
     CANCELLED             // Cancelled before completion
 }
+// related with final submission work and not with verification status

@@ -50,17 +50,17 @@ public class Milestone {
     public void lock() { this.locked = true; }
     public boolean isLocked() { return locked; }
 
-    public int getMilestoneProgress() {
-        return switch (this.status) {
-            case PENDING -> 0;
-            case IN_PROGRESS -> 25;
-            case SUBMITTED -> 70;
-            case REVISION_REQUESTED -> 50;
-            case APPROVED -> 90;
-            case COMPLETED -> 100;
-            case CANCELLED -> 0;
-        };
-    }
+//    public int getMilestoneProgress() {
+//        return switch (this.status) {
+//            case PENDING -> 0;
+//            case IN_PROGRESS -> 25;
+//            case SUBMITTED -> 70;
+//            case REVISION_REQUESTED -> 50;
+//            case APPROVED -> 90;
+//            case COMPLETED -> 100;
+//            case CANCELLED -> 0;
+//        };
+//    }
 
     public int getId() {
         return id;

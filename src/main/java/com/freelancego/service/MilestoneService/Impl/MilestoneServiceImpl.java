@@ -1,6 +1,9 @@
 package com.freelancego.service.MilestoneService.Impl;
 
 import com.freelancego.dto.user.MilestoneDto;
+import com.freelancego.enums.MilestoneStatus;
+import com.freelancego.enums.VerificationStatus;
+import com.freelancego.exception.BadRequestException;
 import com.freelancego.exception.UnauthorizedAccessException;
 import com.freelancego.exception.UserNotFoundException;
 import com.freelancego.mapper.MilestoneMapper;
@@ -82,11 +85,12 @@ public class MilestoneServiceImpl implements MilestoneService {
 
         if (milestone.getMilestoneNumber() != nextAllowedSequence) {
             throw new IllegalArgumentException(
-                    "Invalid milestone number. Expected: " + nextAllowedSequence
-            );
+                    "Invalid milestone number. Expected: " + nextAllowedSequence);
         }
 
         milestone.setContract(contract);
+        milestone.setClientFeedback(null);
+        milestone.setStatus(MilestoneStatus.IN_PROGRESS);
 
         if (milestoneDto.getSubmission() != null) {
             Submission submission = submissionMapper.toEntity(milestoneDto.getSubmission());
@@ -96,6 +100,88 @@ public class MilestoneServiceImpl implements MilestoneService {
 
         Milestone saved = milestoneRepository.save(milestone);
         return milestoneMapper.toDTO(saved);
+    }
+
+    public MilestoneDto updateMilestone(MilestoneDto milestoneDto, int freelancerId, String name) {
+        User user = userRepository.findByEmail(name)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        Freelancer freelancer = freelancerRepository.findByUser(user)
+                .orElseThrow(()-> new UserNotFoundException("freelancer not found"));
+
+        if(freelancerId != freelancer.getId()){
+            throw new UnauthorizedAccessException("your are not authorised to create the milestone");
+        }
+
+        Contract contract = contractRepository.findById(milestoneDto.getContract().id())
+                .orElseThrow(() -> new UserNotFoundException("Contract not found"));
+
+        if(contract.getFreelancer().getId() != user.getId()){
+            throw new UnauthorizedAccessException("your are not authorised to create the milestone");
+        }
+
+        Milestone milestone = milestoneRepository.findById(milestoneDto.getId())
+                .orElseThrow(()-> new UserNotFoundException("milestone not found"));
+
+        if(milestone != null){
+           if(milestone.getVerificationStatus() == VerificationStatus.APPROVED_BY_CLIENT && milestone.isLocked()){
+               throw new BadRequestException("your are not allowed to update the approved milestone");
+           }
+        }
+        if(milestoneDto != null && milestone != null){
+            milestone.setTitle(milestoneDto.getTitle());
+            milestone.setDescription(milestoneDto.getDescription());
+            milestone.setAmount(milestoneDto.getAmount());
+            milestone.setDueDate(milestoneDto.getDueDate());
+        }
+        if(milestone != null) milestoneRepository.save(milestone);
+        return milestoneMapper.toDTO(milestone);
+    }
+
+    public MilestoneDto editMilestone(MilestoneDto milestoneDto, int clientId, String name) {
+        User user = userRepository.findByEmail(name)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        Client client = clientRepository.findByUser(user)
+                .orElseThrow(()-> new UserNotFoundException("client not found"));
+
+        if(clientId != client.getId()){
+            throw new UnauthorizedAccessException("your are not authorised to edit the milestone");
+        }
+
+        Milestone milestone = milestoneRepository.findById(milestoneDto.getId())
+                .orElseThrow(()-> new UserNotFoundException("milestone not found"));
+        if(milestone != null){
+            if(milestone.isLocked() && milestone.getVerificationStatus() == VerificationStatus.APPROVED_BY_CLIENT){
+                throw new BadRequestException("milestone is locked and cannot be updated");
+            }
+            milestone.setClientFeedback(milestoneDto.getClientFeedback());
+            milestone.setVerificationStatus(VerificationStatus.CHANGES_REQUESTED);
+        }
+        if(milestone != null) milestoneRepository.save(milestone);
+        return milestoneMapper.toDTO(milestone);
+    }
+
+    public MilestoneDto approveMilestone(int milestoneId, int clientId, String name) {
+        User user = userRepository.findByEmail(name)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        Client client = clientRepository.findByUser(user)
+                .orElseThrow(()-> new UserNotFoundException("client not found"));
+
+        if(clientId != client.getId()){
+            throw new UnauthorizedAccessException("your are not authorised to edit the milestone");
+        }
+
+        Milestone milestone = milestoneRepository.findById(milestoneId)
+                .orElseThrow(()-> new UserNotFoundException("milestone not found"));
+
+        if(milestone != null){
+            milestone.setVerificationStatus(VerificationStatus.APPROVED_BY_CLIENT);
+            milestone.setLocked(true);
+        }
+        if(milestone != null) milestoneRepository.save(milestone);
+        return milestoneMapper.toDTO(milestone);
     }
 
 }
