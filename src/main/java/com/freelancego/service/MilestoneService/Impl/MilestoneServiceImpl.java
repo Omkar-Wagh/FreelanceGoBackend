@@ -351,6 +351,7 @@ public class MilestoneServiceImpl implements MilestoneService {
         if(submission != null) submissionRepository.save(submission);
         milestone.setSubmission(submission);
         milestone.setStatus(MilestoneStatus.SUBMITTED);
+
         if(milestone != null) milestoneRepository.save(milestone);
 
         return milestoneMapper.toDTO(milestone);
