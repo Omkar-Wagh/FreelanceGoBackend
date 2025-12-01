@@ -15,13 +15,18 @@ public class Submission {
     private String notes;
 
     @Column(columnDefinition = "TIMESTAMP WITH TIME ZONE", updatable = false, nullable = false)
-    private OffsetDateTime submittedAt = OffsetDateTime.now();
+    private OffsetDateTime submittedAt;
 
     @Enumerated(EnumType.STRING)
     private SubmissionStatus status = SubmissionStatus.PENDING_REVIEW;
 
     @Column(length = 1000)
     private String clientRemark;
+
+    @PrePersist
+    protected void onCreate() {
+        this.submittedAt = OffsetDateTime.now();
+    }
 
     public int getId() {
         return id;
