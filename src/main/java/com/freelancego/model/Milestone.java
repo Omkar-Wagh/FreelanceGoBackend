@@ -23,7 +23,7 @@ public class Milestone {
     private OffsetDateTime dueDate;
 
     @Column(columnDefinition = "TIMESTAMP WITH TIME ZONE", nullable = false, updatable = false)
-    private OffsetDateTime createdAt = OffsetDateTime.now();
+    private OffsetDateTime createdAt;
 
     @Enumerated(EnumType.STRING)
     private MilestoneStatus status = MilestoneStatus.PENDING;
@@ -46,6 +46,11 @@ public class Milestone {
     private String clientFeedback;
 
     private boolean locked = false;
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = OffsetDateTime.now();
+    }
 
     public void lock() { this.locked = true; }
     public boolean isLocked() { return locked; }
