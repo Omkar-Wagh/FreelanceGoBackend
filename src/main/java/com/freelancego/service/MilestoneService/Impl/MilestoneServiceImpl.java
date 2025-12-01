@@ -97,7 +97,6 @@ public class MilestoneServiceImpl implements MilestoneService {
 
         milestone.setContract(contract);
         milestone.setClientFeedback(null);
-        milestone.setStatus(MilestoneStatus.IN_PROGRESS);
 
         if (milestoneDto.getSubmission() != null) {
             Submission submission = submissionMapper.toEntity(milestoneDto.getSubmission());
@@ -186,6 +185,7 @@ public class MilestoneServiceImpl implements MilestoneService {
         if(milestone != null){
             milestone.setVerificationStatus(VerificationStatus.APPROVED_BY_CLIENT);
             milestone.setLocked(true);
+            milestone.setStatus(MilestoneStatus.IN_PROGRESS);
         }
         if(milestone != null) milestoneRepository.save(milestone);
         return milestoneMapper.toDTO(milestone);
