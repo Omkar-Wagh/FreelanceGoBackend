@@ -222,7 +222,11 @@ public class FreelancerServiceImpl implements FreelancerService {
         stats.put("Hired", hired);
         stats.put("In Review", inReview);
         stats.put("Completed", completed);
-        stats.put("FreelancerJobs", freelancerJobs); // temporarily store for reuse
+        stats.put("FreelancerJobs",
+                freelancerJobs.stream()
+                        .map(jobMapper::toDto)
+                        .toList()
+        );
         return stats;
     }
 

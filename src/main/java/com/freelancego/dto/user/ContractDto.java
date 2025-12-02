@@ -7,5 +7,5 @@ import com.freelancego.dto.freelancer.FreelancerDto;
 
 import java.time.OffsetDateTime;
 
-public record ContractDto(int id, String status, OffsetDateTime createdAt, BidDto bid, JobDto job, ClientDto client, FreelancerDto freelancer) {
+public record ContractDto(int id, String status, OffsetDateTime createdAt, BidDto acceptedBid, JobDto job, ClientDto client, FreelancerDto freelancer) {
 }
