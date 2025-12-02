@@ -28,20 +28,21 @@ public interface BidMapper {
         return (status == null) ? null : status.name();
     }
 
+    @Named("manualMapBid")
     default Bid toMapEntity(BidDto bidDto) {
 
-        if ( bidDto == null ) {
+        if (bidDto == null) {
             return null;
         }
 
         Bid bid = new Bid();
-
-        bid.setId( bidDto.id() );
+        bid.setId(bidDto.id());
         bid.setFreelancer(null);
         bid.setJob(null);
-        bid.setAmount( bidDto.amount() );
-        bid.setCoverLetter( bidDto.coverLetter() );
-        bid.setTimeRequired( bidDto.timeRequired() );
+        bid.setAmount(bidDto.amount());
+        bid.setCoverLetter(bidDto.coverLetter());
+        bid.setTimeRequired(bidDto.timeRequired());
+
         return bid;
     }
 }
