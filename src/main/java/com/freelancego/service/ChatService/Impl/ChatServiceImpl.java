@@ -17,6 +17,7 @@ import static io.ably.lib.rest.Auth.TokenRequest;
 import static io.ably.lib.rest.Auth.TokenParams;
 import io.ably.lib.types.AblyException;
 import io.ably.lib.types.ClientOptions;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -33,12 +34,12 @@ public class ChatServiceImpl implements ChatService {
     private final AblyRealtime ably;
     private final ObjectMapper objectMapper;
 
-    public ChatServiceImpl(ChatMessageRepository messageRepository, UserRepository userRepository, ChatMapper chatMapper, ObjectMapper objectMapper) throws AblyException {
+    public ChatServiceImpl(ChatMessageRepository messageRepository, UserRepository userRepository, ChatMapper chatMapper, ObjectMapper objectMapper,@Value("${ably.api.key}") String ablyApiKey) throws AblyException {
         this.messageRepository = messageRepository;
         this.userRepository = userRepository;
         this.chatMapper = chatMapper;
         this.objectMapper = objectMapper;
-        ClientOptions options = new ClientOptions("OtSgGA.cAWR0g:rv1IQX4OtdQJLwINZeD4_v4JB3WpW26PZMlzjQ2UVLQ");
+        ClientOptions options = new ClientOptions(ablyApiKey);
         this.ably = new AblyRealtime(options);
     }
 
@@ -114,3 +115,14 @@ public class ChatServiceImpl implements ChatService {
     }
 }
 
+/*
+Frontend requests an authentication token from the Backend using its JWT.
+
+Backend validates the user and generates a signed Ably Token Request.
+
+Frontend uses that token to open a secure WebSocket channel with Ably.
+
+Frontend sends messages to the Backend, which persists them in PostgreSQL.
+
+Backend publishes the saved message to Ably, which broadcasts it to the recipient.
+ */
