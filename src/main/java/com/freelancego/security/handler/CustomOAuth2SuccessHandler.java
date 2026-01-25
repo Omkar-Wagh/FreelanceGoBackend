@@ -1,11 +1,10 @@
 package com.freelancego.security.handler;
 
 import com.freelancego.enums.Role;
-import com.freelancego.exception.UserNotFoundException;
 import com.freelancego.model.User;
 import com.freelancego.repo.UserRepository;
 import com.freelancego.security.service.JWTService;
-import com.freelancego.service.UserService.ImageEncoderService;
+import com.freelancego.service.User.ImageEncoderService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.core.Authentication;
