@@ -1,6 +1,8 @@
 package com.freelancego.controller.ProfileController;
 
 import com.freelancego.dto.client.JobDto;
+import com.freelancego.dto.user.CertificationDto;
+import com.freelancego.dto.user.PortfolioDto;
 import com.freelancego.dto.user.ProfileDto;
 import com.freelancego.service.ProfileService.ProfileService;
 import org.springframework.http.ResponseEntity;
@@ -38,19 +40,32 @@ public class ProfileController {
         return ResponseEntity.ok(profileService.updateFreelancerProfileTwoSection(profileDto,auth.getName()));
     }
 
-    @PostMapping("/profile/update-freelancer-portfolio")
-    public ResponseEntity<ProfileDto> updateProfileThreeSection(@RequestPart(value = "profile") ProfileDto profileDto,
-                                                                @RequestPart(value = "portfolio-section",required = false) MultipartFile imageFile,
-                                                                @RequestPart(value = "portfolio-section",required = false) MultipartFile portfolioFile,
+    @PostMapping("/profile/create-freelancer-portfolio")
+    public ResponseEntity<ProfileDto> createProfileThreeSection(@RequestPart(value = "portfolio") PortfolioDto portfolioDto,
+                                                                @RequestPart(value = "portfolio-image",required = false) MultipartFile imageFile,
                                                                 Authentication auth){
-        return ResponseEntity.ok(profileService.updateFreelancerProfileThreeSection(profileDto,imageFile,portfolioFile,auth.getName()));
+        return ResponseEntity.ok(profileService.createFreelancerProfileThreeSection(portfolioDto,imageFile,auth.getName()));
+    }
+
+    @PostMapping("/profile/update-freelancer-portfolio")
+    public ResponseEntity<ProfileDto> updateProfileThreeSection(@RequestPart(value = "portfolio") PortfolioDto portfolioDto,
+                                                                @RequestPart(value = "portfolio-image",required = false) MultipartFile imageFile,
+                                                                Authentication auth){
+        return ResponseEntity.ok(profileService.updateFreelancerProfileThreeSection(portfolioDto,imageFile,auth.getName()));
+    }
+
+    @PostMapping("/profile/create-freelancer-certification")
+    public ResponseEntity<ProfileDto> createProfileFourSection(@RequestPart(value = "certificate") CertificationDto dto,
+                                                               @RequestPart(value = "certification-image",required = false) MultipartFile certificationFile,
+                                                               Authentication auth){
+        return ResponseEntity.ok(profileService.createFreelancerProfileFourSection(dto,certificationFile,auth.getName()));
     }
 
     @PostMapping("/profile/update-freelancer-certification")
-    public ResponseEntity<ProfileDto> updateProfileFourSection(@RequestPart(value = "profile") ProfileDto profileDto,
-                                                               @RequestPart(value = "certification-section",required = false) MultipartFile certificationFile,
+    public ResponseEntity<ProfileDto> updateProfileFourSection(@RequestPart(value = "certificate") CertificationDto dto,
+                                                               @RequestPart(value = "certification-image",required = false) MultipartFile certificationFile,
                                                                Authentication auth){
-        return ResponseEntity.ok(profileService.updateFreelancerProfileFourSection(profileDto,certificationFile,auth.getName()));
+        return ResponseEntity.ok(profileService.updateFreelancerProfileFourSection(dto,certificationFile,auth.getName()));
     }
 
     @PostMapping("/profile/update-client-profile")
@@ -66,7 +81,7 @@ public class ProfileController {
         return ResponseEntity.ok(profileService.updateClientProfileTwoSection(profileDto,auth.getName()));
     }
 
-    @GetMapping("/profile/get-client-analytics/{id}")
+    @GetMapping("/profile/get-client-analytics/{userId}")
     public ResponseEntity<List<JobDto>> updateClientProfileThreeSection(@PathVariable("userId")int id, Authentication auth){
         return ResponseEntity.ok(profileService.getClientProfileThreeSection(id,auth.getName()));
     }

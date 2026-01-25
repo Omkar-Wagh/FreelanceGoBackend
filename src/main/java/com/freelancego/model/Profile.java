@@ -42,6 +42,16 @@ public class Profile {
     @OneToMany(mappedBy = "profile", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Certification> freelancerCertificationDetails = new ArrayList<>();
 
+    public void addPortfolio(Portfolio portfolio) {
+        freelancerPortfolioDetails.add(portfolio);
+        portfolio.setProfile(this);
+    }
+
+    public void addCertification(Certification certification) {
+        freelancerCertificationDetails.add(certification);
+        certification.setProfile(this);
+    }
+
     // Getters and Setters
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }

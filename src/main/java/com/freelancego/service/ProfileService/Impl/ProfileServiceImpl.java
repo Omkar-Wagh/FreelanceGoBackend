@@ -2,10 +2,14 @@ package com.freelancego.service.ProfileService.Impl;
 
 import com.freelancego.common.utils.SupabaseUtil;
 import com.freelancego.dto.client.JobDto;
+import com.freelancego.dto.user.CertificationDto;
+import com.freelancego.dto.user.PortfolioDto;
 import com.freelancego.dto.user.ProfileDto;
 import com.freelancego.enums.ContractStatus;
 import com.freelancego.exception.*;
+import com.freelancego.mapper.CertificationMapper;
 import com.freelancego.mapper.ClientMapper;
+import com.freelancego.mapper.PortfolioMapper;
 import com.freelancego.mapper.ProfileMapper;
 import com.freelancego.model.*;
 import com.freelancego.repo.*;
@@ -30,10 +34,14 @@ public class ProfileServiceImpl implements ProfileService {
     final private ContractRepository contractRepository;
     final private ClientMapper clientMapper;
     final private BidRepository bidRepository;
+    final private PortfolioRepository portfolioRepository;
+    final private CertificationRepository certificationRepository;
+    final private PortfolioMapper portfolioMapper;
+    final private CertificationMapper certificationMapper;
 
     public ProfileServiceImpl(ProfileRepository profileRepository, ProfileMapper profileMapper, UserRepository userRepository,
                               ClientRepository clientRepository, FreelancerRepository freelancerRepository, SupabaseUtil supabaseUtil,
-                              ContractRepository contractRepository, ClientMapper clientMapper, BidRepository bidRepository) {
+                              ContractRepository contractRepository, ClientMapper clientMapper, BidRepository bidRepository, PortfolioRepository portfolioRepository, CertificationRepository certificationRepository, PortfolioMapper portfolioMapper, CertificationMapper certificationMapper) {
         this.profileRepository = profileRepository;
         this.profileMapper = profileMapper;
         this.userRepository = userRepository;
@@ -43,6 +51,10 @@ public class ProfileServiceImpl implements ProfileService {
         this.contractRepository = contractRepository;
         this.clientMapper = clientMapper;
         this.bidRepository = bidRepository;
+        this.portfolioRepository = portfolioRepository;
+        this.certificationRepository = certificationRepository;
+        this.portfolioMapper = portfolioMapper;
+        this.certificationMapper = certificationMapper;
     }
 
     public void createProfile(User user) {
@@ -191,128 +203,166 @@ public class ProfileServiceImpl implements ProfileService {
         return dto;
     }
 
-    public ProfileDto updateFreelancerProfileThreeSection(ProfileDto profileDto,MultipartFile imageFile,
-                                                          MultipartFile portfolioFile, String name) {
+    public ProfileDto createFreelancerProfileThreeSection(PortfolioDto portfolioDto, MultipartFile imageFile, String name) {
         User loggedInUser = userRepository.findByEmail(name)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
-        if (profileDto == null) {
-            throw new InvalidIdException("profile dto is empty, could perform any operation");
+        if (portfolioDto == null) {
+            throw new InvalidIdException("portfolio dto is empty, could perform any operation");
         }
 
-        if (profileDto.getUser().id() != loggedInUser.getId()) {
-            throw new UnauthorizedAccessException("Unauthorized to modify this profile.");
-        }
+        Profile profile = profileRepository.findByUser(loggedInUser).orElseThrow(
+                ()-> new UserNotFoundException("profile not found")
+        );
 
-        Profile profile = profileRepository.findByUser(loggedInUser).orElse(null);
-        List<PortfolioDetailsDto> portfolioDtos = profileDto.getFreelancerPortfolioDetails();
+        Portfolio portfolio = portfolioMapper.toEntity(portfolioDto);
 
-        if (portfolioDtos != null && !portfolioDtos.isEmpty() && profile != null) {
-            List<PortfolioDetails> portfolioDetailsList = profile.getFreelancerPortfolioDetails();
-
-            if(portfolioDetailsList == null){
-                portfolioDetailsList = new ArrayList<>();
-            }
-
-            for (PortfolioDetailsDto dto : portfolioDtos) {
-                PortfolioDetails details = new PortfolioDetails();
-                details.setTitle(dto.getTitle());
-                details.setDescription(dto.getDescription());
-
-                if (portfolioFile != null && !portfolioFile.isEmpty()) {
-                    String filename = portfolioFile.getOriginalFilename();
-                    String regex = "(?i).*\\.(pdf|png|jpg|jpeg|pptx|docx)$";
-                    if (filename != null && filename.matches(regex)) {
-                        try {
-                            String uploadedUrl = supabaseUtil.uploadFile(portfolioFile);
-                            details.setPortfolioUrl(uploadedUrl);
-                        } catch (Exception e) {
-                            throw new InternalServerErrorException("Error while uploading portfolio file: " + e.getMessage());
-                        }
-                    }
+        if (imageFile != null && !imageFile.isEmpty()) {
+            String filename = imageFile.getOriginalFilename();
+            String regex = "(?i).*\\.(pdf|png|jpg|jpeg|pptx|docx)$";
+            if (filename != null && filename.matches(regex)) {
+                try {
+                    String imageUrl = supabaseUtil.uploadFile(imageFile);
+                    portfolio.setImageUrl(imageUrl);
+                } catch (Exception e) {
+                    throw new InternalServerErrorException("Error while uploading portfolio file: " + e.getMessage());
                 }
-
-                if (imageFile != null && !imageFile.isEmpty()) {
-                    String filename = imageFile.getOriginalFilename();
-                    String regex = "(?i).*\\.(pdf|png|jpg|jpeg|pptx|docx)$";
-                    if (filename != null && filename.matches(regex)) {
-                        try {
-                            String imageUrl = supabaseUtil.uploadFile(imageFile);
-                            details.setImageUrl(imageUrl);
-                        } catch (Exception e) {
-                            throw new InternalServerErrorException("Error while uploading portfolio file: " + e.getMessage());
-                        }
-                    }
-                }
-
-                portfolioDetailsList.add(details);
             }
-
-            profile.setFreelancerPortfolioDetails(portfolioDetailsList);
-            profileRepository.save(profile);
         }
+        profile.addPortfolio(portfolio);
+
+        portfolioRepository.save(portfolio);
         ProfileDto dto = profileMapper.toDto(profile);
-        if(profileDto.getUser().id() == loggedInUser.getId() && dto != null){
+        if(dto.getUser().id() == loggedInUser.getId()){
             dto.setOwnProfile(true);
         }
         return dto;
     }
 
-    public ProfileDto updateFreelancerProfileFourSection(ProfileDto profileDto, MultipartFile certificationFile,
+    public ProfileDto updateFreelancerProfileThreeSection(PortfolioDto portfolioDto, MultipartFile imageFile, String name) {
+        User loggedInUser = userRepository.findByEmail(name)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        if (portfolioDto == null) {
+            throw new InvalidIdException("portfolio dto is empty, could perform any operation");
+        }
+
+        Portfolio portfolio = portfolioRepository.findById(portfolioDto.getId()).orElseThrow(()-> new UserNotFoundException("portfolio not found"));
+
+        Profile profile = profileRepository.findByUser(loggedInUser).orElseThrow(
+                ()-> new UserNotFoundException("profile not found")
+        );
+
+        if(portfolio.getProfile().getId() != profile.getId()){
+            throw new UnauthorizedAccessException("your are not authorised to update the portfolio");
+        }
+
+        if (imageFile != null && !imageFile.isEmpty()) {
+            String filename = imageFile.getOriginalFilename();
+            String regex = "(?i).*\\.(pdf|png|jpg|jpeg|pptx|docx)$";
+            if (filename != null && filename.matches(regex)) {
+                try {
+                    String imageUrl = supabaseUtil.uploadFile(imageFile);
+                    portfolio.setImageUrl(imageUrl);
+                } catch (Exception e) {
+                    throw new InternalServerErrorException("Error while uploading portfolio file: " + e.getMessage());
+                }
+            }
+        }
+
+        portfolio.setDescription(portfolioDto.getDescription());
+        portfolio.setPortfolioUrl(portfolioDto.getPortfolioUrl());
+        portfolio.setTitle(portfolioDto.getTitle());
+        profile.addPortfolio(portfolio);
+
+        portfolioRepository.save(portfolio);
+        ProfileDto dto = profileMapper.toDto(profile);
+        if(dto.getUser().id() == loggedInUser.getId()){
+            dto.setOwnProfile(true);
+        }
+        return dto;
+    }
+
+    public ProfileDto createFreelancerProfileFourSection(CertificationDto dto, MultipartFile certificationFile, String name) {
+        User loggedInUser = userRepository.findByEmail(name)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        if (dto == null) {
+            throw new InvalidIdException("profile dto is empty, could perform any operation");
+        }
+
+        Profile profile = profileRepository.findByUser(loggedInUser).orElseThrow(
+                ()-> new UserNotFoundException("profile not found")
+        );
+
+        Certification certification = certificationMapper.toEntity(dto);
+
+        if (certificationFile != null && !certificationFile.isEmpty()) {
+            String filename = certificationFile.getOriginalFilename();
+            String regex = "(?i).*\\.(pdf|png|jpg|jpeg|pptx|docx)$";
+            if (filename != null && filename.matches(regex)) {
+                try {
+                    String imageUrl = supabaseUtil.uploadFile(certificationFile);
+                    certification.setCertificateUrl(imageUrl);
+                } catch (Exception e) {
+                    throw new InternalServerErrorException("Error while uploading portfolio file: " + e.getMessage());
+                }
+            }
+        }
+
+        profile.addCertification(certification);
+        certificationRepository.save(certification);
+
+        ProfileDto profileDto = profileMapper.toDto(profile);
+        if(profile.getUser().getId() == loggedInUser.getId()){
+            profileDto.setOwnProfile(true);
+        }
+        return profileDto;
+    }
+
+    public ProfileDto updateFreelancerProfileFourSection(CertificationDto dto, MultipartFile certificationFile,
                                                          String name) {
         User loggedInUser = userRepository.findByEmail(name)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
-        if (profileDto == null) {
+        if (dto == null) {
             throw new InvalidIdException("profile dto is empty, could perform any operation");
         }
 
-        if (profileDto.getUser().id() != loggedInUser.getId()) {
-            throw new UnauthorizedAccessException("Unauthorized to modify this profile.");
+        Certification certification = certificationRepository.findById(dto.getId()).orElseThrow(()-> new UserNotFoundException("certification not found"));
+
+        Profile profile = profileRepository.findByUser(loggedInUser).orElseThrow(
+                ()-> new UserNotFoundException("profile not found")
+        );
+
+        if(certification.getProfile().getId() != profile.getId()){
+            throw new UnauthorizedAccessException("your are not authorised to update the portfolio");
         }
 
-        Profile profile = profileRepository.findByUser(loggedInUser)
-                .orElseThrow(() -> new UserNotFoundException("Profile not found"));
-
-        List<CertificationDetailsDto> certificationDtos = profileDto.getFreelancerCertificationDetails();
-
-        if (certificationDtos != null && !certificationDtos.isEmpty()) {
-            List<CertificationsDetails> existingCertifications = profile.getFreelancerCertificationDetails();
-
-            if (existingCertifications == null) {
-                existingCertifications = new ArrayList<>();
-            }
-
-            for (CertificationDetailsDto dto : certificationDtos) {
-                CertificationsDetails details = new CertificationsDetails();
-                details.setCertificateName(dto.getCertificateName());
-                details.setProvider(dto.getProvider());
-                details.setCertificateUrl(dto.getCertificateUrl());
-
-                if (certificationFile != null && !certificationFile.isEmpty()) {
-                    String filename = certificationFile.getOriginalFilename();
-                    String regex = "(?i).*\\.(pdf|png|jpg|jpeg|docx)$";
-                    if (filename != null && filename.matches(regex)) {
-                        try {
-                            String uploadedUrl = supabaseUtil.uploadFile(certificationFile);
-                            details.setCertificateUrl(uploadedUrl);
-                        } catch (Exception e) {
-                            throw new InternalServerErrorException("Error uploading certification file: " + e.getMessage());
-                        }
-                    }
+        if (certificationFile != null && !certificationFile.isEmpty()) {
+            String filename = certificationFile.getOriginalFilename();
+            String regex = "(?i).*\\.(pdf|png|jpg|jpeg|pptx|docx)$";
+            if (filename != null && filename.matches(regex)) {
+                try {
+                    String imageUrl = supabaseUtil.uploadFile(certificationFile);
+                    certification.setCertificateUrl(imageUrl);
+                } catch (Exception e) {
+                    throw new InternalServerErrorException("Error while uploading portfolio file: " + e.getMessage());
                 }
-
-                existingCertifications.add(details);
             }
+        }
 
-            profile.setFreelancerCertificationDetails(existingCertifications);
-            profileRepository.save(profile);
+        certification.setCertificateName(dto.getCertificateName());
+        certification.setProvider(dto.getProvider());
+        profile.addCertification(certification);
+
+        certificationRepository.save(certification);
+
+        ProfileDto profileDto = profileMapper.toDto(profile);
+        if(profile.getUser().getId() == loggedInUser.getId()){
+            profileDto.setOwnProfile(true);
         }
-        ProfileDto dto = profileMapper.toDto(profile);
-        if(profileDto.getUser().id() == loggedInUser.getId() && dto != null){
-            dto.setOwnProfile(true);
-        }
-        return dto;
+        return profileDto;
     }
 
     public ProfileDto updateClientProfileOneSection(ProfileDto profileDto, MultipartFile profileFile,
