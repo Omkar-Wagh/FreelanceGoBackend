@@ -54,6 +54,11 @@ public class ProfileController {
         return ResponseEntity.ok(profileService.updateFreelancerProfileThreeSection(portfolioDto,imageFile,auth.getName()));
     }
 
+    @DeleteMapping("/profile/delete-freelancer-portfolio/{portfolioId}")
+    public ResponseEntity<String> deleteProfileThreeSection(@PathVariable("portfolioId")int id, Authentication auth){
+        return ResponseEntity.ok(profileService.deleteFreelancerProfileThreeSection(id,auth.getName()));
+    }
+
     @PostMapping("/profile/create-freelancer-certification")
     public ResponseEntity<ProfileDto> createProfileFourSection(@RequestPart(value = "certificate") CertificationDto dto,
                                                                @RequestPart(value = "certification-image",required = false) MultipartFile certificationFile,
@@ -66,6 +71,11 @@ public class ProfileController {
                                                                @RequestPart(value = "certification-image",required = false) MultipartFile certificationFile,
                                                                Authentication auth){
         return ResponseEntity.ok(profileService.updateFreelancerProfileFourSection(dto,certificationFile,auth.getName()));
+    }
+
+    @DeleteMapping("/profile/delete-freelancer-certification/{certificateId}")
+    public ResponseEntity<String> deleteProfileFourSection(@PathVariable("certificateId")int id, Authentication auth){
+        return ResponseEntity.ok(profileService.deleteFreelancerProfileFourSection(id,auth.getName()));
     }
 
     @PostMapping("/profile/update-client-profile")

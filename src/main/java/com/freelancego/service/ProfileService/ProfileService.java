@@ -27,4 +27,8 @@ public interface ProfileService {
     ProfileDto createFreelancerProfileThreeSection(PortfolioDto portfolioDto, MultipartFile imageFile, String name);
 
     ProfileDto createFreelancerProfileFourSection(CertificationDto dto, MultipartFile certificationFile, String name);
+
+    String deleteFreelancerProfileThreeSection(int id, String name);
+
+    String deleteFreelancerProfileFourSection(int id, String name);
 }

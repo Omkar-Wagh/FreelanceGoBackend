@@ -283,6 +283,24 @@ public class ProfileServiceImpl implements ProfileService {
         return dto;
     }
 
+
+    public String deleteFreelancerProfileThreeSection(int id, String name) {
+        User loggedInUser = userRepository.findByEmail(name)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        Portfolio portfolio = portfolioRepository.findById(id).orElseThrow(()-> new UserNotFoundException("portfolio not found"));
+
+        Profile profile = profileRepository.findByUser(loggedInUser).orElseThrow(
+                ()-> new UserNotFoundException("profile not found")
+        );
+
+        if(portfolio.getProfile().getId() != profile.getId()){
+            throw new UnauthorizedAccessException("your are not authorised to update the portfolio");
+        }
+        portfolioRepository.delete(portfolio);
+        return "portfolio deleted successfully";
+    }
+
     public ProfileDto createFreelancerProfileFourSection(CertificationDto dto, MultipartFile certificationFile, String name) {
         User loggedInUser = userRepository.findByEmail(name)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
@@ -363,6 +381,22 @@ public class ProfileServiceImpl implements ProfileService {
             profileDto.setOwnProfile(true);
         }
         return profileDto;
+    }
+
+    public String deleteFreelancerProfileFourSection(int id, String name) {
+        User loggedInUser = userRepository.findByEmail(name)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+        Certification certification = certificationRepository.findById(id).orElseThrow(()-> new UserNotFoundException("certification not found"));
+
+        Profile profile = profileRepository.findByUser(loggedInUser).orElseThrow(
+                ()-> new UserNotFoundException("profile not found")
+        );
+
+        if(certification.getProfile().getId() != profile.getId()){
+            throw new UnauthorizedAccessException("your are not authorised to update the portfolio");
+        }
+        certificationRepository.delete(certification);
+        return "certificate deleted successfully";
     }
 
     public ProfileDto updateClientProfileOneSection(ProfileDto profileDto, MultipartFile profileFile,
