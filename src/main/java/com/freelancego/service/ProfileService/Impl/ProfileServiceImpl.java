@@ -2,8 +2,6 @@ package com.freelancego.service.ProfileService.Impl;
 
 import com.freelancego.common.utils.SupabaseUtil;
 import com.freelancego.dto.client.JobDto;
-import com.freelancego.dto.user.CertificationDetailsDto;
-import com.freelancego.dto.user.PortfolioDetailsDto;
 import com.freelancego.dto.user.ProfileDto;
 import com.freelancego.enums.ContractStatus;
 import com.freelancego.exception.*;

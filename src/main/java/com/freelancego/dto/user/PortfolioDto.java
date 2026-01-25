@@ -1,13 +1,19 @@
-package com.freelancego.model;
+package com.freelancego.dto.user;
 
-import jakarta.persistence.Embeddable;
-
-@Embeddable
-public class PortfolioDetails {
+public class PortfolioDto {
+    private int id;
     private String portfolioUrl;
     private String imageUrl;
     private String title;
     private String description;
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
 
     public String getPortfolioUrl() {
         return portfolioUrl;

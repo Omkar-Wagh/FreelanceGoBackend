@@ -36,19 +36,11 @@ public class Profile {
     })
     private ProfileDetails freelancerProfile;
 
-    @ElementCollection
-    @CollectionTable(
-            name = "freelancer_portfolio_details",
-            joinColumns = @JoinColumn(name = "profile_id")
-    )
-    private List<PortfolioDetails> freelancerPortfolioDetails = new ArrayList<>();
+    @OneToMany(mappedBy = "profile", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Portfolio> freelancerPortfolioDetails = new ArrayList<>();
 
-    @ElementCollection
-    @CollectionTable(
-            name = "freelancer_certifications",
-            joinColumns = @JoinColumn(name = "profile_id")
-    )
-    private List<CertificationsDetails> freelancerCertificationDetails = new ArrayList<>();
+    @OneToMany(mappedBy = "profile", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Certification> freelancerCertificationDetails = new ArrayList<>();
 
     // Getters and Setters
     public int getId() { return id; }
@@ -69,9 +61,9 @@ public class Profile {
     public ProfileDetails getFreelancerProfile() { return freelancerProfile; }
     public void setFreelancerProfile(ProfileDetails freelancerProfile) { this.freelancerProfile = freelancerProfile; }
 
-    public List<PortfolioDetails> getFreelancerPortfolioDetails() { return freelancerPortfolioDetails; }
-    public void setFreelancerPortfolioDetails(List<PortfolioDetails> freelancerPortfolioDetails) { this.freelancerPortfolioDetails = freelancerPortfolioDetails; }
+    public List<Portfolio> getFreelancerPortfolioDetails() { return freelancerPortfolioDetails; }
+    public void setFreelancerPortfolioDetails(List<Portfolio> freelancerPortfolioDetails) { this.freelancerPortfolioDetails = freelancerPortfolioDetails; }
 
-    public List<CertificationsDetails> getFreelancerCertificationDetails() { return freelancerCertificationDetails; }
-    public void setFreelancerCertificationDetails(List<CertificationsDetails> freelancerCertificationDetails) { this.freelancerCertificationDetails = freelancerCertificationDetails; }
+    public List<Certification> getFreelancerCertificationDetails() { return freelancerCertificationDetails; }
+    public void setFreelancerCertificationDetails(List<Certification> freelancerCertificationDetails) { this.freelancerCertificationDetails = freelancerCertificationDetails; }
 }

@@ -1,9 +1,19 @@
 package com.freelancego.dto.user;
 
-public class CertificationDetailsDto {
+public class CertificationDto {
+
+    private int id;
     private String certificateName;
     private String provider;
     private String certificateUrl;
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
 
     public String getCertificateName() {
         return certificateName;

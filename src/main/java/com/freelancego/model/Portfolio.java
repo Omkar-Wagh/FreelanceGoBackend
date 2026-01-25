@@ -1,10 +1,30 @@
-package com.freelancego.dto.user;
+package com.freelancego.model;
 
-public class PortfolioDetailsDto {
+import jakarta.persistence.*;
+
+@Entity
+public class Portfolio {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
+
     private String portfolioUrl;
     private String imageUrl;
     private String title;
     private String description;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "profile_id")
+    private Profile profile;
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
 
     public String getPortfolioUrl() {
         return portfolioUrl;
@@ -36,5 +56,13 @@ public class PortfolioDetailsDto {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public Profile getProfile() {
+        return profile;
+    }
+
+    public void setProfile(Profile profile) {
+        this.profile = profile;
     }
 }
