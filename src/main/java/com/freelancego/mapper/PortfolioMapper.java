@@ -5,9 +5,7 @@ import com.freelancego.model.Portfolio;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-import java.util.List;
-
-@Mapper(componentModel = "spring", uses = {PortfolioMapper.class})
+@Mapper(componentModel = "spring", uses = {ProfileMapper.class})
 
 public interface PortfolioMapper {
 
@@ -16,7 +14,4 @@ public interface PortfolioMapper {
 
     @Mapping(source = "profileDto", target = "profile",ignore = true)
     Portfolio toEntity(PortfolioDto Dto);
-
-    List<Portfolio> toDtoList(List<Portfolio> portfolios);
-
 }

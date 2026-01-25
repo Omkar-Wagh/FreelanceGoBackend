@@ -14,15 +14,15 @@ public interface ProfileMapper {
     ProfileDetailsDto toDto(ProfileDetails details);
     ProfileDetails toEntity(ProfileDetailsDto dto);
 
-    PortfolioDetailsDto toDto(PortfolioDetails details);
-    PortfolioDetails toEntity(PortfolioDetailsDto dto);
+    PortfolioDto toDto(Portfolio details);
+    Portfolio toEntity(PortfolioDto dto);
 
-    List<PortfolioDetailsDto> toPortfolioDtoList(List<PortfolioDetails> details);
-    List<PortfolioDetails> toPortfolioEntityList(List<PortfolioDetailsDto> dtoList);
+    List<PortfolioDto> toPortfolioDtoList(List<Portfolio> details);
+    List<Portfolio> toPortfolioEntityList(List<PortfolioDto> dtoList);
 
-    CertificationDetailsDto toDto(CertificationsDetails details);
-    CertificationsDetails toEntity(CertificationDetailsDto dto);
+    CertificationDto toDto(Certification details);
+    Certification toEntity(CertificationDto dto);
 
-    List<CertificationDetailsDto> toCertificationDtoList(List<CertificationsDetails> details);
-    List<CertificationsDetails> toCertificationEntityList(List<CertificationDetailsDto> dtoList);
+    List<CertificationDto> toCertificationDtoList(List<Certification> details);
+    List<Certification> toCertificationEntityList(List<CertificationDto> dtoList);
 }

@@ -5,8 +5,6 @@ import com.freelancego.model.Certification;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-import java.util.List;
-
 @Mapper(componentModel = "spring", uses = {ProfileMapper.class})
 
 public interface CertificationMapper {
@@ -16,8 +14,6 @@ public interface CertificationMapper {
 
     @Mapping(source = "profileDto", target = "profile",ignore = true)
     Certification toEntity(CertificationDto Dto);
-
-    List<CertificationDto> toDtoList(List<Certification> certifications);
 
 }
 

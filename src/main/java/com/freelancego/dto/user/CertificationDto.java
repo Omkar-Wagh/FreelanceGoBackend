@@ -6,6 +6,7 @@ public class CertificationDto {
     private String certificateName;
     private String provider;
     private String certificateUrl;
+    private ProfileDto profileDto;
 
     public int getId() {
         return id;
@@ -37,5 +38,13 @@ public class CertificationDto {
 
     public void setCertificateUrl(String certificateUrl) {
         this.certificateUrl = certificateUrl;
+    }
+
+    public ProfileDto getProfileDto() {
+        return profileDto;
+    }
+
+    public void setProfileDto(ProfileDto profileDto) {
+        this.profileDto = profileDto;
     }
 }

@@ -6,6 +6,7 @@ public class PortfolioDto {
     private String imageUrl;
     private String title;
     private String description;
+    private ProfileDto profileDto;
 
     public int getId() {
         return id;
@@ -45,5 +46,13 @@ public class PortfolioDto {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public ProfileDto getProfileDto() {
+        return profileDto;
+    }
+
+    public void setProfileDto(ProfileDto profileDto) {
+        this.profileDto = profileDto;
     }
 }
