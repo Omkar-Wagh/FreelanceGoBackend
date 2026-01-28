@@ -1,23 +1,31 @@
 package com.freelancego.service.payment.impl;
 
+import com.freelancego.dto.freelancer.PayoutSetupRequest;
 import com.freelancego.dto.user.MilestonePaymentResponse;
 import com.freelancego.dto.user.RazorpayOrderResponse;
+import com.freelancego.enums.ContractStatus;
 import com.freelancego.enums.MilestoneStatus;
 import com.freelancego.enums.PaymentStatus;
+import com.freelancego.enums.PayoutAccountStatus;
+import com.freelancego.exception.InternalServerErrorException;
 import com.freelancego.exception.InvalidIdException;
-import com.freelancego.model.Milestone;
-import com.freelancego.model.Payment;
-import com.freelancego.repo.MilestoneRepository;
-import com.freelancego.repo.PaymentRepository;
+import com.freelancego.exception.UserNotFoundException;
+import com.freelancego.model.*;
+import com.freelancego.repo.*;
+import com.freelancego.service.Milestone.MilestoneService;
 import com.freelancego.service.payment.PaymentService;
-import jakarta.transaction.Transactional;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.apache.commons.codec.binary.Hex;
 
-import java.math.BigDecimal;
+import jakarta.transaction.Transactional;
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
@@ -27,14 +35,145 @@ public class PaymentServiceImpl implements PaymentService {
     private final PaymentRepository paymentRepository;
     private final MilestoneRepository milestoneRepository;
     private final RazorpayService razorpayService;
+    private final FreelancerRepository freelancerRepository;
+    private final UserRepository userRepository;
+    private final ContractRepository contractRepository;
+    private final MilestoneService milestoneService;
 
     @Value("${razorpay.key.id}")
     private String razorpayKey;
 
-    public PaymentServiceImpl(PaymentRepository paymentRepository, MilestoneRepository milestoneRepository, RazorpayService razorpayService) {
+    @Value("${webhook.secret}")
+    private String webhookSecret;
+
+    public PaymentServiceImpl(PaymentRepository paymentRepository, MilestoneRepository milestoneRepository, RazorpayService razorpayService, FreelancerRepository freelancerRepository, UserRepository userRepository, ContractRepository contractRepository, MilestoneService milestoneService) {
         this.paymentRepository = paymentRepository;
         this.milestoneRepository = milestoneRepository;
         this.razorpayService = razorpayService;
+        this.freelancerRepository = freelancerRepository;
+        this.userRepository = userRepository;
+        this.contractRepository = contractRepository;
+        this.milestoneService = milestoneService;
+    }
+
+    /** Verify signature */
+    private void verifySignature(String payload, String signature) throws Exception {
+        Mac mac = Mac.getInstance("HmacSHA256");
+        SecretKeySpec secretKey = new SecretKeySpec(webhookSecret.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
+        mac.init(secretKey);
+        String generatedSignature = Hex.encodeHexString(mac.doFinal(payload.getBytes(StandardCharsets.UTF_8)));
+        if (!generatedSignature.equals(signature)) {
+            throw new RuntimeException("Invalid Razorpay webhook signature");
+        }
+    }
+
+    /** Process client → platform payments */
+    public void processPaymentWebhook(String payload, String signature) {
+        try{
+            verifySignature(payload, signature);
+        }catch (Exception e){
+            throw new RuntimeException("issue with webhook processing during client to platform payment");
+        }
+
+        JSONObject event = new JSONObject(payload);
+        String eventType = event.getString("event");
+
+        if (!eventType.startsWith("payment.")) return;
+
+        JSONObject paymentEntity = event.getJSONObject("payload")
+                .getJSONObject("payment")
+                .getJSONObject("entity");
+
+        String razorpayPaymentId = paymentEntity.getString("id");
+        String orderId = paymentEntity.getString("order_id");
+
+        Payment payment = paymentRepository.findByRazorpayOrderId(orderId);
+
+        if (payment == null) return;
+
+        if (payment.isExpired()) {
+            payment.setStatus(PaymentStatus.FAILED);
+            paymentRepository.save(payment);
+            throw new RuntimeException("Payment order expired");
+        }
+
+        Milestone milestone = payment.getMilestone();
+
+        switch (eventType) {
+            case "payment.captured" -> {
+                payment.setRazorpayPaymentId(razorpayPaymentId);
+                payment.setStatus(PaymentStatus.ESCROW_HELD);
+                payment.setCreatedAt(OffsetDateTime.now());
+                paymentRepository.save(payment);
+
+                milestone.setPaymentStatus(PaymentStatus.ESCROW_HELD);
+                milestoneRepository.save(milestone);
+            }
+            case "payment.failed" -> {
+                payment.setStatus(PaymentStatus.FAILED);
+                paymentRepository.save(payment);
+
+                milestone.setPaymentStatus(PaymentStatus.FAILED);
+                milestoneRepository.save(milestone);
+            }
+        }
+    }
+
+    /** Process freelancer fund account verification */
+    public void processFundAccountWebhook(String payload, String signature) {
+        try{
+            verifySignature(payload, signature);
+        }catch (Exception e){
+            throw new RuntimeException("issue with webhook processing during freelancer account verification");
+        }
+
+        JSONObject event = new JSONObject(payload);
+        String eventType = event.getString("event");
+
+        if (!eventType.startsWith("fund_account.")) return;
+
+        JSONObject fundEntity = event.getJSONObject("payload")
+                .getJSONObject("fund_account")
+                .getJSONObject("entity");
+
+        String fundAccountId = fundEntity.getString("id");
+        Freelancer freelancer = freelancerRepository.findByRazorpayFundAccountId(fundAccountId);
+
+        if (freelancer == null) return;
+
+        switch (eventType) {
+            case "fund_account.verified" -> freelancer.setPayoutAccountStatus(PayoutAccountStatus.ACTIVE);
+            case "fund_account.failed" -> freelancer.setPayoutAccountStatus(PayoutAccountStatus.FAILED);
+        }
+
+        freelancerRepository.save(freelancer);
+    }
+
+    public void setupPayoutAccount(String email, PayoutSetupRequest req) {
+
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException("user not found"));
+        Freelancer freelancer = freelancerRepository.findByUser(user)
+                .orElseThrow(() -> new UserNotFoundException("Freelancer not found"));
+
+        if (freelancer.getPayoutAccountStatus() == PayoutAccountStatus.ACTIVE) {
+            throw new RuntimeException("Payout already active");
+        }
+
+        String contactId = null;
+        String fundAccountId = null;
+        try {
+            contactId = razorpayService.createContact(freelancer.getUser().getUsername(), freelancer.getUser().getEmail(), freelancer.getPhone());
+            fundAccountId = razorpayService.createFundAccount(contactId, req.getAccountHolderName(), req.getAccountNumber(), req.getIfscCode());
+        } catch (Exception e) {
+            e.getMessage();
+            throw new InternalServerErrorException("failed to save the payout status");
+        }
+
+        freelancer.setRazorpayContactId(contactId);
+        freelancer.setRazorpayFundAccountId(fundAccountId);
+        freelancer.setPayoutAccountStatus(PayoutAccountStatus.PENDING_VERIFICATION);
+
+        freelancerRepository.save(freelancer);
     }
 
     @Transactional
@@ -71,8 +210,8 @@ public class PaymentServiceImpl implements PaymentService {
         payment.setExpiresAt(OffsetDateTime.now().plusMinutes(20));
         payment.setStatus(PaymentStatus.NOT_PAID);
         payment.setMilestone(milestone);
-        payment.setPayer(milestone.getContract().getClient().getUser());
-        payment.setPayee(milestone.getContract().getFreelancer().getUser());
+        payment.setPayer(milestone.getContract().getClient());
+        payment.setPayee(milestone.getContract().getFreelancer());
 
         paymentRepository.save(payment);
 
@@ -135,9 +274,11 @@ public class PaymentServiceImpl implements PaymentService {
         }
 
         Payment payment = paymentRepository.findByMilestoneAndStatus(milestone, PaymentStatus.ESCROW_HELD);
+        if(!payment.getPayee().getPayoutAccountStatus().equals(PayoutAccountStatus.ACTIVE)){
+            throw new InvalidIdException("freelancer account is not verified");
+        }
         JSONObject transfer = new JSONObject();
-        // freelancerAccountId needed
-//        transfer.put("account", milestone.getContract().getFreelancer().getRazorpayAccountId());
+        transfer.put("account", milestone.getContract().getFreelancer().getRazorpayFundAccountId());
         transfer.put("account", milestone.getContract().getFreelancer());
         transfer.put("amount", BigDecimal.valueOf(payment.getAmount()).multiply(BigDecimal.valueOf(100)).intValue());
         transfer.put("currency", "INR");
@@ -156,8 +297,16 @@ public class PaymentServiceImpl implements PaymentService {
         milestone.setPaymentStatus(PaymentStatus.RELEASED);
         milestone.setStatus(MilestoneStatus.COMPLETED);
 
+        Contract contract = milestone.getContract();
+        Milestone lastMilestone = milestoneService.getLastMilestone(milestone.getContract());
+
+        if(lastMilestone.getId() == milestone.getId()){
+            contract.setStatus(ContractStatus.COMPLETED);
+        }
+
         paymentRepository.save(payment);
         milestoneRepository.save(milestone);
+        contractRepository.save(contract);
     }
 
     @Transactional
@@ -175,6 +324,8 @@ public class PaymentServiceImpl implements PaymentService {
             throw new RuntimeException("Refund failed", e);
         }
 
+        Contract contract = milestone.getContract();
+        contract.setStatus(ContractStatus.CANCELLED);
         payment.setStatus(PaymentStatus.REFUNDED);
 
         milestone.setPaymentStatus(PaymentStatus.REFUNDED);
@@ -182,6 +333,7 @@ public class PaymentServiceImpl implements PaymentService {
 
         paymentRepository.save(payment);
         milestoneRepository.save(milestone);
+        contractRepository.save(contract);
     }
 
 }

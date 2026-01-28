@@ -1,6 +1,7 @@
 package com.freelancego.model;
 
 import com.freelancego.enums.ExperienceLevel;
+import com.freelancego.enums.PayoutAccountStatus;
 import jakarta.persistence.*;
 
 @Entity
@@ -19,6 +20,15 @@ public class Freelancer {
     private String skills;
     private ExperienceLevel experienceLevel;
     private String phone;
+
+    @Column(unique = true)
+    private String razorpayContactId;
+
+    @Column(unique = true)
+    private String razorpayFundAccountId;
+
+    @Enumerated(EnumType.STRING)
+    private PayoutAccountStatus payoutAccountStatus;
 
     public int getId() {
         return id;
@@ -85,5 +95,27 @@ public class Freelancer {
         this.phone = phone;
     }
 
+    public String getRazorpayContactId() {
+        return razorpayContactId;
+    }
 
+    public void setRazorpayContactId(String razorpayContactId) {
+        this.razorpayContactId = razorpayContactId;
+    }
+
+    public String getRazorpayFundAccountId() {
+        return razorpayFundAccountId;
+    }
+
+    public void setRazorpayFundAccountId(String razorpayFundAccountId) {
+        this.razorpayFundAccountId = razorpayFundAccountId;
+    }
+
+    public PayoutAccountStatus getPayoutAccountStatus() {
+        return payoutAccountStatus;
+    }
+
+    public void setPayoutAccountStatus(PayoutAccountStatus payoutAccountStatus) {
+        this.payoutAccountStatus = payoutAccountStatus;
+    }
 }

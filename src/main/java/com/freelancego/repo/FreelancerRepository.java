@@ -10,4 +10,6 @@ import java.util.Optional;
 @Repository
 public interface FreelancerRepository extends JpaRepository<Freelancer, Integer> {
     Optional<Freelancer> findByUser(User user);
+
+    Freelancer findByRazorpayFundAccountId(String fundAccountId);
 }

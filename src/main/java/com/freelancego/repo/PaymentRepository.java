@@ -15,4 +15,5 @@ public interface PaymentRepository extends JpaRepository<Payment, Integer> {
     Payment findByRazorpayOrderId(String orderId);
 
     Payment findByMilestoneAndStatus(Milestone milestone, PaymentStatus paymentStatus);
+
 }

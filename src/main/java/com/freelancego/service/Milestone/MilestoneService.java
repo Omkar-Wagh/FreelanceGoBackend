@@ -3,6 +3,8 @@ package com.freelancego.service.Milestone;
 import com.freelancego.dto.user.MilestoneDto;
 import com.freelancego.dto.user.MilestonePaymentResponse;
 import com.freelancego.dto.user.SubmissionDto;
+import com.freelancego.model.Contract;
+import com.freelancego.model.Milestone;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -27,4 +29,6 @@ public interface MilestoneService {
     SubmissionDto editSubmission(SubmissionDto submissionDto, int clientId, String name);
 
     MilestoneDto approveSubmission(int submissionId, int clientId, String name);
+
+    Milestone getLastMilestone(Contract contract);
 }

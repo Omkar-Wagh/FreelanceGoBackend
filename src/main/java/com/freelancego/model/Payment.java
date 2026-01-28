@@ -34,10 +34,10 @@ public class Payment {
     private Milestone milestone;
 
     @ManyToOne(optional = false)
-    private User payer;
+    private Client payer;
 
     @ManyToOne
-    private User payee;
+    private Freelancer payee;
 
     @PrePersist
     void onCreate() {
@@ -128,19 +128,19 @@ public class Payment {
         this.milestone = milestone;
     }
 
-    public User getPayer() {
+    public Client getPayer() {
         return payer;
     }
 
-    public void setPayer(User payer) {
+    public void setPayer(Client payer) {
         this.payer = payer;
     }
 
-    public User getPayee() {
+    public Freelancer getPayee() {
         return payee;
     }
 
-    public void setPayee(User payee) {
+    public void setPayee(Freelancer payee) {
         this.payee = payee;
     }
 }

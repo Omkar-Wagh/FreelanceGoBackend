@@ -18,11 +18,9 @@ import java.util.Map;
 @RequestMapping("/api/")
 public class MilestoneController {
     final private MilestoneService milestoneService;
-    final private PaymentService paymentService;
 
-    public MilestoneController(MilestoneService milestoneService, PaymentService paymentService) {
+    public MilestoneController(MilestoneService milestoneService) {
         this.milestoneService = milestoneService;
-        this.paymentService = paymentService;
     }
 
     @GetMapping("/get-milestone/{contractId}")
@@ -46,16 +44,10 @@ public class MilestoneController {
         return ResponseEntity.ok(milestoneService.editMilestone(milestoneDto,clientId,auth.getName()));
     }
 
-    // trigger payment from here
     @PreAuthorize("hasRole('CLIENT')")
     @PostMapping("/milestone-approval")
     ResponseEntity<MilestonePaymentResponse> approveMilestone(@RequestParam int milestoneId, @RequestParam int clientId, Authentication auth){
         return ResponseEntity.ok(milestoneService.approveMilestone(milestoneId,clientId,auth.getName()));
-    }
-
-    @PostMapping("/verify")
-    public ResponseEntity<MilestonePaymentResponse> verifyPayment(@RequestBody Map<String, String> request) {
-            return ResponseEntity.ok(paymentService.verifyPayment(request));
     }
 
     @GetMapping("/get-submission")

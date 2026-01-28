@@ -1,17 +1,16 @@
 package com.freelancego.service.payment.impl;
 
 import com.freelancego.dto.user.RazorpayOrderResponse;
-import com.razorpay.Order;
 import com.razorpay.RazorpayClient;
+import com.razorpay.RazorpayException;
+import com.razorpay.Order;
+import com.razorpay.Utils;
 import jakarta.annotation.PostConstruct;
-import org.apache.commons.codec.binary.Hex;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
-import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 
 @Service
 public class RazorpayService {
@@ -25,54 +24,81 @@ public class RazorpayService {
     private RazorpayClient client;
 
     @PostConstruct
-    public void init() throws Exception {
+    public void init() throws RazorpayException {
         this.client = new RazorpayClient(keyId, keySecret);
     }
 
-    public RazorpayOrderResponse createOrder(double amount, int milestoneId) throws Exception {
+    /** Create Razorpay Contact */
+    public String createContact(String name, String email, String phone) throws RazorpayException {
+        JSONObject req = new JSONObject();
+        req.put("name", name);
+        req.put("email", email);
+        req.put("contact", phone);
+        req.put("type", "customer");
 
+        // Use the standard internal method that returns the specific SDK Response type
+        // Then convert to JSON.
+        return client.post("contacts", req).toJson().getString("id");
+    }
+
+    /** Create Fund Account */
+    public String createFundAccount(String contactId, String holder, String account, String ifsc) throws RazorpayException {
+        JSONObject bank = new JSONObject();
+        bank.put("name", holder);
+        bank.put("account_number", account);
+        bank.put("ifsc", ifsc);
+
+        JSONObject req = new JSONObject();
+        req.put("contact_id", contactId);
+        req.put("account_type", "bank_account");
+        req.put("bank_account", bank);
+
+        return client.post("fund_accounts", req).toJson().getString("id");
+    }
+
+    /** Create Razorpay Order */
+    public RazorpayOrderResponse createOrder(double amount, int milestoneId) throws RazorpayException {
         JSONObject orderRequest = new JSONObject();
-        orderRequest.put("amount", (int) (amount * 100));
+        orderRequest.put("amount", (long) Math.round(amount * 100));
         orderRequest.put("currency", "INR");
         orderRequest.put("receipt", "MILESTONE-" + milestoneId);
         orderRequest.put("payment_capture", 1);
 
-//        Order order = client.orders.create(orderRequest);
-        com.razorpay.Order order = client.orders.create(orderRequest);
+        Order order = client.orders.create(orderRequest);
 
         RazorpayOrderResponse response = new RazorpayOrderResponse();
-
-        response.setOrderId(order.get("id"));
-        response.setAmount(order.get("amount"));
-        response.setCurrency(order.get("currency"));
-        response.setStatus(order.get("status"));
+        // Use .get() method which is the most compatible way to extract data from SDK objects
+        response.setOrderId(order.get("id").toString());
+        response.setAmount(Integer.parseInt(order.get("amount").toString()));
+        response.setCurrency(order.get("currency").toString());
+        response.setStatus(order.get("status").toString());
 
         return response;
     }
 
-    public boolean verifyPaymentSignature(String orderId, String paymentId, String signature) throws Exception {
+    /** Verify Payment Signature */
+    public boolean verifyPaymentSignature(String orderId, String paymentId, String signature) {
+        try {
+            JSONObject options = new JSONObject();
+            options.put("razorpay_order_id", orderId);
+            options.put("razorpay_payment_id", paymentId);
+            options.put("razorpay_signature", signature);
 
-        String payload = orderId + "|" + paymentId;
-
-        Mac mac = Mac.getInstance("HmacSHA256");
-        SecretKeySpec secretKey = new SecretKeySpec(keySecret.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
-
-        mac.init(secretKey);
-
-        String generatedSignature = Hex.encodeHexString(mac.doFinal(payload.getBytes(StandardCharsets.UTF_8)));
-
-        return generatedSignature.equals(signature);
+            return Utils.verifyPaymentSignature(options, keySecret);
+        } catch (RazorpayException e) {
+            return false;
+        }
     }
 
-    public void transfer(String paymentId, JSONObject request) throws Exception {
+    public void transfer(String paymentId, JSONObject request)
+            throws Exception {
         client.payments.transfer(paymentId, request);
     }
 
-    public void refundPayment(String paymentId, int amount) throws Exception {
-
+    /** Refund payment */
+    public void refundPayment(String paymentId, double amount) throws RazorpayException {
         JSONObject refundRequest = new JSONObject();
-        refundRequest.put("amount", amount);
-
+        refundRequest.put("amount", (long) Math.round(amount * 100));
         client.payments.refund(paymentId, refundRequest);
     }
 
