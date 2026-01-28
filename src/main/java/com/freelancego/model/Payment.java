@@ -2,6 +2,7 @@ package com.freelancego.model;
 
 import com.freelancego.enums.PaymentStatus;
 import jakarta.persistence.*;
+
 import java.time.OffsetDateTime;
 
 @Entity
@@ -11,52 +12,135 @@ public class Payment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    private Double amount;              // actual transaction amount
+    private Double amount;
+    private String currency;
 
-    @Column(columnDefinition = "TIMESTAMP WITH TIME ZONE", updatable = false, nullable = false)
-    private OffsetDateTime paidAt;     // when payment was processed
-    private String transactionId;      // reference from gateway
-    private String method;             // CARD, UPI, BANK_TRANSFER, etc.
+    @Column(nullable = false, unique = true)
+    private String razorpayOrderId;
+
+    private String razorpayPaymentId;
+    private String razorpaySignature;
 
     @Enumerated(EnumType.STRING)
     private PaymentStatus status = PaymentStatus.NOT_PAID;
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "contract_id")
-    private Contract contract;
+    @Column(columnDefinition = "TIMESTAMP WITH TIME ZONE")
+    private OffsetDateTime createdAt;
 
-    @ManyToOne
-    @JoinColumn(name = "payer_id")
+    @Column(columnDefinition = "TIMESTAMP WITH TIME ZONE")
+    private OffsetDateTime expiresAt;
+
+    @ManyToOne(optional = false)
+    private Milestone milestone;
+
+    @ManyToOne(optional = false)
     private User payer;
 
     @ManyToOne
-    @JoinColumn(name = "payee_id")
     private User payee;
 
-    public int getId() { return id; }
-    public void setId(int id) { this.id = id; }
+    @PrePersist
+    void onCreate() {
+        this.createdAt = OffsetDateTime.now();
+    }
 
-    public Double getAmount() { return amount; }
-    public void setAmount(Double amount) { this.amount = amount; }
+    public boolean isExpired() {
+        return expiresAt != null && OffsetDateTime.now().isAfter(expiresAt);
+    }
 
-    public OffsetDateTime getPaidAt() { return paidAt; }
-    public void setPaidAt(OffsetDateTime paidAt) { this.paidAt = paidAt; }
+    public int getId() {
+        return id;
+    }
 
-    public String getTransactionId() { return transactionId; }
-    public void setTransactionId(String transactionId) { this.transactionId = transactionId; }
+    public void setId(int id) {
+        this.id = id;
+    }
 
-    public String getMethod() { return method; }
-    public void setMethod(String method) { this.method = method; }
+    public Double getAmount() {
+        return amount;
+    }
 
-    public PaymentStatus getStatus() { return status; }
-    public void setStatus(PaymentStatus status) { this.status = status; }
+    public void setAmount(Double amount) {
+        this.amount = amount;
+    }
 
-    public Contract getContract() { return contract; }
-    public void setContract(Contract contract) { this.contract = contract; }
+    public String getCurrency() {
+        return currency;
+    }
 
-    public User getPayer() { return payer; }
-    public void setPayer(User payer) { this.payer = payer; }
+    public void setCurrency(String currency) {
+        this.currency = currency;
+    }
 
-    public User getPayee() { return payee; }
-    public void setPayee(User payee) { this.payee = payee; }
+    public String getRazorpayOrderId() {
+        return razorpayOrderId;
+    }
+
+    public void setRazorpayOrderId(String razorpayOrderId) {
+        this.razorpayOrderId = razorpayOrderId;
+    }
+
+    public String getRazorpayPaymentId() {
+        return razorpayPaymentId;
+    }
+
+    public void setRazorpayPaymentId(String razorpayPaymentId) {
+        this.razorpayPaymentId = razorpayPaymentId;
+    }
+
+    public String getRazorpaySignature() {
+        return razorpaySignature;
+    }
+
+    public void setRazorpaySignature(String razorpaySignature) {
+        this.razorpaySignature = razorpaySignature;
+    }
+
+    public PaymentStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(PaymentStatus status) {
+        this.status = status;
+    }
+
+    public OffsetDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(OffsetDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public OffsetDateTime getExpiresAt() {
+        return expiresAt;
+    }
+
+    public void setExpiresAt(OffsetDateTime expiresAt) {
+        this.expiresAt = expiresAt;
+    }
+
+    public Milestone getMilestone() {
+        return milestone;
+    }
+
+    public void setMilestone(Milestone milestone) {
+        this.milestone = milestone;
+    }
+
+    public User getPayer() {
+        return payer;
+    }
+
+    public void setPayer(User payer) {
+        this.payer = payer;
+    }
+
+    public User getPayee() {
+        return payee;
+    }
+
+    public void setPayee(User payee) {
+        this.payee = payee;
+    }
 }

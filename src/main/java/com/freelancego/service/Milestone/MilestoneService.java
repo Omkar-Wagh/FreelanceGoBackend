@@ -1,6 +1,7 @@
 package com.freelancego.service.Milestone;
 
 import com.freelancego.dto.user.MilestoneDto;
+import com.freelancego.dto.user.MilestonePaymentResponse;
 import com.freelancego.dto.user.SubmissionDto;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -15,7 +16,7 @@ public interface MilestoneService {
 
     MilestoneDto editMilestone(MilestoneDto milestoneDto, int clientId, String name);
 
-    MilestoneDto approveMilestone(int milestoneId, int clientId, String name);
+    MilestonePaymentResponse approveMilestone(int milestoneId, int clientId, String name);
 
     SubmissionDto getSubmission(int milestoneId, int clientId, String name);
 

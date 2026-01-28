@@ -1,8 +1,10 @@
 package com.freelancego.controller.Milestone;
 
 import com.freelancego.dto.user.MilestoneDto;
+import com.freelancego.dto.user.MilestonePaymentResponse;
 import com.freelancego.dto.user.SubmissionDto;
 import com.freelancego.service.Milestone.MilestoneService;
+import com.freelancego.service.payment.PaymentService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -10,14 +12,17 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/")
 public class MilestoneController {
     final private MilestoneService milestoneService;
+    final private PaymentService paymentService;
 
-    public MilestoneController(MilestoneService milestoneService) {
+    public MilestoneController(MilestoneService milestoneService, PaymentService paymentService) {
         this.milestoneService = milestoneService;
+        this.paymentService = paymentService;
     }
 
     @GetMapping("/get-milestone/{contractId}")
@@ -41,10 +46,16 @@ public class MilestoneController {
         return ResponseEntity.ok(milestoneService.editMilestone(milestoneDto,clientId,auth.getName()));
     }
 
+    // trigger payment from here
     @PreAuthorize("hasRole('CLIENT')")
     @PostMapping("/milestone-approval")
-    ResponseEntity<MilestoneDto> approveMilestone(@RequestParam int milestoneId, @RequestParam int clientId, Authentication auth){
+    ResponseEntity<MilestonePaymentResponse> approveMilestone(@RequestParam int milestoneId, @RequestParam int clientId, Authentication auth){
         return ResponseEntity.ok(milestoneService.approveMilestone(milestoneId,clientId,auth.getName()));
+    }
+
+    @PostMapping("/verify")
+    public ResponseEntity<MilestonePaymentResponse> verifyPayment(@RequestBody Map<String, String> request) {
+            return ResponseEntity.ok(paymentService.verifyPayment(request));
     }
 
     @GetMapping("/get-submission")

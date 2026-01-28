@@ -2,6 +2,7 @@ package com.freelancego.service.Milestone.Impl;
 
 import com.freelancego.common.utils.SupabaseUtil;
 import com.freelancego.dto.user.MilestoneDto;
+import com.freelancego.dto.user.MilestonePaymentResponse;
 import com.freelancego.dto.user.SubmissionDto;
 import com.freelancego.enums.MilestoneStatus;
 import com.freelancego.enums.SubmissionStatus;
@@ -15,6 +16,8 @@ import com.freelancego.mapper.SubmissionMapper;
 import com.freelancego.model.*;
 import com.freelancego.repo.*;
 import com.freelancego.service.Milestone.MilestoneService;
+import com.freelancego.service.payment.PaymentService;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -32,8 +35,9 @@ public class MilestoneServiceImpl implements MilestoneService {
     final private ClientRepository clientRepository;
     final private FreelancerRepository freelancerRepository;
     final private SupabaseUtil supabaseUtil;
+    final private PaymentService paymentService;
 
-    public MilestoneServiceImpl(UserRepository userRepository, ContractRepository contractRepository, MilestoneRepository milestoneRepository, MilestoneMapper milestoneMapper, SubmissionRepository submissionRepository, SubmissionMapper submissionMapper, ClientRepository clientRepository, FreelancerRepository freelancerRepository, SupabaseUtil supabaseUtil) {
+    public MilestoneServiceImpl(UserRepository userRepository, ContractRepository contractRepository, MilestoneRepository milestoneRepository, MilestoneMapper milestoneMapper, SubmissionRepository submissionRepository, SubmissionMapper submissionMapper, ClientRepository clientRepository, FreelancerRepository freelancerRepository, SupabaseUtil supabaseUtil, PaymentService paymentService) {
         this.userRepository = userRepository;
         this.contractRepository = contractRepository;
         this.milestoneRepository = milestoneRepository;
@@ -43,6 +47,7 @@ public class MilestoneServiceImpl implements MilestoneService {
         this.clientRepository = clientRepository;
         this.freelancerRepository = freelancerRepository;
         this.supabaseUtil = supabaseUtil;
+        this.paymentService = paymentService;
     }
 
     public List<MilestoneDto> getMileStone(int contractId,String name) {
@@ -168,27 +173,51 @@ public class MilestoneServiceImpl implements MilestoneService {
         return milestoneMapper.toDTO(milestone);
     }
 
-    public MilestoneDto approveMilestone(int milestoneId, int clientId, String name) {
-        User user = userRepository.findByEmail(name)
+//    public MilestoneDto approveMilestone(int milestoneId, int clientId, String name) {
+//        User user = userRepository.findByEmail(name)
+//                .orElseThrow(() -> new UserNotFoundException("User not found"));
+//
+//        Client client = clientRepository.findByUser(user)
+//                .orElseThrow(()-> new UserNotFoundException("client not found"));
+//
+//        if(clientId != client.getId()){
+//            throw new UnauthorizedAccessException("your are not authorised to edit the milestone");
+//        }
+//
+//        Milestone milestone = milestoneRepository.findById(milestoneId)
+//                .orElseThrow(()-> new UserNotFoundException("milestone not found"));
+//
+//        if(milestone != null){
+//            milestone.setVerificationStatus(VerificationStatus.APPROVED_BY_CLIENT);
+//            milestone.setLocked(true);
+//            milestone.setStatus(MilestoneStatus.IN_PROGRESS);
+//        }
+//        if(milestone != null) milestoneRepository.save(milestone);
+//        return milestoneMapper.toDTO(milestone);
+//    }
+
+    @Transactional
+    public MilestonePaymentResponse approveMilestone(int milestoneId, int clientId, String email) {
+
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         Client client = clientRepository.findByUser(user)
-                .orElseThrow(()-> new UserNotFoundException("client not found"));
+                .orElseThrow(() -> new UserNotFoundException("Client not found"));
 
-        if(clientId != client.getId()){
-            throw new UnauthorizedAccessException("your are not authorised to edit the milestone");
+        if (client.getId() != clientId) {
+            throw new UnauthorizedAccessException("Not authorized");
         }
 
         Milestone milestone = milestoneRepository.findById(milestoneId)
-                .orElseThrow(()-> new UserNotFoundException("milestone not found"));
+                .orElseThrow(() -> new UserNotFoundException("Milestone not found"));
 
-        if(milestone != null){
-            milestone.setVerificationStatus(VerificationStatus.APPROVED_BY_CLIENT);
-            milestone.setLocked(true);
-            milestone.setStatus(MilestoneStatus.IN_PROGRESS);
-        }
-        if(milestone != null) milestoneRepository.save(milestone);
-        return milestoneMapper.toDTO(milestone);
+        milestone.setVerificationStatus(VerificationStatus.APPROVED_BY_CLIENT);
+        milestone.setLocked(true);
+        milestone.setStatus(MilestoneStatus.IN_PROGRESS);
+        milestoneRepository.save(milestone);
+
+        return paymentService.createPaymentOrder(milestone);
     }
 
     public SubmissionDto getSubmission(int milestoneId, int clientId, String name) {
@@ -339,8 +368,7 @@ public class MilestoneServiceImpl implements MilestoneService {
         Submission submission = submissionRepository.findById(submissionId)
                 .orElseThrow(() -> new UserNotFoundException("submission not found"));
 
-        Milestone milestone = milestoneRepository.findById(submission.getId())
-                .orElseThrow(()-> new UserNotFoundException("milestone not found"));
+        Milestone milestone = milestoneRepository.findBySubmission(submission);
 
         if (milestone.getContract().getClient().getId() != client.getId()) {
             throw new BadRequestException("unauthorised to provide submission approval");
@@ -354,6 +382,11 @@ public class MilestoneServiceImpl implements MilestoneService {
 
         if(milestone != null) milestoneRepository.save(milestone);
 
+        try{
+            paymentService.releaseMilestonePayment(milestone);
+        }catch (Exception e){
+            e.getMessage();
+        }
         return milestoneMapper.toDTO(milestone);
     }
 
