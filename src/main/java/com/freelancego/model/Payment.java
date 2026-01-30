@@ -19,7 +19,6 @@ public class Payment {
     private String razorpayOrderId;
 
     private String razorpayPaymentId;
-//    private String razorpaySignature;
 
     @Enumerated(EnumType.STRING)
     private PaymentStatus status = PaymentStatus.NOT_PAID;
@@ -87,14 +86,6 @@ public class Payment {
     public void setRazorpayPaymentId(String razorpayPaymentId) {
         this.razorpayPaymentId = razorpayPaymentId;
     }
-
-//    public String getRazorpaySignature() {
-//        return razorpaySignature;
-//    }
-//
-//    public void setRazorpaySignature(String razorpaySignature) {
-//        this.razorpaySignature = razorpaySignature;
-//    }
 
     public PaymentStatus getStatus() {
         return status;
