@@ -1,4 +1,4 @@
-package com.freelancego.controller.milestone;
+package com.freelancego.controller.Milestone;
 
 import com.freelancego.service.payment.PaymentService;
 import org.springframework.http.ResponseEntity;
