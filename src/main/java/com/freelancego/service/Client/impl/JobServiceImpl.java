@@ -98,53 +98,6 @@ public class JobServiceImpl implements JobService {
         return jobMapper.toDto(job);
     }
 
-//    public List<JobDto> getPostByClient(int page, int size, String email) {
-//        User user = userRepository.findByEmail(email)
-//                .orElseThrow(() -> new UserNotFoundException("User not found"));
-//
-//        Client client = clientRepository.findByUser(user)
-//                .orElseThrow(() -> new UserNotFoundException("Client not found"));
-//
-//        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-//        List<Job> jobs = jobRepository.findJobByClient(client, pageable).getContent();
-//        List<JobDto> jobDtoList = new ArrayList<>();
-//        for(Job job : jobs){
-//            int proposalsCount = bidRepository.countBidsByJobId(job.getId());
-//            List<String> requiredSkillsList = (job.getRequiredSkills() == null || job.getRequiredSkills().isBlank())
-//                    ? List.of()
-//                    : Arrays.stream(job.getRequiredSkills().split(","))
-//                    .map(String::trim)
-//                    .toList();
-//            String phase;
-//            if(job.getPhase() == null){
-//                phase = null;
-//            }else{
-//                phase = job.getPhase().name();
-//            }
-//                    JobDto jobDto = new JobDto(
-//                    job.getId(),
-//                    job.getJobTitle(),
-//                    requiredSkillsList,
-//                    job.getExperienceLevel().name(),
-//                    job.getJobDescription(),
-//                    job.getRequirement(),
-//                    job.getProjectStartTime(),
-//                    job.getProjectEndTime(),
-//                    job.getCreatedAt(),
-//                    job.getBudget(),
-//                    job.getFile(),
-//                    job.getStatus().name(),
-//                    phase,
-//                    clientMapper.toDTO(job.getClient()),
-//                    proposalsCount,
-//                    false
-//            );
-//                    jobDtoList.add(jobDto);
-//
-//        }
-//        return jobDtoList;
-//    }
-
     public Page<JobDto> getPostByClient(int page, int size, String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));

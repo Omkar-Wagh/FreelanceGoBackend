@@ -19,6 +19,7 @@ public class Payment {
     private String razorpayOrderId;
 
     private String razorpayPaymentId;
+    private String razorpayTransferId;
 
     @Enumerated(EnumType.STRING)
     private PaymentStatus status = PaymentStatus.NOT_PAID;
@@ -29,7 +30,7 @@ public class Payment {
     @Column(columnDefinition = "TIMESTAMP WITH TIME ZONE")
     private OffsetDateTime expiresAt;
 
-    @ManyToOne(optional = false)
+    @OneToOne(optional = false)
     private Milestone milestone;
 
     @ManyToOne(optional = false)
@@ -85,6 +86,14 @@ public class Payment {
 
     public void setRazorpayPaymentId(String razorpayPaymentId) {
         this.razorpayPaymentId = razorpayPaymentId;
+    }
+
+    public String getRazorpayTransferId() {
+        return razorpayTransferId;
+    }
+
+    public void setRazorpayTransferId(String razorpayTransferId) {
+        this.razorpayTransferId = razorpayTransferId;
     }
 
     public PaymentStatus getStatus() {

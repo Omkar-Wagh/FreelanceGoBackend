@@ -10,10 +10,14 @@ import java.util.List;
 
 @Repository
 public interface PaymentRepository extends JpaRepository<Payment, Integer> {
-    List<Payment> findByByMilestone(Milestone milestone);
 
     Payment findByRazorpayOrderId(String orderId);
 
     Payment findByMilestoneAndStatus(Milestone milestone, PaymentStatus paymentStatus);
 
+    Payment findByRazorpayTransferId(String transferId);
+
+    Payment findByMilestone(Milestone milestone);
+
+    Payment findByRazorpayPaymentId(String paymentId);
 }

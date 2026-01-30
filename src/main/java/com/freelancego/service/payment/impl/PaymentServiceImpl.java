@@ -7,13 +7,13 @@ import com.freelancego.enums.ContractStatus;
 import com.freelancego.enums.MilestoneStatus;
 import com.freelancego.enums.PaymentStatus;
 import com.freelancego.enums.PayoutAccountStatus;
-import com.freelancego.exception.InternalServerErrorException;
-import com.freelancego.exception.InvalidIdException;
-import com.freelancego.exception.UserNotFoundException;
+import com.freelancego.exception.*;
 import com.freelancego.model.*;
 import com.freelancego.repo.*;
 import com.freelancego.service.Milestone.MilestoneService;
 import com.freelancego.service.payment.PaymentService;
+import com.razorpay.RazorpayException;
+import com.razorpay.Transfer;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
@@ -66,12 +66,13 @@ public class PaymentServiceImpl implements PaymentService {
         }
     }
 
-    /** Process client → platform payments */
+    @Transactional
     public void processPaymentWebhook(String payload, String signature) {
-        try{
+
+        try {
             verifySignature(payload, signature);
-        }catch (Exception e){
-            throw new RuntimeException("issue with webhook processing during client to platform payment");
+        } catch (Exception e) {
+            throw new RuntimeException("Invalid Razorpay signature");
         }
 
         JSONObject event = new JSONObject(payload);
@@ -87,28 +88,37 @@ public class PaymentServiceImpl implements PaymentService {
         String orderId = paymentEntity.getString("order_id");
 
         Payment payment = paymentRepository.findByRazorpayOrderId(orderId);
-
         if (payment == null) return;
-
-        if (payment.isExpired()) {
-            payment.setStatus(PaymentStatus.FAILED);
-            paymentRepository.save(payment);
-            throw new RuntimeException("Payment order expired");
-        }
 
         Milestone milestone = payment.getMilestone();
 
         switch (eventType) {
+
             case "payment.captured" -> {
+
+                if (payment.getStatus() == PaymentStatus.ESCROW_HELD ||
+                        payment.getStatus() == PaymentStatus.COMPLETED) {
+                    return;
+                }
+
                 payment.setRazorpayPaymentId(razorpayPaymentId);
                 payment.setStatus(PaymentStatus.ESCROW_HELD);
                 payment.setCreatedAt(OffsetDateTime.now());
                 paymentRepository.save(payment);
 
-                milestone.setPaymentStatus(PaymentStatus.ESCROW_HELD);
-                milestoneRepository.save(milestone);
+                if (milestone.getPaymentStatus() != PaymentStatus.ESCROW_HELD) {
+                    milestone.setPaymentStatus(PaymentStatus.ESCROW_HELD);
+                    milestoneRepository.save(milestone);
+                }
             }
+
             case "payment.failed" -> {
+
+                if (payment.getStatus() == PaymentStatus.ESCROW_HELD ||
+                        payment.getStatus() == PaymentStatus.COMPLETED) {
+                    return;
+                }
+
                 payment.setStatus(PaymentStatus.FAILED);
                 paymentRepository.save(payment);
 
@@ -178,20 +188,25 @@ public class PaymentServiceImpl implements PaymentService {
     @Transactional
     public MilestonePaymentResponse createPaymentOrder(Milestone milestone) {
 
-        if (milestone.getPaymentStatus() == PaymentStatus.RELEASED) {
+        if (milestone.getPaymentStatus() == PaymentStatus.COMPLETED) {
             throw new RuntimeException("Payment already completed for milestone");
         }
 
-        List<Payment> existingPayments = paymentRepository.findByByMilestone(milestone);
+        Payment payment = paymentRepository.findByMilestone(milestone);
 
-        for (Payment payment : existingPayments) {
-            if (payment.isExpired() && payment.getStatus() == PaymentStatus.NOT_PAID) {
-                payment.setStatus(PaymentStatus.FAILED);
-                paymentRepository.save(payment);
+        if (payment != null) {
+
+            if (payment.getStatus() == PaymentStatus.ESCROW_HELD) {
+                return MilestonePaymentResponse.from(payment, milestone, razorpayKey);
             }
 
-            if (!payment.isExpired() && payment.getStatus() == PaymentStatus.NOT_PAID) {
+            if (payment.getStatus() == PaymentStatus.NOT_PAID && !payment.isExpired()) {
                 return MilestonePaymentResponse.from(payment, milestone, razorpayKey);
+            }
+
+            if (payment.isExpired() || payment.getStatus() == PaymentStatus.FAILED) {
+                payment.setStatus(PaymentStatus.EXPIRED);
+                paymentRepository.save(payment);
             }
         }
 
@@ -202,20 +217,24 @@ public class PaymentServiceImpl implements PaymentService {
             throw new RuntimeException("Failed to create Razorpay order", e);
         }
 
-        Payment payment = new Payment();
-        payment.setAmount(milestone.getAmount());
-        payment.setCurrency("INR");
+        if (payment == null) {
+            payment = new Payment();
+            payment.setMilestone(milestone);
+            payment.setPayer(milestone.getContract().getClient());
+            payment.setPayee(milestone.getContract().getFreelancer());
+            payment.setCurrency("INR");
+            payment.setAmount(milestone.getAmount());
+        }
+
         payment.setRazorpayOrderId(order.getOrderId());
         payment.setExpiresAt(OffsetDateTime.now().plusMinutes(20));
         payment.setStatus(PaymentStatus.NOT_PAID);
-        payment.setMilestone(milestone);
-        payment.setPayer(milestone.getContract().getClient());
-        payment.setPayee(milestone.getContract().getFreelancer());
 
         paymentRepository.save(payment);
 
         return MilestonePaymentResponse.from(payment, milestone, razorpayKey);
     }
+
 
     @Transactional
     public void releaseMilestonePayment(Milestone milestone) {
@@ -225,12 +244,21 @@ public class PaymentServiceImpl implements PaymentService {
         }
 
         Payment payment = paymentRepository.findByMilestoneAndStatus(milestone, PaymentStatus.ESCROW_HELD);
-        if(!payment.getPayee().getPayoutAccountStatus().equals(PayoutAccountStatus.ACTIVE)){
-            throw new InvalidIdException("freelancer account is not verified");
+
+        if (payment == null) {
+            throw new RuntimeException("No escrow payment found");
         }
+
+        if (payment.getPayee().getPayoutAccountStatus() != PayoutAccountStatus.ACTIVE) {
+            throw new InvalidIdException("Freelancer payout account not verified");
+        }
+
+        if (payment.getStatus() == PaymentStatus.RELEASED || payment.getStatus() == PaymentStatus.COMPLETED) {
+            throw new ConflictException("Payment already released");
+        }
+
         JSONObject transfer = new JSONObject();
-        transfer.put("account", milestone.getContract().getFreelancer().getRazorpayFundAccountId());
-        transfer.put("account", milestone.getContract().getFreelancer());
+        transfer.put("account", payment.getPayee().getRazorpayFundAccountId());
         transfer.put("amount", BigDecimal.valueOf(payment.getAmount()).multiply(BigDecimal.valueOf(100)).intValue());
         transfer.put("currency", "INR");
         transfer.put("notes", new JSONObject().put("milestoneId", milestone.getId()));
@@ -238,21 +266,68 @@ public class PaymentServiceImpl implements PaymentService {
         JSONObject request = new JSONObject();
         request.put("transfers", new JSONArray().put(transfer));
 
+        List<Transfer> transfers;
         try {
-            razorpayService.transfer(payment.getRazorpayPaymentId(), request);
+            transfers = razorpayService.transfer(payment.getRazorpayPaymentId(), request);
         } catch (Exception e) {
-            throw new RuntimeException("Payout failed", e);
+            throw new RuntimeException("Failed to initiate payout", e);
         }
 
+        Transfer t = transfers.get(0);
+
+        payment.setRazorpayTransferId(t.get("id").toString());
         payment.setStatus(PaymentStatus.RELEASED);
+
         milestone.setPaymentStatus(PaymentStatus.RELEASED);
-        milestone.setStatus(MilestoneStatus.COMPLETED);
 
+        paymentRepository.save(payment);
+        milestoneRepository.save(milestone);
+    }
+
+    @Transactional
+    public void processTransferWebhook(String payload, String signature) {
+
+        try{
+            verifySignature(payload, signature);
+        }catch (Exception e){
+            throw new RuntimeException("issue with webhook processing during platform to freelancer payment");
+        }
+
+        JSONObject event = new JSONObject(payload);
+        String eventType = event.getString("event");
+
+        if (!eventType.startsWith("transfer.")) return;
+
+        JSONObject transfer = event.getJSONObject("payload")
+                .getJSONObject("transfer")
+                .getJSONObject("entity");
+
+        String transferId = transfer.getString("id");
+        String status = transfer.getString("status");
+
+        Payment payment = paymentRepository.findByRazorpayTransferId(transferId);
+
+        if (payment == null) return;
+
+        Milestone milestone = payment.getMilestone();
         Contract contract = milestone.getContract();
-        Milestone lastMilestone = milestoneService.getLastMilestone(milestone.getContract());
 
-        if(lastMilestone.getId() == milestone.getId()){
-            contract.setStatus(ContractStatus.COMPLETED);
+        switch (status) {
+            case "processed" -> {
+                payment.setStatus(PaymentStatus.COMPLETED);
+
+                if(milestoneService.getLastMilestone(contract).getId() == milestone.getId()){
+                    milestone.setStatus(MilestoneStatus.COMPLETED);
+                    contract.setStatus(ContractStatus.COMPLETED);
+                }
+
+            }
+            case "failed" -> {
+                payment.setStatus(PaymentStatus.FAILED);
+            }
+            case "pending", "queued", "processing" -> {
+                return;
+            }
         }
 
         paymentRepository.save(payment);
@@ -264,23 +339,74 @@ public class PaymentServiceImpl implements PaymentService {
     public void refundMilestonePayment(Milestone milestone, String reason) {
 
         if (milestone.getPaymentStatus() != PaymentStatus.ESCROW_HELD) {
-            throw new RuntimeException("Refund not allowed. Payment already released or not paid.");
+            throw new RuntimeException("Refund not allowed in current state");
         }
 
-        Payment payment = paymentRepository.findByMilestoneAndStatus(milestone, PaymentStatus.ESCROW_HELD);
+        Payment payment = paymentRepository
+                .findByMilestoneAndStatus(milestone, PaymentStatus.ESCROW_HELD);
+
+        if (payment == null) {
+            throw new RuntimeException("No escrow payment found");
+        }
+
+        if (payment.getStatus() == PaymentStatus.RELEASED || payment.getStatus() == PaymentStatus.REFUNDED) {
+            throw new ConflictException("Refund already initiated");
+        }
 
         try {
-            razorpayService.refundPayment(payment.getRazorpayPaymentId(), (int) (payment.getAmount() * 100));
+            razorpayService.refundPayment(payment.getRazorpayPaymentId(), payment.getAmount());
         } catch (Exception e) {
-            throw new RuntimeException("Refund failed", e);
+            throw new RuntimeException("Failed to initiate refund", e);
         }
 
-        Contract contract = milestone.getContract();
-        contract.setStatus(ContractStatus.CANCELLED);
-        payment.setStatus(PaymentStatus.REFUNDED);
+        payment.setStatus(PaymentStatus.RELEASED);
+        milestone.setPaymentStatus(PaymentStatus.RELEASED);
 
-        milestone.setPaymentStatus(PaymentStatus.REFUNDED);
-        milestone.setStatus(MilestoneStatus.CANCELLED);
+        paymentRepository.save(payment);
+        milestoneRepository.save(milestone);
+    }
+
+    @Transactional
+    public void processRefundWebhook(String payload, String signature) {
+
+        try{
+            verifySignature(payload, signature);
+        }catch (Exception e){
+            throw new RuntimeException("issue with webhook processing during platform to freelancer payment");
+        }
+
+        JSONObject event = new JSONObject(payload);
+        String eventType = event.getString("event");
+
+        if (!eventType.startsWith("refund.")) return;
+
+        JSONObject refund = event.getJSONObject("payload")
+                .getJSONObject("refund")
+                .getJSONObject("entity");
+
+        String paymentId = refund.getString("payment_id");
+        String status = refund.getString("status");
+
+        Payment payment = paymentRepository.findByRazorpayPaymentId(paymentId);
+
+        if (payment == null) return;
+
+        Milestone milestone = payment.getMilestone();
+        Contract contract = milestone.getContract();
+
+        switch (status) {
+
+            case "processed" -> {
+                payment.setStatus(PaymentStatus.REFUNDED);
+                milestone.setPaymentStatus(PaymentStatus.REFUNDED);
+                milestone.setStatus(MilestoneStatus.CANCELLED);
+                contract.setStatus(ContractStatus.CANCELLED);
+            }
+
+            case "failed" -> {
+                payment.setStatus(PaymentStatus.FAILED);
+            }
+        }
 
         paymentRepository.save(payment);
         milestoneRepository.save(milestone);

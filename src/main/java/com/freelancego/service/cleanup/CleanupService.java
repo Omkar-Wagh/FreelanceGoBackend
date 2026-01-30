@@ -1,4 +1,4 @@
-package com.freelancego.service.Client.impl;
+package com.freelancego.service.cleanup;
 
 import com.freelancego.enums.JobStatus;
 import com.freelancego.repo.JobRepository;

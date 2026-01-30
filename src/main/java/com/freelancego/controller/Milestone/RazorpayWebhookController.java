@@ -35,4 +35,23 @@ public class RazorpayWebhookController {
             return ResponseEntity.status(500).body("Error: " + e.getMessage());
         }
     }
+
+    /** Webhook for confirming payment status from platform to freelancer account*/
+    @PostMapping("/payment/transfer")
+    public ResponseEntity<String> handleTransferWebhook(@RequestHeader("X-Razorpay-Signature") String signature, @RequestBody String payload) {
+        try {
+            paymentService.processTransferWebhook(payload, signature);
+            return ResponseEntity.ok("transfer webhook processed");
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Error: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/webhooks/razorpay/refund")
+    public ResponseEntity<String> handleRefundWebhook(@RequestHeader("X-Razorpay-Signature") String signature, @RequestBody String payload) {
+
+        paymentService.processRefundWebhook(payload, signature);
+        return ResponseEntity.ok("refund webhook processed");
+    }
+
 }

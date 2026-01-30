@@ -7,6 +7,8 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class RazorpayService {
 
@@ -107,8 +109,8 @@ public class RazorpayService {
     /* -------------------------------------------------
        TRANSFER PAYMENT (ESCROW → FREELANCER)
        ------------------------------------------------- */
-    public void transfer(String paymentId, JSONObject transferRequest) throws RazorpayException {
-        client.payments.transfer(paymentId, transferRequest);
+    public List<Transfer> transfer(String paymentId, JSONObject transferRequest) throws RazorpayException {
+        return client.payments.transfer(paymentId, transferRequest);
     }
 
     /* -------------------------------------------------

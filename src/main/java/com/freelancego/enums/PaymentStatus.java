@@ -5,6 +5,7 @@ public enum PaymentStatus {
     ESCROW_HELD,     // Client deposited funds but not released
     RELEASED,        // Payment released to freelancer
     REFUNDED,        // Payment refunded to client
+    COMPLETED,
     FAILED,           // Transaction failed
     EXPIRED
 }

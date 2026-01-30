@@ -15,4 +15,8 @@ public interface PaymentService {
     void processPaymentWebhook(String payload, String signature);
 
     void processFundAccountWebhook(String payload, String signature);
+
+    void processTransferWebhook(String payload, String signature);
+
+    void processRefundWebhook(String payload, String signature);
 }
