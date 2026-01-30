@@ -12,7 +12,6 @@ import com.freelancego.model.*;
 import com.freelancego.repo.*;
 import com.freelancego.service.Milestone.MilestoneService;
 import com.freelancego.service.payment.PaymentService;
-import com.razorpay.RazorpayException;
 import com.razorpay.Transfer;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -195,19 +194,16 @@ public class PaymentServiceImpl implements PaymentService {
         Payment payment = paymentRepository.findByMilestone(milestone);
 
         if (payment != null) {
-
-            if (payment.getStatus() == PaymentStatus.ESCROW_HELD) {
+            if (payment.getStatus() == PaymentStatus.ESCROW_HELD || payment.getStatus() == PaymentStatus.NOT_PAID) {
                 return MilestonePaymentResponse.from(payment, milestone, razorpayKey);
             }
-
-            if (payment.getStatus() == PaymentStatus.NOT_PAID && !payment.isExpired()) {
-                return MilestonePaymentResponse.from(payment, milestone, razorpayKey);
-            }
-
-            if (payment.isExpired() || payment.getStatus() == PaymentStatus.FAILED) {
-                payment.setStatus(PaymentStatus.EXPIRED);
-                paymentRepository.save(payment);
-            }
+        } else {
+            payment = new Payment();
+            payment.setMilestone(milestone);
+            payment.setPayer(milestone.getContract().getClient());
+            payment.setPayee(milestone.getContract().getFreelancer());
+            payment.setCurrency("INR");
+            payment.setAmount(milestone.getAmount());
         }
 
         RazorpayOrderResponse order;
@@ -217,18 +213,9 @@ public class PaymentServiceImpl implements PaymentService {
             throw new RuntimeException("Failed to create Razorpay order", e);
         }
 
-        if (payment == null) {
-            payment = new Payment();
-            payment.setMilestone(milestone);
-            payment.setPayer(milestone.getContract().getClient());
-            payment.setPayee(milestone.getContract().getFreelancer());
-            payment.setCurrency("INR");
-            payment.setAmount(milestone.getAmount());
-        }
-
         payment.setRazorpayOrderId(order.getOrderId());
-        payment.setExpiresAt(OffsetDateTime.now().plusMinutes(20));
         payment.setStatus(PaymentStatus.NOT_PAID);
+        payment.setExpiresAt(OffsetDateTime.now().plusMinutes(20)); // optional, just for temporary expiry check
 
         paymentRepository.save(payment);
 
