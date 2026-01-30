@@ -8,11 +8,11 @@ import org.springframework.stereotype.Service;
 import java.time.OffsetDateTime;
 
 @Service
-public class CleanupService {
+public class JobInactivityScheduler {
 
     private final JobRepository jobRepository;
 
-    public CleanupService(JobRepository jobRepository) {
+    public JobInactivityScheduler(JobRepository jobRepository) {
         this.jobRepository = jobRepository;
     }
 
