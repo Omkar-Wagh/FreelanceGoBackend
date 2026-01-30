@@ -27,7 +27,6 @@ import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
 
 @Service
 public class PaymentServiceImpl implements PaymentService {
@@ -214,54 +213,6 @@ public class PaymentServiceImpl implements PaymentService {
         payment.setPayee(milestone.getContract().getFreelancer());
 
         paymentRepository.save(payment);
-
-        return MilestonePaymentResponse.from(payment, milestone, razorpayKey);
-    }
-
-    @Transactional
-    public MilestonePaymentResponse verifyPayment(Map<String, String> request) {
-
-        String orderId = request.get("razorpay_order_id");
-        String paymentId = request.get("razorpay_payment_id");
-        String signature = request.get("razorpay_signature");
-
-        Payment payment = paymentRepository.findByRazorpayOrderId(orderId);
-
-        if (payment == null) {
-            throw new InvalidIdException("Invalid Razorpay order id");
-        }
-
-        if (payment.isExpired()) {
-            payment.setStatus(PaymentStatus.FAILED);
-            paymentRepository.save(payment);
-            throw new RuntimeException("Payment order expired");
-        }
-
-        if (payment.getStatus() == PaymentStatus.ESCROW_HELD) {
-            return MilestonePaymentResponse.from(payment, payment.getMilestone(), razorpayKey);
-        }
-
-        boolean verified;
-        try {
-            verified = razorpayService.verifyPaymentSignature(orderId, paymentId, signature);
-        } catch (Exception e) {
-            throw new RuntimeException("Payment verification error", e);
-        }
-
-        if (!verified) {
-            payment.setStatus(PaymentStatus.FAILED);
-            paymentRepository.save(payment);
-            throw new RuntimeException("Invalid payment signature");
-        }
-
-        payment.setRazorpayPaymentId(paymentId);
-        payment.setCreatedAt(OffsetDateTime.now());
-        payment.setStatus(PaymentStatus.ESCROW_HELD);
-        paymentRepository.save(payment);
-
-        Milestone milestone = payment.getMilestone();
-        milestone.setPaymentStatus(PaymentStatus.ESCROW_HELD);
-        milestoneRepository.save(milestone);
 
         return MilestonePaymentResponse.from(payment, milestone, razorpayKey);
     }

@@ -19,7 +19,7 @@ public class Payment {
     private String razorpayOrderId;
 
     private String razorpayPaymentId;
-    private String razorpaySignature;
+//    private String razorpaySignature;
 
     @Enumerated(EnumType.STRING)
     private PaymentStatus status = PaymentStatus.NOT_PAID;
@@ -88,13 +88,13 @@ public class Payment {
         this.razorpayPaymentId = razorpayPaymentId;
     }
 
-    public String getRazorpaySignature() {
-        return razorpaySignature;
-    }
-
-    public void setRazorpaySignature(String razorpaySignature) {
-        this.razorpaySignature = razorpaySignature;
-    }
+//    public String getRazorpaySignature() {
+//        return razorpaySignature;
+//    }
+//
+//    public void setRazorpaySignature(String razorpaySignature) {
+//        this.razorpaySignature = razorpaySignature;
+//    }
 
     public PaymentStatus getStatus() {
         return status;

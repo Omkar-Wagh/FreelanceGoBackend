@@ -1,10 +1,7 @@
 package com.freelancego.service.payment.impl;
 
 import com.freelancego.dto.user.RazorpayOrderResponse;
-import com.razorpay.RazorpayClient;
-import com.razorpay.RazorpayException;
-import com.razorpay.Order;
-import com.razorpay.Utils;
+import com.razorpay.*;
 import jakarta.annotation.PostConstruct;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,56 +23,75 @@ public class RazorpayService {
         this.client = new RazorpayClient(keyId, keySecret);
     }
 
-    /** Create Razorpay Contact */
+    /* -------------------------------------------------
+       CREATE CONTACT (SDK SAFE)
+       ------------------------------------------------- */
     public String createContact(String name, String email, String phone) throws RazorpayException {
-        JSONObject req = new JSONObject();
-        req.put("name", name);
-        req.put("email", email);
-        req.put("contact", phone);
-        req.put("type", "customer");
 
-        // Use the standard internal method that returns the specific SDK Response type
-        // Then convert to JSON.
-        return client.post("contacts", req).toJson().getString("id");
+        JSONObject request = new JSONObject();
+        request.put("name", name);
+        request.put("email", email);
+        request.put("contact", phone);
+        request.put("type", "customer");
+
+        Customer customer = client.customers.create(request);
+        return customer.get("id");
     }
 
-    /** Create Fund Account */
-    public String createFundAccount(String contactId, String holder, String account, String ifsc) throws RazorpayException {
-        JSONObject bank = new JSONObject();
-        bank.put("name", holder);
-        bank.put("account_number", account);
-        bank.put("ifsc", ifsc);
+    /* -------------------------------------------------
+       CREATE FUND ACCOUNT (SDK SAFE)
+       ------------------------------------------------- */
+    public String createFundAccount(
+            String contactId,
+            String holderName,
+            String accountNumber,
+            String ifsc
+    ) throws RazorpayException {
 
-        JSONObject req = new JSONObject();
-        req.put("contact_id", contactId);
-        req.put("account_type", "bank_account");
-        req.put("bank_account", bank);
+        JSONObject bankAccount = new JSONObject();
+        bankAccount.put("name", holderName);
+        bankAccount.put("account_number", accountNumber);
+        bankAccount.put("ifsc", ifsc);
 
-        return client.post("fund_accounts", req).toJson().getString("id");
+        JSONObject request = new JSONObject();
+        request.put("contact_id", contactId);
+        request.put("account_type", "bank_account");
+        request.put("bank_account", bankAccount);
+
+        FundAccount fundAccount = client.fundAccount.create(request);
+        return fundAccount.get("id");
     }
 
-    /** Create Razorpay Order */
+    /* -------------------------------------------------
+       CREATE ORDER
+       ------------------------------------------------- */
     public RazorpayOrderResponse createOrder(double amount, int milestoneId) throws RazorpayException {
-        JSONObject orderRequest = new JSONObject();
-        orderRequest.put("amount", (long) Math.round(amount * 100));
-        orderRequest.put("currency", "INR");
-        orderRequest.put("receipt", "MILESTONE-" + milestoneId);
-        orderRequest.put("payment_capture", 1);
 
-        Order order = client.orders.create(orderRequest);
+        JSONObject request = new JSONObject();
+        request.put("amount", Math.round(amount * 100)); // paise
+        request.put("currency", "INR");
+        request.put("receipt", "MILESTONE-" + milestoneId);
+        request.put("payment_capture", 1);
+
+        Order order = client.orders.create(request);
 
         RazorpayOrderResponse response = new RazorpayOrderResponse();
-        // Use .get() method which is the most compatible way to extract data from SDK objects
-        response.setOrderId(order.get("id").toString());
+        response.setOrderId(order.get("id"));
         response.setAmount(Integer.parseInt(order.get("amount").toString()));
-        response.setCurrency(order.get("currency").toString());
-        response.setStatus(order.get("status").toString());
+        response.setCurrency(order.get("currency"));
+        response.setStatus(order.get("status"));
 
         return response;
     }
 
-    /** Verify Payment Signature */
-    public boolean verifyPaymentSignature(String orderId, String paymentId, String signature) {
+    /* -------------------------------------------------
+       VERIFY CLIENT PAYMENT SIGNATURE (OPTIONAL)
+       ------------------------------------------------- */
+    public boolean verifyPaymentSignature(
+            String orderId,
+            String paymentId,
+            String signature
+    ) {
         try {
             JSONObject options = new JSONObject();
             options.put("razorpay_order_id", orderId);
@@ -88,16 +104,21 @@ public class RazorpayService {
         }
     }
 
-    public void transfer(String paymentId, JSONObject request)
-            throws Exception {
-        client.payments.transfer(paymentId, request);
+    /* -------------------------------------------------
+       TRANSFER PAYMENT (ESCROW → FREELANCER)
+       ------------------------------------------------- */
+    public void transfer(String paymentId, JSONObject transferRequest) throws RazorpayException {
+        client.payments.transfer(paymentId, transferRequest);
     }
 
-    /** Refund payment */
+    /* -------------------------------------------------
+       REFUND PAYMENT
+       ------------------------------------------------- */
     public void refundPayment(String paymentId, double amount) throws RazorpayException {
+
         JSONObject refundRequest = new JSONObject();
-        refundRequest.put("amount", (long) Math.round(amount * 100));
+        refundRequest.put("amount", Math.round(amount * 100)); // paise
+
         client.payments.refund(paymentId, refundRequest);
     }
-
 }

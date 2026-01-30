@@ -174,29 +174,6 @@ public class MilestoneServiceImpl implements MilestoneService {
         return milestoneMapper.toDTO(milestone);
     }
 
-//    public MilestoneDto approveMilestone(int milestoneId, int clientId, String name) {
-//        User user = userRepository.findByEmail(name)
-//                .orElseThrow(() -> new UserNotFoundException("User not found"));
-//
-//        Client client = clientRepository.findByUser(user)
-//                .orElseThrow(()-> new UserNotFoundException("client not found"));
-//
-//        if(clientId != client.getId()){
-//            throw new UnauthorizedAccessException("your are not authorised to edit the milestone");
-//        }
-//
-//        Milestone milestone = milestoneRepository.findById(milestoneId)
-//                .orElseThrow(()-> new UserNotFoundException("milestone not found"));
-//
-//        if(milestone != null){
-//            milestone.setVerificationStatus(VerificationStatus.APPROVED_BY_CLIENT);
-//            milestone.setLocked(true);
-//            milestone.setStatus(MilestoneStatus.IN_PROGRESS);
-//        }
-//        if(milestone != null) milestoneRepository.save(milestone);
-//        return milestoneMapper.toDTO(milestone);
-//    }
-
     @Transactional
     public MilestonePaymentResponse approveMilestone(int milestoneId, int clientId, String email) {
 
