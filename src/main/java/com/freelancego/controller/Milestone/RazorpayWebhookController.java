@@ -47,7 +47,7 @@ public class RazorpayWebhookController {
         }
     }
 
-    @PostMapping("/webhooks/razorpay/refund")
+    @PostMapping("/payment/refund")
     public ResponseEntity<String> handleRefundWebhook(@RequestHeader("X-Razorpay-Signature") String signature, @RequestBody String payload) {
 
         paymentService.processRefundWebhook(payload, signature);

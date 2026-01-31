@@ -191,10 +191,14 @@ public class PaymentServiceImpl implements PaymentService {
             throw new RuntimeException("Payment already completed for milestone");
         }
 
+        if (milestone.getPaymentStatus() == PaymentStatus.ESCROW_HELD) {
+            throw new RuntimeException("you have made payment already completed for milestone");
+        }
+
         Payment payment = paymentRepository.findByMilestone(milestone);
 
         if (payment != null) {
-            if (payment.getStatus() == PaymentStatus.ESCROW_HELD || payment.getStatus() == PaymentStatus.NOT_PAID) {
+            if (payment.getStatus() == PaymentStatus.NOT_PAID) {
                 return MilestonePaymentResponse.from(payment, milestone, razorpayKey);
             }
         } else {
@@ -221,7 +225,6 @@ public class PaymentServiceImpl implements PaymentService {
 
         return MilestonePaymentResponse.from(payment, milestone, razorpayKey);
     }
-
 
     @Transactional
     public void releaseMilestonePayment(Milestone milestone) {
@@ -345,9 +348,6 @@ public class PaymentServiceImpl implements PaymentService {
         } catch (Exception e) {
             throw new RuntimeException("Failed to initiate refund", e);
         }
-
-        payment.setStatus(PaymentStatus.RELEASED);
-        milestone.setPaymentStatus(PaymentStatus.RELEASED);
 
         paymentRepository.save(payment);
         milestoneRepository.save(milestone);

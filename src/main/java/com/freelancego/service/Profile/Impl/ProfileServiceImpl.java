@@ -420,7 +420,7 @@ public class ProfileServiceImpl implements ProfileService {
             loggedInUser.setPhone(profileDto.getUser().phone());
         }
 
-        if (client != null && profileDto.getFreelancer() != null) {
+        if (client != null && profileDto.getClient() != null) {
             client.setCompanyName(profileDto.getClient().companyName());
             client.setBio(profileDto.getClient().bio());
             client.setPhone(profileDto.getClient().phone());
@@ -446,8 +446,8 @@ public class ProfileServiceImpl implements ProfileService {
                 }
             }
 
-            profileDetails.setLocation(profileDto.getFreelancerProfile().getLocation());
-            profileDetails.setRating(profileDto.getFreelancerProfile().getRating());
+            profileDetails.setLocation(profileDto.getClientProfile().getLocation());
+            profileDetails.setRating(profileDto.getClientProfile().getRating());
             profileDetails.setBannerUrl(bannerUrl);
             profile.setClientProfile(profileDetails);
         }
