@@ -114,15 +114,3 @@ public class ChatServiceImpl implements ChatService {
         return ably.auth.createTokenRequest(params, null);
     }
 }
-
-/*
-Frontend requests an authentication token from the Backend using its JWT.
-
-Backend validates the user and generates a signed Ably Token Request.
-
-Frontend uses that token to open a secure WebSocket channel with Ably.
-
-Frontend sends messages to the Backend, which persists them in PostgreSQL.
-
-Backend publishes the saved message to Ably, which broadcasts it to the recipient.
- */
