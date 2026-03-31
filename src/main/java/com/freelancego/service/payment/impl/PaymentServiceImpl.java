@@ -41,7 +41,7 @@ public class PaymentServiceImpl implements PaymentService {
     @Value("${razorpay.key.id}")
     private String razorpayKey;
 
-    @Value("${webhook.secret}")
+    @Value("${razorpay.webhook.secret}")
     private String webhookSecret;
 
     public PaymentServiceImpl(PaymentRepository paymentRepository, MilestoneRepository milestoneRepository, RazorpayService razorpayService, FreelancerRepository freelancerRepository, UserRepository userRepository, ContractRepository contractRepository, MilestoneService milestoneService) {
