@@ -5,12 +5,14 @@ import com.freelancego.dto.user.MilestoneDto;
 import com.freelancego.dto.user.MilestonePaymentResponse;
 import com.freelancego.dto.user.SubmissionDto;
 import com.freelancego.enums.MilestoneStatus;
+import com.freelancego.enums.NotificationType;
 import com.freelancego.enums.SubmissionStatus;
 import com.freelancego.enums.VerificationStatus;
 import com.freelancego.exception.BadRequestException;
 import com.freelancego.exception.InternalServerErrorException;
 import com.freelancego.exception.UnauthorizedAccessException;
 import com.freelancego.exception.UserNotFoundException;
+import com.freelancego.listeners.types.MilestoneEvent;
 import com.freelancego.mapper.MilestoneMapper;
 import com.freelancego.mapper.SubmissionMapper;
 import com.freelancego.model.*;
@@ -18,6 +20,7 @@ import com.freelancego.repo.*;
 import com.freelancego.service.Milestone.MilestoneService;
 import com.freelancego.service.payment.PaymentService;
 import jakarta.transaction.Transactional;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -37,8 +40,9 @@ public class MilestoneServiceImpl implements MilestoneService {
     final private FreelancerRepository freelancerRepository;
     final private SupabaseUtil supabaseUtil;
     final private PaymentService paymentService;
+    final private ApplicationEventPublisher applicationEventPublisher;
 
-    public MilestoneServiceImpl(UserRepository userRepository, ContractRepository contractRepository, MilestoneRepository milestoneRepository, MilestoneMapper milestoneMapper, SubmissionRepository submissionRepository, SubmissionMapper submissionMapper, ClientRepository clientRepository, FreelancerRepository freelancerRepository, SupabaseUtil supabaseUtil, PaymentService paymentService) {
+    public MilestoneServiceImpl(UserRepository userRepository, ContractRepository contractRepository, MilestoneRepository milestoneRepository, MilestoneMapper milestoneMapper, SubmissionRepository submissionRepository, SubmissionMapper submissionMapper, ClientRepository clientRepository, FreelancerRepository freelancerRepository, SupabaseUtil supabaseUtil, PaymentService paymentService, ApplicationEventPublisher applicationEventPublisher) {
         this.userRepository = userRepository;
         this.contractRepository = contractRepository;
         this.milestoneRepository = milestoneRepository;
@@ -49,6 +53,7 @@ public class MilestoneServiceImpl implements MilestoneService {
         this.freelancerRepository = freelancerRepository;
         this.supabaseUtil = supabaseUtil;
         this.paymentService = paymentService;
+        this.applicationEventPublisher = applicationEventPublisher;
     }
 
     public List<MilestoneDto> getMileStone(int contractId,String name) {
@@ -111,6 +116,16 @@ public class MilestoneServiceImpl implements MilestoneService {
         }
 
         Milestone saved = milestoneRepository.save(milestone);
+
+        // * Publishing the event to NotificationListener to create a notification
+        applicationEventPublisher.publishEvent(
+                new MilestoneEvent(
+                        contract.getClient().getUser(),
+                        contract.getFreelancer().getUser(),
+                        NotificationType.MILESTONE_CREATED
+                )
+        );
+
         return milestoneMapper.toDTO(saved);
     }
 

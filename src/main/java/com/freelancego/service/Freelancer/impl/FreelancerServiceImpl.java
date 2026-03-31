@@ -187,7 +187,6 @@ public class FreelancerServiceImpl implements FreelancerService {
         return response;
     }
 
-
     public Map<String, Object> calculateBidStatsForFreelancer(Freelancer freelancer) {
         List<Job> allJobs = jobRepository.findAll();
 

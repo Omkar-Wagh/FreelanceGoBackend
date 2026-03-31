@@ -10,6 +10,7 @@ import com.freelancego.enums.JobPhase;
 import com.freelancego.enums.JobStatus;
 import com.freelancego.exception.InternalServerErrorException;
 import com.freelancego.exception.UserNotFoundException;
+import com.freelancego.listeners.types.JobEvent;
 import com.freelancego.mapper.BidMapper;
 import com.freelancego.mapper.ClientMapper;
 import com.freelancego.mapper.ContractMapper;
@@ -17,6 +18,7 @@ import com.freelancego.mapper.JobMapper;
 import com.freelancego.model.*;
 import com.freelancego.repo.*;
 import com.freelancego.service.Client.JobService;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -37,8 +39,9 @@ public class JobServiceImpl implements JobService {
     final private SupabaseUtil supabaseUtil;
     final private BidRepository bidRepository;
     final private ClientMapper clientMapper;
+    final private ApplicationEventPublisher applicationEventPublisher;
 
-    public JobServiceImpl(UserRepository userRepository, JobMapper jobMapper, ClientRepository clientRepository, JobRepository jobRepository, ContractRepository contractRepository, ContractMapper contractMapper, BidMapper bidMapper, SupabaseUtil supabaseUtil, BidRepository bidRepository, ClientMapper clientMapper) {
+    public JobServiceImpl(UserRepository userRepository, JobMapper jobMapper, ClientRepository clientRepository, JobRepository jobRepository, ContractRepository contractRepository, ContractMapper contractMapper, BidMapper bidMapper, SupabaseUtil supabaseUtil, BidRepository bidRepository, ClientMapper clientMapper, ApplicationEventPublisher applicationEventPublisher) {
         this.userRepository = userRepository;
         this.jobMapper = jobMapper;
         this.clientRepository = clientRepository;
@@ -49,6 +52,7 @@ public class JobServiceImpl implements JobService {
         this.supabaseUtil = supabaseUtil;
         this.bidRepository = bidRepository;
         this.clientMapper = clientMapper;
+        this.applicationEventPublisher = applicationEventPublisher;
     }
 
     public <T> List<T> limitList(List<T> list, int limit) {
@@ -90,10 +94,13 @@ public class JobServiceImpl implements JobService {
                 job.setFile(attachmentPublicUrl);
             }
         }catch (Exception e){
-            throw new InternalServerErrorException("Something went wrong while creating the Job " + e.getMessage());
+            throw new InternalServerErrorException("Something went wrong while creating the Job "
+                    + e.getMessage());
         }
 
         jobRepository.save(job);
+
+        applicationEventPublisher.publishEvent(new JobEvent(client, job));
 
         return jobMapper.toDto(job);
     }
