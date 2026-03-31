@@ -1,5 +1,6 @@
 package com.freelancego.model;
 
+import com.freelancego.enums.NotificationType;
 import jakarta.persistence.*;
 import java.time.OffsetDateTime;
 
@@ -20,11 +21,31 @@ public class Notification {
     @JoinColumn(name = "trigger_user_id")
     private User triggerUser;
 
-    private int type;
+    /**
+    * Set to type 'String' for avoiding any issues with enum persistence
+    * Will not create problem even after changing the order of enum constants
+    */
+    @Enumerated(EnumType.STRING)
+    private NotificationType type;
+
     private OffsetDateTime createdAt;
     private boolean isSeen;
 
+    private boolean isGeneral;
+
     public Notification() {
+    }
+
+    public Notification(User user, User triggerUser, NotificationType type) {
+        this.user = user;
+        this.triggerUser = triggerUser;
+        this.type = type;
+    }
+
+    public Notification(User triggerUser, NotificationType type, boolean isGeneral) {
+        this.triggerUser = triggerUser;
+        this.type = type;
+        this.isGeneral = isGeneral;
     }
 
     @PrePersist
@@ -32,7 +53,14 @@ public class Notification {
         this.createdAt = OffsetDateTime.now();
         this.isSeen = false; // default to unseen when created
     }
-    // Getters and Setters
+
+    public boolean isGeneral() {
+        return isGeneral;
+    }
+
+    public void setGeneral(boolean general) {
+        isGeneral = general;
+    }
 
     public int getId() {
         return id;
@@ -58,11 +86,11 @@ public class Notification {
         this.triggerUser = triggerUser;
     }
 
-    public int getType() {
+    public NotificationType getType() {
         return type;
     }
 
-    public void setType(int type) {
+    public void setType(NotificationType type) {
         this.type = type;
     }
 
