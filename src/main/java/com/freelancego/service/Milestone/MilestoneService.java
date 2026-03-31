@@ -30,5 +30,4 @@ public interface MilestoneService {
 
     MilestoneDto approveSubmission(int submissionId, int clientId, String name);
 
-    Milestone getLastMilestone(Contract contract);
 }

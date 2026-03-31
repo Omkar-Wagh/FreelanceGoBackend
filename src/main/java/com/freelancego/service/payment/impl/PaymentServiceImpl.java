@@ -25,6 +25,7 @@ import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.math.BigDecimal;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -306,7 +307,7 @@ public class PaymentServiceImpl implements PaymentService {
             case "processed" -> {
                 payment.setStatus(PaymentStatus.COMPLETED);
 
-                if(milestoneService.getLastMilestone(contract).getId() == milestone.getId()){
+                if(getLastMilestone(contract).getId() == milestone.getId()){
                     milestone.setStatus(MilestoneStatus.COMPLETED);
                     contract.setStatus(ContractStatus.COMPLETED);
                 }
@@ -398,6 +399,12 @@ public class PaymentServiceImpl implements PaymentService {
         paymentRepository.save(payment);
         milestoneRepository.save(milestone);
         contractRepository.save(contract);
+    }
+
+    private Milestone getLastMilestone(Contract contract) {
+        List<Milestone> milestones = milestoneRepository.findByContract(contract);
+        return milestones.stream().max(Comparator.comparingInt(Milestone::getMilestoneNumber))
+                .orElseThrow(() -> new RuntimeException("No milestones found for this contract"));
     }
 
 }

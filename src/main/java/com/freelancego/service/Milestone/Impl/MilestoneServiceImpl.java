@@ -367,10 +367,4 @@ public class MilestoneServiceImpl implements MilestoneService {
         }
         return milestoneMapper.toDTO(milestone);
     }
-
-    public Milestone getLastMilestone(Contract contract) {
-        List<Milestone> milestones = milestoneRepository.findByContract(contract);
-        return milestones.stream().max(Comparator.comparingInt(Milestone::getMilestoneNumber))
-                .orElseThrow(() -> new RuntimeException("No milestones found for this contract"));
-    }
 }
