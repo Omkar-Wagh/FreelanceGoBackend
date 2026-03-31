@@ -37,7 +37,6 @@ public class PaymentServiceImpl implements PaymentService {
     private final FreelancerRepository freelancerRepository;
     private final UserRepository userRepository;
     private final ContractRepository contractRepository;
-    private final MilestoneService milestoneService;
 
     @Value("${razorpay.key.id}")
     private String razorpayKey;
@@ -45,14 +44,13 @@ public class PaymentServiceImpl implements PaymentService {
     @Value("${razorpay.webhook.secret}")
     private String webhookSecret;
 
-    public PaymentServiceImpl(PaymentRepository paymentRepository, MilestoneRepository milestoneRepository, RazorpayService razorpayService, FreelancerRepository freelancerRepository, UserRepository userRepository, ContractRepository contractRepository, MilestoneService milestoneService) {
+    public PaymentServiceImpl(PaymentRepository paymentRepository, MilestoneRepository milestoneRepository, RazorpayService razorpayService, FreelancerRepository freelancerRepository, UserRepository userRepository, ContractRepository contractRepository) {
         this.paymentRepository = paymentRepository;
         this.milestoneRepository = milestoneRepository;
         this.razorpayService = razorpayService;
         this.freelancerRepository = freelancerRepository;
         this.userRepository = userRepository;
         this.contractRepository = contractRepository;
-        this.milestoneService = milestoneService;
     }
 
     /** Verify signature */
