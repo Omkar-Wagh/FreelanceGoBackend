@@ -10,7 +10,16 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface NotificationRepository extends JpaRepository<Notification, Integer> {
-    Page<Notification> findByUser(User user, Pageable pageable);
+    @Query("""
+        SELECT n FROM Notification n
+        WHERE n.user = :user
+           OR n.isGeneral = true
+        ORDER BY n.createdAt DESC
+        """)
+    Page<Notification> findUserAndGeneralNotifications(
+            @Param("user") User user,
+            Pageable pageable
+    );
 
     /* Make this method's return type as int,
      if number of affected rows are needed */
