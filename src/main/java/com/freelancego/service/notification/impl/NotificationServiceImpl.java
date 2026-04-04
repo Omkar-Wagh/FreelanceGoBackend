@@ -33,7 +33,7 @@ public class NotificationServiceImpl implements NotificationService {
                 size,
                 Sort.by("createdAt").descending()
         );
-        return notificationRepository.findByUser(user, pageable);
+        return notificationRepository.findUserAndGeneralNotifications(user, pageable);
     }
 
     @Override
