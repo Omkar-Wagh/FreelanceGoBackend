@@ -11,13 +11,6 @@ import java.util.Optional;
 
 @Repository
 public interface UserRepository extends JpaRepository<User,Integer> {
-    @Query("""
-        SELECT u FROM User u 
-        JOIN u.profile p 
-        JOIN p.skills s 
-        WHERE s IN :skills
-        """)
-    List<User> findFreelancersBySkills(@Param("skills") List<String> skills);
 
      Optional<User> findByEmail(String email);
 }
