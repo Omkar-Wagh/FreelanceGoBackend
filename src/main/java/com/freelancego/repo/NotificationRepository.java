@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 public interface NotificationRepository extends JpaRepository<Notification, Integer> {
@@ -26,11 +27,12 @@ public interface NotificationRepository extends JpaRepository<Notification, Inte
     /* Make this method's return type as int,
      if number of affected rows are needed */
     @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Transactional
     @Query("""
         UPDATE Notification n
-        SET n.seen = true
+        SET n.isSeen = true
         WHERE n.user = :user
-          AND n.seen = false
+          AND n.isSeen = false
           AND n.isGeneral = false
         """)
     void markUserNotificationsAsSeenExcludingGeneral(@Param("user") User user);
