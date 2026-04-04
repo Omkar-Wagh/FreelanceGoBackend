@@ -8,6 +8,7 @@ import com.freelancego.dto.user.ContractDto;
 import com.freelancego.enums.ContractStatus;
 import com.freelancego.enums.JobPhase;
 import com.freelancego.enums.JobStatus;
+import com.freelancego.enums.NotificationType;
 import com.freelancego.exception.InternalServerErrorException;
 import com.freelancego.exception.UserNotFoundException;
 import com.freelancego.listeners.types.JobEvent;
@@ -100,7 +101,7 @@ public class JobServiceImpl implements JobService {
 
         jobRepository.save(job);
 
-        applicationEventPublisher.publishEvent(new JobEvent(client, job));
+        applicationEventPublisher.publishEvent(new JobEvent(user, job, NotificationType.JOB_CREATED));
 
         return jobMapper.toDto(job);
     }

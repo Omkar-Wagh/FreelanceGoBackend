@@ -10,7 +10,6 @@ import com.freelancego.enums.PayoutAccountStatus;
 import com.freelancego.exception.*;
 import com.freelancego.model.*;
 import com.freelancego.repo.*;
-import com.freelancego.service.Milestone.MilestoneService;
 import com.freelancego.service.payment.PaymentService;
 import com.razorpay.Transfer;
 import org.json.JSONArray;
