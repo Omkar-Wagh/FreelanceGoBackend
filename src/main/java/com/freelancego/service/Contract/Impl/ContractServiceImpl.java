@@ -1,18 +1,18 @@
 package com.freelancego.service.Contract.Impl;
 
 import com.freelancego.dto.user.ContractDto;
-import com.freelancego.enums.BidStatus;
-import com.freelancego.enums.ContractStatus;
-import com.freelancego.enums.JobPhase;
-import com.freelancego.enums.JobStatus;
+import com.freelancego.enums.*;
 import com.freelancego.exception.InvalidIdException;
 import com.freelancego.exception.UnauthorizedAccessException;
 import com.freelancego.exception.UserNotFoundException;
+import com.freelancego.listeners.types.BidRejectedEvent;
 import com.freelancego.mapper.ContractMapper;
 import com.freelancego.model.*;
 import com.freelancego.repo.*;
 import com.freelancego.service.Contract.ContractService;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
 @Service
 public class ContractServiceImpl implements ContractService {
@@ -24,8 +24,9 @@ public class ContractServiceImpl implements ContractService {
     private final ContractRepository contractRepository;
     private final ContractMapper contractMapper;
     private final BidRepository bidRepository;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
-    public ContractServiceImpl(UserRepository userRepository, ClientRepository clientRepository, FreelancerRepository freelancerRepository, JobRepository jobRepository, ContractRepository contractRepository, ContractMapper contractMapper, BidRepository bidRepository) {
+    public ContractServiceImpl(UserRepository userRepository, ClientRepository clientRepository, FreelancerRepository freelancerRepository, JobRepository jobRepository, ContractRepository contractRepository, ContractMapper contractMapper, BidRepository bidRepository, ApplicationEventPublisher applicationEventPublisher) {
         this.userRepository = userRepository;
         this.clientRepository = clientRepository;
         this.freelancerRepository = freelancerRepository;
@@ -33,8 +34,8 @@ public class ContractServiceImpl implements ContractService {
         this.contractRepository = contractRepository;
         this.contractMapper = contractMapper;
         this.bidRepository = bidRepository;
+        this.applicationEventPublisher = applicationEventPublisher;
     }
-
 
     public ContractDto getContract(int jobId, int freelancerId, int clientId, String name) {
 
@@ -111,8 +112,10 @@ public class ContractServiceImpl implements ContractService {
 
         contractRepository.save(contract);
 
+        applicationEventPublisher.publishEvent(new BidRejectedEvent(
+                job.getBids(), job.getClient().getUser(), NotificationType.BID_REJECTED
+        ));
+
         return contractMapper.toDTO(contract);
     }
-
-
 }

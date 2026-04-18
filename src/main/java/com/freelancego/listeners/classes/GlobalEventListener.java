@@ -1,8 +1,7 @@
 package com.freelancego.listeners.classes;
 
-import com.freelancego.listeners.types.JobEvent;
-import com.freelancego.listeners.types.MilestoneEvent;
-import com.freelancego.listeners.types.PaymentEvent;
+import com.freelancego.enums.NotificationType;
+import com.freelancego.listeners.types.*;
 import com.freelancego.model.Notification;
 import com.freelancego.repo.NotificationRepository;
 import com.freelancego.repo.UserRepository;
@@ -67,5 +66,25 @@ public class GlobalEventListener {
         );
 
         notificationRepository.save(notification);
+    }
+
+    @EventListener
+    public void onBidEvent(BidEvent bidEvent) {
+        Notification notification = new Notification(
+                bidEvent.recipient(),
+                bidEvent.actor(),
+                bidEvent.notificationType()
+        );
+
+        notificationRepository.save(notification);
+    }
+
+    @EventListener
+    public void onBidRejected(BidRejectedEvent event) {
+        Notification notification = new Notification(
+                event.actor(),
+                event.notificationType(),
+                true
+        );
     }
 }

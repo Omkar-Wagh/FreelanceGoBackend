@@ -101,7 +101,7 @@ public class JobServiceImpl implements JobService {
 
         jobRepository.save(job);
 
-        applicationEventPublisher.publishEvent(new JobEvent(user, job, NotificationType.JOB_CREATED));
+        applicationEventPublisher.publishEvent(new JobEvent(client.getUser(), job, NotificationType.JOB_CREATED));
 
         return jobMapper.toDto(job);
     }
