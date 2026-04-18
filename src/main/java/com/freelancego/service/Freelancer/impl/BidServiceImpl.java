@@ -3,9 +3,11 @@ package com.freelancego.service.Freelancer.impl;
 import com.freelancego.common.utils.SupabaseUtil;
 import com.freelancego.dto.freelancer.BidDto;
 import com.freelancego.enums.BidStatus;
+import com.freelancego.enums.NotificationType;
 import com.freelancego.exception.InternalServerErrorException;
 import com.freelancego.exception.InvalidIdException;
 import com.freelancego.exception.UserNotFoundException;
+import com.freelancego.listeners.types.BidEvent;
 import com.freelancego.mapper.BidMapper;
 import com.freelancego.model.*;
 import com.freelancego.repo.BidRepository;
@@ -13,6 +15,7 @@ import com.freelancego.repo.FreelancerRepository;
 import com.freelancego.repo.JobRepository;
 import com.freelancego.repo.UserRepository;
 import com.freelancego.service.Freelancer.BidService;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -26,14 +29,16 @@ public class BidServiceImpl implements BidService {
     final private BidRepository bidRepository;
     final private UserRepository userRepository;
     final private SupabaseUtil supabaseUtil;
+    final private ApplicationEventPublisher applicationEventPublisher;
 
-    public BidServiceImpl(BidMapper bidMapper, JobRepository jobRepository, FreelancerRepository freelancerRepository, BidRepository bidRepository, UserRepository userRepository, SupabaseUtil supabaseUtil) {
+    public BidServiceImpl(BidMapper bidMapper, JobRepository jobRepository, FreelancerRepository freelancerRepository, BidRepository bidRepository, UserRepository userRepository, SupabaseUtil supabaseUtil, ApplicationEventPublisher applicationEventPublisher) {
         this.bidMapper = bidMapper;
         this.jobRepository = jobRepository;
         this.freelancerRepository = freelancerRepository;
         this.bidRepository = bidRepository;
         this.userRepository = userRepository;
         this.supabaseUtil = supabaseUtil;
+        this.applicationEventPublisher = applicationEventPublisher;
     }
 
     public BidDto createBid(BidDto bidDto, MultipartFile file, String name) {
@@ -78,8 +83,16 @@ public class BidServiceImpl implements BidService {
             bidRepository.save(bid);
         }
         catch (Exception e){
-            throw new InternalServerErrorException("Something went wrong while creating the bid " + e.getMessage());
+            throw new InternalServerErrorException("Something went wrong while creating the bid "
+                    + e.getMessage());
         }
+
+        applicationEventPublisher.publishEvent(
+                new BidEvent(
+                        freelancer.getUser(),
+                        job.getClient().getUser(),
+                        NotificationType.BID_RECEIVED
+                ));
 
         return bidMapper.toDto(bid);
     }
@@ -106,6 +119,9 @@ public class BidServiceImpl implements BidService {
         bid.setTimeRequired(bidDto.timeRequired());
         bid.setAmount(bidDto.amount());
         bidRepository.save(bid);
+
+
+
         return bidMapper.toDto(bid);
     }
 
