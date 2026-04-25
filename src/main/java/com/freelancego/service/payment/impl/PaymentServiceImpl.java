@@ -148,8 +148,8 @@ public class PaymentServiceImpl implements PaymentService {
         if (freelancer == null) return;
 
         switch (eventType) {
-            case "fund_account.verified" -> freelancer.setPayoutAccountStatus(PayoutAccountStatus.ACTIVE);
-            case "fund_account.failed" -> freelancer.setPayoutAccountStatus(PayoutAccountStatus.FAILED);
+            case "fund_account.validation.completed" -> freelancer.setPayoutAccountStatus(PayoutAccountStatus.ACTIVE);
+            case "fund_account.validation.failed" -> freelancer.setPayoutAccountStatus(PayoutAccountStatus.FAILED);
         }
 
         freelancerRepository.save(freelancer);
