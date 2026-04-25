@@ -4,7 +4,6 @@ import com.freelancego.dto.user.MilestoneDto;
 import com.freelancego.dto.user.MilestonePaymentResponse;
 import com.freelancego.dto.user.SubmissionDto;
 import com.freelancego.service.Milestone.MilestoneService;
-import com.freelancego.service.payment.PaymentService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -12,7 +11,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/")
