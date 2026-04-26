@@ -37,11 +37,16 @@ public class SecurityConfig {
                     return config;
                 }))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth", "/oauth2/**", "/login**", "/wakeup").permitAll()
-                        .anyRequest().authenticated()
-                )
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/webhooks/razorpay/payment/verify","/api/webhooks/razorpay/fund-account","/api/webhooks/razorpay/payment/transfer","/api/webhooks/razorpay/payment/refund").permitAll()
+                        .requestMatchers(
+                                "/api/auth",
+                                "/oauth2/**",
+                                "/login**",
+                                "/wakeup",
+                                "/api/webhooks/razorpay/payment/verify",
+                                "/api/webhooks/razorpay/fund-account",
+                                "/api/webhooks/razorpay/payment/transfer",
+                                "/api/webhooks/razorpay/payment/refund"
+                        ).permitAll()
                         .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth -> oauth
