@@ -160,6 +160,7 @@ public class MilestoneServiceImpl implements MilestoneService {
             milestone.setDescription(milestoneDto.getDescription());
             milestone.setAmount(milestoneDto.getAmount());
             milestone.setDueDate(milestoneDto.getDueDate());
+            milestone.setVerificationStatus(VerificationStatus.PENDING_REVIEW);
         }
         if(milestone != null) milestoneRepository.save(milestone);
         return milestoneMapper.toDTO(milestone);
@@ -206,8 +207,6 @@ public class MilestoneServiceImpl implements MilestoneService {
                 .orElseThrow(() -> new UserNotFoundException("Milestone not found"));
 
         milestone.setVerificationStatus(VerificationStatus.APPROVED_BY_CLIENT);
-        milestone.setLocked(true);
-        milestone.setStatus(MilestoneStatus.IN_PROGRESS);
         milestoneRepository.save(milestone);
 
         return paymentService.createPaymentOrder(milestone);

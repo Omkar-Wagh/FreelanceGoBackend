@@ -105,6 +105,8 @@ public class PaymentServiceImpl implements PaymentService {
 
                 if (milestone.getPaymentStatus() != PaymentStatus.ESCROW_HELD) {
                     milestone.setPaymentStatus(PaymentStatus.ESCROW_HELD);
+                    milestone.setLocked(true);
+                    milestone.setStatus(MilestoneStatus.IN_PROGRESS);
                     milestoneRepository.save(milestone);
                 }
             }
