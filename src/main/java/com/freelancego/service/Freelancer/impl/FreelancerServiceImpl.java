@@ -24,6 +24,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
 import java.util.*;
@@ -149,6 +150,7 @@ public class FreelancerServiceImpl implements FreelancerService {
         return contractMapper.toDtoList(activeContracts);
     }
 
+    @Transactional
     public Map<String, Object> getBidHistory(int page, int size, String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
@@ -187,24 +189,69 @@ public class FreelancerServiceImpl implements FreelancerService {
         return response;
     }
 
-    public Map<String, Object> calculateBidStatsForFreelancer(Freelancer freelancer) {
+//    public Map<String, Object> calculateBidStatsForFreelancer(Freelancer freelancer) {
+//        List<Job> allJobs = jobRepository.findAll();
+//
+//        List<Job> freelancerJobs = allJobs.stream()
+//                .filter(job -> job.getBids() != null &&
+//                        job.getBids().stream()
+//                                .anyMatch(bid -> (bid.getFreelancer().getId() == (freelancer.getId()))))
+//                .peek(job -> {
+//                    List<Bid> myBidOnly = job.getBids().stream()
+//                            .filter(b -> (b.getFreelancer().getId() == (freelancer.getId())))
+//                            .toList();
+//                    job.setBids(myBidOnly);
+//                })
+//                .toList();
+//
+//        long totalJobs = freelancerJobs.size();
+//        long totalProposals = freelancerJobs.stream().flatMap(j -> j.getBids().stream()).count();
+//        List<Bid> myBids = freelancerJobs.stream().flatMap(j -> j.getBids().stream()).toList();
+//
+//        List<Contract> contracts = myBids.stream()
+//                .map(contractRepository::findByAcceptedBid)
+//                .filter(Objects::nonNull)
+//                .toList();
+//
+//        long hired = contracts.size();
+//        long inReview = contracts.stream().filter(c -> c.getStatus() == ContractStatus.ACTIVE).count();
+//        long completed = contracts.stream().filter(c -> c.getStatus() == ContractStatus.COMPLETED).count();
+//
+//        Map<String, Object> stats = new HashMap<>();
+//        stats.put("Total Jobs", totalJobs);
+//        stats.put("Total Proposals", totalProposals);
+//        stats.put("Hired", hired);
+//        stats.put("In Review", inReview);
+//        stats.put("Completed", completed);
+//        stats.put("FreelancerJobs",
+//                freelancerJobs.stream()
+//                        .map(jobMapper::toDto)
+//                        .toList()
+//        );
+//        return stats;
+//    }
+
+    public Map<String, Object>  calculateBidStatsForFreelancer(Freelancer freelancer) {
+
         List<Job> allJobs = jobRepository.findAll();
 
         List<Job> freelancerJobs = allJobs.stream()
                 .filter(job -> job.getBids() != null &&
                         job.getBids().stream()
-                                .anyMatch(bid -> (bid.getFreelancer().getId() == (freelancer.getId()))))
-                .peek(job -> {
-                    List<Bid> myBidOnly = job.getBids().stream()
-                            .filter(b -> (b.getFreelancer().getId() == (freelancer.getId())))
-                            .toList();
-                    job.setBids(myBidOnly);
-                })
+                                .anyMatch(b -> b.getFreelancer().getId() == freelancer.getId()))
                 .toList();
 
         long totalJobs = freelancerJobs.size();
-        long totalProposals = freelancerJobs.stream().flatMap(j -> j.getBids().stream()).count();
-        List<Bid> myBids = freelancerJobs.stream().flatMap(j -> j.getBids().stream()).toList();
+
+        long totalProposals = freelancerJobs.stream()
+                .flatMap(j -> j.getBids().stream())
+                .filter(b -> b.getFreelancer().getId() == freelancer.getId())
+                .count();
+
+        List<Bid> myBids = freelancerJobs.stream()
+                .flatMap(j -> j.getBids().stream())
+                .filter(b -> b.getFreelancer().getId() == freelancer.getId())
+                .toList();
 
         List<Contract> contracts = myBids.stream()
                 .map(contractRepository::findByAcceptedBid)
@@ -212,8 +259,13 @@ public class FreelancerServiceImpl implements FreelancerService {
                 .toList();
 
         long hired = contracts.size();
-        long inReview = contracts.stream().filter(c -> c.getStatus() == ContractStatus.ACTIVE).count();
-        long completed = contracts.stream().filter(c -> c.getStatus() == ContractStatus.COMPLETED).count();
+        long inReview = contracts.stream()
+                .filter(c -> c.getStatus() == ContractStatus.ACTIVE)
+                .count();
+
+        long completed = contracts.stream()
+                .filter(c -> c.getStatus() == ContractStatus.COMPLETED)
+                .count();
 
         Map<String, Object> stats = new HashMap<>();
         stats.put("Total Jobs", totalJobs);
@@ -221,15 +273,9 @@ public class FreelancerServiceImpl implements FreelancerService {
         stats.put("Hired", hired);
         stats.put("In Review", inReview);
         stats.put("Completed", completed);
-        stats.put("FreelancerJobs",
-                freelancerJobs.stream()
-                        .map(jobMapper::toDto)
-                        .toList()
-        );
+        stats.put("FreelancerJobs", freelancerJobs);
         return stats;
     }
-
-
 
     public Map<String, Object> getEarningsDashboard(int page, int size, String email) {
         User user = userRepository.findByEmail(email)
