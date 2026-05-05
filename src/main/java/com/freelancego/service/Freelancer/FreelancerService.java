@@ -24,6 +24,7 @@ public interface FreelancerService {
 
     Map<String,Object> getAnalytics(String name);
 
+    Map<String, Object> getFreelancerDashboardData(String name);
 }
 
 /*

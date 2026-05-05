@@ -205,7 +205,7 @@ public class JobServiceImpl implements JobService {
         return jobDtos;
     }
 
-    public Map<String, Object> getDashboardData(String email) {
+    public Map<String, Object> getClientDashboardData(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
@@ -238,7 +238,6 @@ public class JobServiceImpl implements JobService {
                 "dashboard", dashboardStats
         );
     }
-
 
     public List<ContractDto> getPostByPhase(String name) {
         User user = userRepository.findByEmail(name)

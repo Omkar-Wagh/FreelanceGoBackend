@@ -16,7 +16,7 @@ public interface JobService {
 
     public Map<String,Object> getPostById(int id, String email);
 
-    public Map<String,Object> getDashboardData(String name);
+    public Map<String,Object> getClientDashboardData(String name);
 
     public List<ContractDto> getPostByPhase(String name);
 

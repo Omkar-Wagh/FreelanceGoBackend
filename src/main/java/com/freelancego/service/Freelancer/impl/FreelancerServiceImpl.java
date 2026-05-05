@@ -1,6 +1,7 @@
 package com.freelancego.service.Freelancer.impl;
 
 import com.freelancego.dto.client.JobDto;
+import com.freelancego.dto.client.response.DashBoardResponseDto;
 import com.freelancego.dto.freelancer.BidDto;
 import com.freelancego.dto.freelancer.BrowseJobDto;
 import com.freelancego.dto.freelancer.FreelancerDto;
@@ -57,6 +58,19 @@ public class FreelancerServiceImpl implements FreelancerService {
         this.contractMapper = contractMapper;
         this.bidMapper = bidMapper;
         this.profileService = profileService;
+    }
+
+    public List<JobDto> getActivePost(Freelancer freelancer) {
+        Pageable pageable = PageRequest.of(0, 3, Sort.by("createdAt").descending());
+        List<Job> jobs = jobRepository.findByFreelancer(freelancer,pageable).getContent();
+        List<JobDto> jobDtos = jobMapper.toDtoList(jobs);
+        return jobDtos;
+    }
+
+    public <T> List<T> limitList(List<T> list, int limit) {
+        return list.stream()
+                .limit(limit)
+                .toList();
     }
 
     public Map<String,Object> createFreelancer(FreelancerDto freelancerDto, String username) {
@@ -143,9 +157,7 @@ public class FreelancerServiceImpl implements FreelancerService {
         Freelancer freelancer = freelancerRepository.findByUser(user)
                 .orElseThrow(() -> new UserNotFoundException("Freelancer not found"));
 
-        List<Contract> activeContracts = contractRepository.findByFreelancerAndStatus(
-                freelancer, ContractStatus.ACTIVE
-        );
+        List<Contract> activeContracts = contractRepository.findByFreelancerAndStatus(freelancer, ContractStatus.ACTIVE);
 
         return contractMapper.toDtoList(activeContracts);
     }
@@ -169,11 +181,20 @@ public class FreelancerServiceImpl implements FreelancerService {
 
         // Prepare job-with-bid data
         List<Map<String, Object>> jobWithBids = pagedJobs.stream()
+                .filter(job -> job.getBids().stream()
+                        .anyMatch(b -> b.getFreelancer().getId() == freelancer.getId()))
                 .map(job -> {
                     Map<String, Object> jobMap = new HashMap<>();
+
                     jobMap.put("job", jobMapper.toDto(job));
-                    List<BidDto> bids = job.getBids().stream().map(bidMapper::toDto).toList();
-                    if (!bids.isEmpty()) jobMap.put("myBid", bids.get(0));
+
+                    Bid myBid = job.getBids().stream()
+                            .filter(b -> b.getFreelancer().getId() == freelancer.getId())
+                            .findFirst()
+                            .get(); // safe now because already filtered
+
+                    jobMap.put("myBid", bidMapper.toDto(myBid));
+
                     return jobMap;
                 })
                 .toList();
@@ -188,48 +209,6 @@ public class FreelancerServiceImpl implements FreelancerService {
 
         return response;
     }
-
-//    public Map<String, Object> calculateBidStatsForFreelancer(Freelancer freelancer) {
-//        List<Job> allJobs = jobRepository.findAll();
-//
-//        List<Job> freelancerJobs = allJobs.stream()
-//                .filter(job -> job.getBids() != null &&
-//                        job.getBids().stream()
-//                                .anyMatch(bid -> (bid.getFreelancer().getId() == (freelancer.getId()))))
-//                .peek(job -> {
-//                    List<Bid> myBidOnly = job.getBids().stream()
-//                            .filter(b -> (b.getFreelancer().getId() == (freelancer.getId())))
-//                            .toList();
-//                    job.setBids(myBidOnly);
-//                })
-//                .toList();
-//
-//        long totalJobs = freelancerJobs.size();
-//        long totalProposals = freelancerJobs.stream().flatMap(j -> j.getBids().stream()).count();
-//        List<Bid> myBids = freelancerJobs.stream().flatMap(j -> j.getBids().stream()).toList();
-//
-//        List<Contract> contracts = myBids.stream()
-//                .map(contractRepository::findByAcceptedBid)
-//                .filter(Objects::nonNull)
-//                .toList();
-//
-//        long hired = contracts.size();
-//        long inReview = contracts.stream().filter(c -> c.getStatus() == ContractStatus.ACTIVE).count();
-//        long completed = contracts.stream().filter(c -> c.getStatus() == ContractStatus.COMPLETED).count();
-//
-//        Map<String, Object> stats = new HashMap<>();
-//        stats.put("Total Jobs", totalJobs);
-//        stats.put("Total Proposals", totalProposals);
-//        stats.put("Hired", hired);
-//        stats.put("In Review", inReview);
-//        stats.put("Completed", completed);
-//        stats.put("FreelancerJobs",
-//                freelancerJobs.stream()
-//                        .map(jobMapper::toDto)
-//                        .toList()
-//        );
-//        return stats;
-//    }
 
     public Map<String, Object>  calculateBidStatsForFreelancer(Freelancer freelancer) {
 
@@ -417,6 +396,41 @@ public class FreelancerServiceImpl implements FreelancerService {
         response.put("jobsWonPerCategory", jobsWonPerCategory);
 
         return response;
+    }
+
+    @Transactional
+    public Map<String, Object> getFreelancerDashboardData(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        Freelancer freelancer = freelancerRepository.findByUser(user)
+                .orElseThrow(() -> new UserNotFoundException("Client not found"));
+
+        List<Contract> completedContracts = contractRepository.findByFreelancerAndStatus(freelancer, ContractStatus.COMPLETED);
+        List<Contract> activeContracts = contractRepository.findByFreelancerAndStatus(freelancer, ContractStatus.ACTIVE);
+
+        int totalJobs = completedContracts.size();
+        int totalActiveProjects = activeContracts.size();
+
+        double totalSpending = completedContracts.stream()
+                .map(Contract::getAcceptedBid)
+                .filter(bid -> bid != null)
+                .mapToDouble(Bid::getAmount)
+                .sum();
+
+        List<JobDto> inProgressPosts = getActivePost(freelancer);
+
+        List<Contract> recentActiveContracts = limitList(activeContracts, 3);
+        List<Contract> recentCompletedContracts = limitList(completedContracts, 3);
+
+        DashBoardResponseDto dashboardStats = new DashBoardResponseDto(totalJobs, totalActiveProjects, totalSpending);
+
+        return Map.of(
+                "activeProjects", contractMapper.toDtoList(recentActiveContracts),
+                "recentJobPosts", inProgressPosts,
+                "completedJobs", contractMapper.toDtoList(recentCompletedContracts),
+                "dashboard", dashboardStats
+        );
     }
 
 }

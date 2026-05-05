@@ -120,8 +120,8 @@ public class MilestoneServiceImpl implements MilestoneService {
         // * Publishing the event to NotificationListener to create a notification
         applicationEventPublisher.publishEvent(
                 new MilestoneEvent(
-                        contract.getClient().getUser(),
                         contract.getFreelancer().getUser(),
+                        contract.getClient().getUser(),
                         NotificationType.MILESTONE_CREATED
                 )
         );

@@ -6,6 +6,7 @@ import com.freelancego.dto.freelancer.FreelancerDto;
 import com.freelancego.dto.user.ContractDto;
 import com.freelancego.service.Freelancer.FreelancerService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -67,4 +68,11 @@ public class FreelancerController {
     ResponseEntity<Map<String, Object>> getAnalyticsData(Authentication auth){
         return ResponseEntity.ok(freelancerService.getAnalytics(auth.getName()));
     }
+
+    @PreAuthorize("hasRole('FREELANCER')")
+    @GetMapping("/freelancer/get-post-in-progress")
+    ResponseEntity<Map<String,Object>> getDashboardInfo(Authentication auth){
+        return ResponseEntity.ok(freelancerService.getFreelancerDashboardData(auth.getName()));
+    }
+
 }
