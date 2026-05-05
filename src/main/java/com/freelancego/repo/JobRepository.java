@@ -34,8 +34,6 @@ public interface JobRepository extends JpaRepository<Job, Integer> {
 
     Page<Job> findByClient(Client client, Pageable pageable);
 
-    Page<Job> findByFreelancer(Freelancer freelancer, Pageable pageable);
-
     List<Job> findByClient(Client client);
 
     Page<Job> findJobByStatus(JobStatus jobStatus, Pageable pageable);

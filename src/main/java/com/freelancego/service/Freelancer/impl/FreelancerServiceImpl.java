@@ -60,13 +60,6 @@ public class FreelancerServiceImpl implements FreelancerService {
         this.profileService = profileService;
     }
 
-    public List<JobDto> getActivePost(Freelancer freelancer) {
-        Pageable pageable = PageRequest.of(0, 3, Sort.by("createdAt").descending());
-        List<Job> jobs = jobRepository.findByFreelancer(freelancer,pageable).getContent();
-        List<JobDto> jobDtos = jobMapper.toDtoList(jobs);
-        return jobDtos;
-    }
-
     public <T> List<T> limitList(List<T> list, int limit) {
         return list.stream()
                 .limit(limit)
@@ -418,8 +411,6 @@ public class FreelancerServiceImpl implements FreelancerService {
                 .mapToDouble(Bid::getAmount)
                 .sum();
 
-        List<JobDto> inProgressPosts = getActivePost(freelancer);
-
         List<Contract> recentActiveContracts = limitList(activeContracts, 3);
         List<Contract> recentCompletedContracts = limitList(completedContracts, 3);
 
@@ -427,7 +418,6 @@ public class FreelancerServiceImpl implements FreelancerService {
 
         return Map.of(
                 "activeProjects", contractMapper.toDtoList(recentActiveContracts),
-                "recentJobPosts", inProgressPosts,
                 "completedJobs", contractMapper.toDtoList(recentCompletedContracts),
                 "dashboard", dashboardStats
         );
