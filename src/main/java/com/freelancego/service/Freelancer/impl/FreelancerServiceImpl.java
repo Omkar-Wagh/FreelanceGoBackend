@@ -157,53 +157,57 @@ public class FreelancerServiceImpl implements FreelancerService {
 
     @Transactional
     public Map<String, Object> getBidHistory(int page, int size, String email) {
+
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         Freelancer freelancer = freelancerRepository.findByUser(user)
                 .orElseThrow(() -> new UserNotFoundException("Freelancer not found"));
 
-        // Compute full stats + get all jobs where this freelancer has bids
-        Map<String, Object> globalStats = calculateBidStatsForFreelancer(freelancer);
-        List<Job> freelancerJobs = (List<Job>) globalStats.get("FreelancerJobs");
+        Map<String, Object> globalStats =
+                calculateBidStatsForFreelancer(freelancer);
 
-        // Paginate only over freelancer’s bid jobs
+        List<Job> freelancerJobs = jobRepository.findAll().stream()
+                .filter(job -> job.getBids() != null &&
+                        job.getBids().stream()
+                                .anyMatch(b -> b.getFreelancer().getId() == freelancer.getId()))
+                .toList();
+
         int start = Math.min(page * size, freelancerJobs.size());
         int end = Math.min(start + size, freelancerJobs.size());
+
         List<Job> pagedJobs = freelancerJobs.subList(start, end);
 
-        // Prepare job-with-bid data
         List<Map<String, Object>> jobWithBids = pagedJobs.stream()
-                .filter(job -> job.getBids().stream()
-                        .anyMatch(b -> b.getFreelancer().getId() == freelancer.getId()))
                 .map(job -> {
-                    Map<String, Object> jobMap = new HashMap<>();
 
-                    jobMap.put("job", jobMapper.toDto(job));
+                    Map<String, Object> map = new HashMap<>();
 
                     Bid myBid = job.getBids().stream()
                             .filter(b -> b.getFreelancer().getId() == freelancer.getId())
                             .findFirst()
-                            .get(); // safe now because already filtered
+                            .orElse(null);
 
-                    jobMap.put("myBid", bidMapper.toDto(myBid));
+                    map.put("job", jobMapper.toDto(job));
+                    map.put("myBid", bidMapper.toDto(myBid));
 
-                    return jobMap;
+                    return map;
                 })
                 .toList();
 
-        // Final response: global stats + paginated results
         Map<String, Object> response = new HashMap<>(globalStats);
+
         response.put("Current Page", page);
         response.put("Page Size", size);
-        response.put("Total Pages", (int) Math.ceil((double) freelancerJobs.size() / size));
+        response.put("Total Pages",
+                (int) Math.ceil((double) freelancerJobs.size() / size));
+
         response.put("JobWithBid", jobWithBids);
-        response.put("Jobs", pagedJobs.stream().map(jobMapper::toDto).toList());
 
         return response;
     }
 
-    public Map<String, Object>  calculateBidStatsForFreelancer(Freelancer freelancer) {
+    public Map<String, Object> calculateBidStatsForFreelancer(Freelancer freelancer) {
 
         List<Job> allJobs = jobRepository.findAll();
 
@@ -231,6 +235,7 @@ public class FreelancerServiceImpl implements FreelancerService {
                 .toList();
 
         long hired = contracts.size();
+
         long inReview = contracts.stream()
                 .filter(c -> c.getStatus() == ContractStatus.ACTIVE)
                 .count();
@@ -240,12 +245,13 @@ public class FreelancerServiceImpl implements FreelancerService {
                 .count();
 
         Map<String, Object> stats = new HashMap<>();
+
         stats.put("Total Jobs", totalJobs);
         stats.put("Total Proposals", totalProposals);
         stats.put("Hired", hired);
         stats.put("In Review", inReview);
         stats.put("Completed", completed);
-        stats.put("FreelancerJobs", freelancerJobs);
+
         return stats;
     }
 
