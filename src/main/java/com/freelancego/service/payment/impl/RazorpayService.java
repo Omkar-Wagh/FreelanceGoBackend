@@ -40,19 +40,6 @@ public class RazorpayService {
         return customer.get("id");
     }
 
-//    public String createContact(String name, String email, String phone) throws RazorpayException {
-//
-//        JSONObject request = new JSONObject();
-//        request.put("name", name);
-//        request.put("email", email);
-//        request.put("contact", phone);
-//        request.put("type", "customer");
-//
-//        Contact contact = client.contacts.create(request);
-//
-//        return contact.get("id");
-//    }
-
     /* -------------------------------------------------
        CREATE FUND ACCOUNT (SDK SAFE)
        ------------------------------------------------- */

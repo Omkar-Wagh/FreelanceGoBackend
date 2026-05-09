@@ -11,6 +11,7 @@ import com.freelancego.exception.*;
 import com.freelancego.model.*;
 import com.freelancego.repo.*;
 import com.freelancego.service.payment.PaymentService;
+import com.razorpay.RazorpayException;
 import com.razorpay.Transfer;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -178,10 +179,10 @@ public class PaymentServiceImpl implements PaymentService {
                     req.getPhoneNumber()
             );
 
-        } catch (Exception e) {
+        } catch (RazorpayException e) {
 
             throw new InternalServerErrorException(
-                    "Failed to create Razorpay contact: " + e.getMessage()
+                    "Failed to create Razorpay contact ID: " + e.getMessage()
             );
         }
 
@@ -195,10 +196,10 @@ public class PaymentServiceImpl implements PaymentService {
                     req.getIfscCode()
             );
 
-        } catch (Exception e) {
+        } catch (RazorpayException e) {
 
             throw new InternalServerErrorException(
-                    "Failed to create Razorpay fund account: " + e.getMessage()
+                    "Failed to create Razorpay fund account ID: " + e.getMessage()
             );
         }
 
