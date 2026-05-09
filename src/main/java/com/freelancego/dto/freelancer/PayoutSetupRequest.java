@@ -1,7 +1,6 @@
 package com.freelancego.dto.freelancer;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 
 public class PayoutSetupRequest {
 
@@ -17,11 +16,8 @@ public class PayoutSetupRequest {
     @NotBlank(message = "IFSC code is required")
     private String ifscCode;
 
-    @NotBlank(message = "Bank name is required")
-    private String bankName;
-
-    @NotNull(message = "Account type is required")
-    private String accountType; // savings, current, etc.
+    @NotBlank(message = "Phone Number is required")
+    private String phoneNumber;
 
     // Getters and Setters
     public String getFreelancerId() {
@@ -56,19 +52,11 @@ public class PayoutSetupRequest {
         this.ifscCode = ifscCode;
     }
 
-    public String getBankName() {
-        return bankName;
+    public String getPhoneNumber() {
+        return phoneNumber;
     }
 
-    public void setBankName(String bankName) {
-        this.bankName = bankName;
-    }
-
-    public String getAccountType() {
-        return accountType;
-    }
-
-    public void setAccountType(String accountType) {
-        this.accountType = accountType;
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
     }
 }

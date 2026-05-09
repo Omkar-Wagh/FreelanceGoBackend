@@ -166,15 +166,40 @@ public class PaymentServiceImpl implements PaymentService {
         if (freelancer.getPayoutAccountStatus() == PayoutAccountStatus.ACTIVE) {
             throw new RuntimeException("Payout already active");
         }
-
         String contactId = null;
         String fundAccountId = null;
+
+// Step 1 -> Create Contact
         try {
-            contactId = razorpayService.createContact(freelancer.getUser().getUsername(), freelancer.getUser().getEmail(), freelancer.getPhone());
-            fundAccountId = razorpayService.createFundAccount(contactId, req.getAccountHolderName(), req.getAccountNumber(), req.getIfscCode());
+
+            contactId = razorpayService.createContact(
+                    freelancer.getUser().getUsername(),
+                    freelancer.getUser().getEmail(),
+                    req.getPhoneNumber()
+            );
+
         } catch (Exception e) {
-            e.getMessage();
-            throw new InternalServerErrorException("failed to save the payout status");
+
+            throw new InternalServerErrorException(
+                    "Failed to create Razorpay contact: " + e.getMessage()
+            );
+        }
+
+// Step 2 -> Create Fund Account
+        try {
+
+            fundAccountId = razorpayService.createFundAccount(
+                    contactId,
+                    req.getAccountHolderName(),
+                    req.getAccountNumber(),
+                    req.getIfscCode()
+            );
+
+        } catch (Exception e) {
+
+            throw new InternalServerErrorException(
+                    "Failed to create Razorpay fund account: " + e.getMessage()
+            );
         }
 
         freelancer.setRazorpayContactId(contactId);
