@@ -27,6 +27,9 @@ public record JobDto(
         @NotBlank(message = "Requirement cannot be blank")
         String requirement,
 
+        @NotNull(message = "category cannot be blank")
+        String category,
+
         @NotNull(message = "Project start time is required")
         OffsetDateTime projectStartTime,
 

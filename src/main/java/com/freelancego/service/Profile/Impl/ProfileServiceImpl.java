@@ -540,6 +540,7 @@ public class ProfileServiceImpl implements ProfileService {
                     job.getExperienceLevel().name(),
                     job.getJobDescription(),
                     job.getRequirement(),
+                    job.getCategory(),
                     job.getProjectStartTime(),
                     job.getProjectEndTime(),
                     job.getCreatedAt(),

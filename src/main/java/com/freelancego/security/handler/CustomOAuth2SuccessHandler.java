@@ -55,6 +55,7 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
         // Generate JWT token
         String role = existingUser.getRole().name();
         String token = jwtService.generateToken(email,role);
-        response.sendRedirect("http://localhost:5173/profile-setup?token=" + token);
+        response.sendRedirect("https://freelance-go.vercel.app/profile-setup?token=" + token);
+
     }
 }
