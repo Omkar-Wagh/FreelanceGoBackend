@@ -53,7 +53,7 @@ public class SecurityConfig {
                         .successHandler(oAuth2SuccessHandler)
                         .failureHandler((request, response, exception) -> {
                             request.getSession().setAttribute("loginError", "Login failed. Please try again.");
-                            response.sendRedirect("/auth-failed");
+                            response.sendRedirect("https://freelance-go.vercel.app/auth-failed");
                         })
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);

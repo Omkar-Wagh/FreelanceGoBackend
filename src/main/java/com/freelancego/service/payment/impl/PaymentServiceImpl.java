@@ -225,6 +225,25 @@ public class PaymentServiceImpl implements PaymentService {
 
         if (payment != null) {
             if (payment.getStatus() == PaymentStatus.NOT_PAID) {
+
+                if (payment.getAmount() == milestone.getAmount()) {
+                    return MilestonePaymentResponse.from(payment, milestone, razorpayKey);
+                }
+
+                RazorpayOrderResponse order;
+                payment.setAmount(milestone.getAmount());
+                try {
+                    order = razorpayService.createOrder(milestone.getAmount(), milestone.getId());
+                } catch (Exception e) {
+                    throw new RuntimeException("Failed to create Razorpay order", e);
+                }
+
+                payment.setRazorpayOrderId(order.getOrderId());
+                payment.setStatus(PaymentStatus.NOT_PAID);
+                payment.setExpiresAt(OffsetDateTime.now().plusMinutes(20));
+
+                Payment saved = paymentRepository.save(payment);
+
                 return MilestonePaymentResponse.from(payment, milestone, razorpayKey);
             }
         } else {
@@ -245,7 +264,7 @@ public class PaymentServiceImpl implements PaymentService {
 
         payment.setRazorpayOrderId(order.getOrderId());
         payment.setStatus(PaymentStatus.NOT_PAID);
-        payment.setExpiresAt(OffsetDateTime.now().plusMinutes(20)); // optional, just for temporary expiry check
+        payment.setExpiresAt(OffsetDateTime.now().plusMinutes(20));
 
         paymentRepository.save(payment);
 
