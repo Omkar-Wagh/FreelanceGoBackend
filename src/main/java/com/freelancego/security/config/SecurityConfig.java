@@ -30,7 +30,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(request -> {
                     CorsConfiguration config = new CorsConfiguration();
-                    config.setAllowedOrigins(List.of("https://freelance-go.vercel.app","https://localhost:5173"));
+                    config.setAllowedOrigins(List.of("https://freelance-go.vercel.app","http://localhost:5173"));
                     config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE"));
                     config.setAllowedHeaders(List.of("*"));
                     config.setAllowCredentials(true);
