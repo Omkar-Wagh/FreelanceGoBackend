@@ -28,7 +28,7 @@ public class Freelancer {
     private String razorpayFundAccountId;
 
     @Enumerated(EnumType.STRING)
-    private PayoutAccountStatus payoutAccountStatus;
+    private PayoutAccountStatus payoutAccountStatus = PayoutAccountStatus.NOT_CREATED;
 
     public int getId() {
         return id;
