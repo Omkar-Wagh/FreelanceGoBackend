@@ -184,7 +184,7 @@ public class PaymentServiceImpl implements PaymentService {
             if (!hasContact && !hasFundAccount) {
 
                 contactId = razorpayService.createContact(
-                        freelancer.getUser().getUsername(),
+                        req.getAccountHolderName(),
                         freelancer.getUser().getEmail(),
                         req.getPhoneNumber()
                 );
@@ -199,9 +199,7 @@ public class PaymentServiceImpl implements PaymentService {
                 freelancer.setPhone(req.getPhoneNumber());
                 freelancer.setRazorpayContactId(contactId);
                 freelancer.setRazorpayFundAccountId(fundAccountId);
-                freelancer.setPayoutAccountStatus(
-                        PayoutAccountStatus.PENDING_VERIFICATION
-                );
+                freelancer.setPayoutAccountStatus(PayoutAccountStatus.PENDING_VERIFICATION);
 
                 freelancerRepository.save(freelancer);
 
