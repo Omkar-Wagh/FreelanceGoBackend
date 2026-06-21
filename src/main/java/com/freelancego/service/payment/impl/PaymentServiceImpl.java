@@ -236,10 +236,8 @@ public class PaymentServiceImpl implements PaymentService {
             // CASE 3 : Already Configured
             // ==========================================
             if (hasContact && hasFundAccount) {
-
-                throw new RuntimeException(
-                        "Payout account already configured"
-                );
+                String validationId = razorpayService.validateFundAccount(freelancer.getRazorpayFundAccountId(), req.getAccountNumber());
+                throw new RuntimeException("Payout account already configured");
             }
 
             // ==========================================
