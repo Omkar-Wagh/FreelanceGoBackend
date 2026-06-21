@@ -167,11 +167,8 @@ public class PaymentServiceImpl implements PaymentService {
         Freelancer freelancer = freelancerRepository.findByUser(user)
                 .orElseThrow(() -> new UserNotFoundException("Freelancer not found"));
 
-        boolean hasContact =
-                freelancer.getRazorpayContactId() != null;
-
-        boolean hasFundAccount =
-                freelancer.getRazorpayFundAccountId() != null;
+        boolean hasContact = freelancer.getRazorpayContactId() != null;
+        boolean hasFundAccount = freelancer.getRazorpayFundAccountId() != null;
 
         String contactId;
         String fundAccountId;
@@ -200,8 +197,7 @@ public class PaymentServiceImpl implements PaymentService {
                 freelancer.setRazorpayContactId(contactId);
                 freelancer.setRazorpayFundAccountId(fundAccountId);
 
-                String validationId = razorpayService.validateFundAccount(fundAccountId, req.getAccountNumber());
-                freelancer.setPayoutAccountStatus(PayoutAccountStatus.PENDING_VERIFICATION);
+                freelancer.setPayoutAccountStatus(PayoutAccountStatus.ACTIVE);
 
                 freelancerRepository.save(freelancer);
 
@@ -209,50 +205,22 @@ public class PaymentServiceImpl implements PaymentService {
             }
 
             // ==========================================
-            // CASE 2 : Recovery Mode
-            // Contact exists but Fund Account missing
-            // ==========================================
-            if (hasContact && !hasFundAccount) {
-
-                fundAccountId = razorpayService.createFundAccount(
-                        freelancer.getRazorpayContactId(),
-                        req.getAccountHolderName(),
-                        req.getAccountNumber(),
-                        req.getIfscCode()
-                );
-
-                freelancer.setPhone(req.getPhoneNumber());
-                freelancer.setRazorpayFundAccountId(fundAccountId);
-
-                String validationId = razorpayService.validateFundAccount(fundAccountId, req.getAccountNumber());
-                freelancer.setPayoutAccountStatus(PayoutAccountStatus.PENDING_VERIFICATION);
-
-                freelancerRepository.save(freelancer);
-
-                return;
-            }
-
-            // ==========================================
-            // CASE 3 : Already Configured
+            // CASE 2 : Already Configured
             // ==========================================
             if (hasContact && hasFundAccount) {
-                String validationId = razorpayService.validateFundAccount(freelancer.getRazorpayFundAccountId(), req.getAccountNumber());
+                freelancer.setPayoutAccountStatus(PayoutAccountStatus.ACTIVE);
+                freelancerRepository.save(freelancer);
                 throw new RuntimeException("Payout account already configured");
             }
 
             // ==========================================
-            // CASE 4 : Invalid State
+            // CASE 3 : Invalid State
             // Fund Account exists without Contact
             // ==========================================
-            throw new IllegalStateException(
-                    "Invalid payout account state detected"
-            );
+            throw new IllegalStateException("Invalid payout account state detected");
 
         } catch (RazorpayException e) {
-
-            throw new InternalServerErrorException(
-                    "Failed to setup payout account: " + e.getMessage()
-            );
+            throw new InternalServerErrorException("Failed to setup payout account: " + e.getMessage());
         }
     }
 

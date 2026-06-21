@@ -97,7 +97,7 @@ public class RazorpayService {
 
 
     /* -------------------------------------------------
-    CREATE FUND ACCOUNT (SDK SAFE)
+     VALIDATE FUND ACCOUNT
     ------------------------------------------------- */
 
     public String validateFundAccount(
