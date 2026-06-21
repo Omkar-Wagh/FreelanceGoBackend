@@ -199,6 +199,8 @@ public class PaymentServiceImpl implements PaymentService {
                 freelancer.setPhone(req.getPhoneNumber());
                 freelancer.setRazorpayContactId(contactId);
                 freelancer.setRazorpayFundAccountId(fundAccountId);
+
+                String validationId = razorpayService.validateFundAccount(fundAccountId, req.getAccountNumber());
                 freelancer.setPayoutAccountStatus(PayoutAccountStatus.PENDING_VERIFICATION);
 
                 freelancerRepository.save(freelancer);
@@ -221,9 +223,9 @@ public class PaymentServiceImpl implements PaymentService {
 
                 freelancer.setPhone(req.getPhoneNumber());
                 freelancer.setRazorpayFundAccountId(fundAccountId);
-                freelancer.setPayoutAccountStatus(
-                        PayoutAccountStatus.PENDING_VERIFICATION
-                );
+
+                String validationId = razorpayService.validateFundAccount(fundAccountId, req.getAccountNumber());
+                freelancer.setPayoutAccountStatus(PayoutAccountStatus.PENDING_VERIFICATION);
 
                 freelancerRepository.save(freelancer);
 

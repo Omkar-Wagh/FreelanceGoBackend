@@ -95,6 +95,46 @@ public class RazorpayService {
         return fundAccount.get("id");
     }
 
+
+    /* -------------------------------------------------
+    CREATE FUND ACCOUNT (SDK SAFE)
+    ------------------------------------------------- */
+
+    public String validateFundAccount(
+            String fundAccountId,
+            String accountNumber
+    ) {
+
+        WebClient webClient = WebClient.builder()
+                .baseUrl("https://api.razorpay.com")
+                .defaultHeaders(headers -> {
+                    headers.setBasicAuth(keyId, keySecret);
+                    headers.setContentType(MediaType.APPLICATION_JSON);
+                })
+                .build();
+
+        JSONObject fundAccount = new JSONObject();
+        fundAccount.put("id", fundAccountId);
+
+        JSONObject request = new JSONObject();
+        request.put("account_number", accountNumber);
+        request.put("fund_account", fundAccount);
+
+        // mandatory by Razorpay
+        request.put("amount", 100);
+        request.put("currency", "INR");
+
+        String response = webClient.post()
+                .uri("/v1/fund_accounts/validations")
+                .bodyValue(request.toString())
+                .retrieve()
+                .bodyToMono(String.class)
+                .block();
+
+        JSONObject json = new JSONObject(response);
+        return json.getString("id");
+    }
+
     /* -------------------------------------------------
        CREATE ORDER
        ------------------------------------------------- */
