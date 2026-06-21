@@ -120,8 +120,6 @@ public class BidServiceImpl implements BidService {
         bid.setAmount(bidDto.amount());
         bidRepository.save(bid);
 
-
-
         return bidMapper.toDto(bid);
     }
 

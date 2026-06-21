@@ -5,7 +5,9 @@ import com.razorpay.*;
 import jakarta.annotation.PostConstruct;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.List;
 
@@ -28,16 +30,45 @@ public class RazorpayService {
     /* -------------------------------------------------
        CREATE CONTACT (SDK SAFE)
        ------------------------------------------------- */
-    public String createContact(String name, String email, String phone) throws RazorpayException {
+//    public String createContact(String name, String email, String phone) throws RazorpayException {
+//
+//        JSONObject request = new JSONObject();
+//        request.put("name", name);
+//        request.put("email", email);
+//        request.put("contact", phone);
+//        request.put("type", "customer");
+//
+//        Customer customer = client.customers.create(request);
+//        return customer.get("id");
+//    }
 
-        JSONObject request = new JSONObject();
-        request.put("name", name);
-        request.put("email", email);
-        request.put("contact", phone);
-        request.put("type", "customer");
+    public String createContact(String name,
+                                String email,
+                                String phone) {
 
-        Customer customer = client.customers.create(request);
-        return customer.get("id");
+        WebClient client = WebClient.builder()
+                .baseUrl("https://api.razorpay.com")
+                .defaultHeaders(headers -> {
+                    headers.setBasicAuth(keyId, keySecret);
+                    headers.setContentType(MediaType.APPLICATION_JSON);
+                })
+                .build();
+        JSONObject body = new JSONObject();
+
+        body.put("name", name);
+        body.put("email", email);
+        body.put("contact", phone);
+        body.put("type", "employee");
+
+
+        String response = client.post()
+                .uri("/v1/contacts")
+                .bodyValue(body.toString())
+                .retrieve()
+                .bodyToMono(String.class)
+                .block();
+
+        return new JSONObject(response).getString("id");
     }
 
     /* -------------------------------------------------
