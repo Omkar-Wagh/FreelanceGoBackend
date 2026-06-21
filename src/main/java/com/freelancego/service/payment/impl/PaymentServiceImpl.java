@@ -159,7 +159,7 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Transactional
-    public void setupPayoutAccount(String email, PayoutSetupRequest req) {
+    public String setupPayoutAccount(String email, PayoutSetupRequest req) {
 
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
@@ -168,6 +168,7 @@ public class PaymentServiceImpl implements PaymentService {
                 .orElseThrow(() -> new UserNotFoundException("Freelancer not found"));
 
         boolean hasContact = freelancer.getRazorpayContactId() != null;
+
         boolean hasFundAccount = freelancer.getRazorpayFundAccountId() != null;
 
         String contactId;
@@ -196,12 +197,11 @@ public class PaymentServiceImpl implements PaymentService {
                 freelancer.setPhone(req.getPhoneNumber());
                 freelancer.setRazorpayContactId(contactId);
                 freelancer.setRazorpayFundAccountId(fundAccountId);
-
                 freelancer.setPayoutAccountStatus(PayoutAccountStatus.ACTIVE);
 
                 freelancerRepository.save(freelancer);
 
-                return;
+                return "Payout account setup completed successfully";
             }
 
             // ==========================================
@@ -210,7 +210,7 @@ public class PaymentServiceImpl implements PaymentService {
             if (hasContact && hasFundAccount) {
                 freelancer.setPayoutAccountStatus(PayoutAccountStatus.ACTIVE);
                 freelancerRepository.save(freelancer);
-                throw new RuntimeException("Payout account already configured");
+                return "Payout account already configured";
             }
 
             // ==========================================
@@ -218,8 +218,8 @@ public class PaymentServiceImpl implements PaymentService {
             // Fund Account exists without Contact
             // ==========================================
             throw new IllegalStateException("Invalid payout account state detected");
-
-        } catch (RazorpayException e) {
+        }
+        catch (RazorpayException e) {
             throw new InternalServerErrorException("Failed to setup payout account: " + e.getMessage());
         }
     }

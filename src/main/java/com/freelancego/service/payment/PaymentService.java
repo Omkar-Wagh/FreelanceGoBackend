@@ -10,7 +10,7 @@ public interface PaymentService {
 
     void releaseMilestonePayment(Milestone milestone);
 
-    void setupPayoutAccount(String name, PayoutSetupRequest request);
+    String setupPayoutAccount(String name, PayoutSetupRequest request);
 
     void processPaymentWebhook(String payload, String signature);
 

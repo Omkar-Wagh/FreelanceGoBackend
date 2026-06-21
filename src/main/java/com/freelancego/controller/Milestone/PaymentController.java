@@ -22,7 +22,7 @@ public class PaymentController {
 
     @PostMapping("/setup")
     public ResponseEntity<?> setupPayout(@RequestBody PayoutSetupRequest request, Authentication auth) {
-        paymentService.setupPayoutAccount(auth.getName(), request);
-        return ResponseEntity.ok("Payout setup initiated");
+        String message = paymentService.setupPayoutAccount(auth.getName(), request);
+        return ResponseEntity.ok(message);
     }
 }
