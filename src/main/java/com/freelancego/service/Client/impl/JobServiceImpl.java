@@ -224,7 +224,8 @@ public class JobServiceImpl implements JobService {
             throw new InternalServerErrorException("Something went wrong while creating the Job "
                     + e.getMessage());
         }
-        return null;
+        Job savedJob = jobRepository.save(oldJob);
+        return jobMapper.toDto(savedJob);
     }
 
     public List<JobDto> getPostByProgress(Client client) {
