@@ -5,12 +5,8 @@ import com.freelancego.dto.client.JobDto;
 import com.freelancego.dto.client.response.DashBoardResponseDto;
 import com.freelancego.dto.freelancer.BidDto;
 import com.freelancego.dto.user.ContractDto;
-import com.freelancego.enums.ContractStatus;
-import com.freelancego.enums.JobPhase;
-import com.freelancego.enums.JobStatus;
-import com.freelancego.enums.NotificationType;
-import com.freelancego.exception.InternalServerErrorException;
-import com.freelancego.exception.UserNotFoundException;
+import com.freelancego.enums.*;
+import com.freelancego.exception.*;
 import com.freelancego.listeners.types.JobEvent;
 import com.freelancego.mapper.BidMapper;
 import com.freelancego.mapper.ClientMapper;
@@ -184,6 +180,51 @@ public class JobServiceImpl implements JobService {
         Page<Bid> bids = bidRepository.findByJob(job,pageable);
 
         return bids.map(bidMapper::toDto);
+    }
+
+    public JobDto updatePost(JobDto jobDto, MultipartFile file, String name) {
+        User user = userRepository.findByEmail(name).orElseThrow(()-> new UserNotFoundException("user not found"));
+        Job oldJob = jobRepository.findById(jobDto.id()).orElseThrow( () -> new UserNotFoundException("job not found for id: " + jobDto.id()));
+        if(oldJob.getClient().getUser().getId() != user.getId()){
+            throw new UnauthorizedAccessException("user not not authorized to update the job");
+        }
+        if(!oldJob.getStatus().isActive()){
+            throw new InvalidIdException("user cannot update the job after job status in inactive");
+        }
+
+        List<String> list = jobDto.requiredSkills();
+        String requiredSkills = (list == null || list.isEmpty()) ? "" : String.join(",", list);
+
+        String level = jobDto.experienceLevel();
+        if (level == null || level.isBlank()) {
+            throw new BadRequestException("Experience level is required");
+        }
+        try {
+            oldJob.setExperienceLevel(ExperienceLevel.valueOf(level.trim().toUpperCase()));
+        } catch (IllegalArgumentException e) {
+            throw new BadRequestException("Invalid experience level: " + level);
+        }
+
+        oldJob.setJobTitle(jobDto.jobTitle());
+        oldJob.setJobDescription(jobDto.jobDescription());
+        oldJob.setRequiredSkills(requiredSkills);
+        oldJob.setRequirement(jobDto.requirement());
+        oldJob.setBudget(jobDto.budget());
+        oldJob.setCategory(jobDto.category());
+        oldJob.setProjectStartTime(jobDto.projectStartTime());
+        oldJob.setProjectEndTime(jobDto.projectEndTime());
+        String regex = ".*\\.(pdf|png|jpg|jpeg|pptx|docx)$";
+
+        try{
+            if (file != null && file.getOriginalFilename().matches(regex)) {
+                String attachmentPublicUrl = supabaseUtil.uploadFile(file);
+                oldJob.setFile(attachmentPublicUrl);
+            }
+        }catch (Exception e){
+            throw new InternalServerErrorException("Something went wrong while creating the Job "
+                    + e.getMessage());
+        }
+        return null;
     }
 
     public List<JobDto> getPostByProgress(Client client) {

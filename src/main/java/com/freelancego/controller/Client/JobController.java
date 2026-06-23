@@ -30,6 +30,12 @@ public class JobController {
         return ResponseEntity.ok(jobService.createPost(jobDto,file,auth.getName()));
     }
 
+    // Update a Job
+    @PostMapping("/update-post")
+    ResponseEntity<JobDto> updatePost(@RequestPart(value = "job") JobDto jobDto, @RequestPart(value = "file", required = false) MultipartFile file, Authentication auth){
+        return ResponseEntity.ok(jobService.updatePost(jobDto,file,auth.getName()));
+    }
+
     // My Job Posts
     @GetMapping("/get-post")
     ResponseEntity<Page<JobDto>> getPost(@RequestParam(defaultValue = "0") int page,

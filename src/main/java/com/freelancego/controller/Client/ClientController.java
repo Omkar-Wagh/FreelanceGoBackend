@@ -22,4 +22,5 @@ public class ClientController {
     ResponseEntity<Map<String,Object>> createClientProfile(@RequestBody ClientDto clientDto, Authentication auth){
         return ResponseEntity.ok(clientService.createClient(clientDto, auth.getName()));
     }
+
 }

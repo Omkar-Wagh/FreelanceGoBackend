@@ -6,6 +6,7 @@ import com.freelancego.dto.user.PortfolioDto;
 import com.freelancego.dto.user.ProfileDto;
 import com.freelancego.service.Profile.ProfileService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -27,6 +28,7 @@ public class ProfileController {
         return ResponseEntity.ok(profileService.getProfile(id,auth));
     }
 
+//    @PreAuthorize("hasRole('FREELANCER')")
     @PostMapping("/profile/update-freelancer-profile")
     public ResponseEntity<ProfileDto> updateProfileOneSection(@RequestPart(value = "profile") ProfileDto profileDto,
                                                               @RequestPart(value = "profileImage", required = false) MultipartFile profileFile,

@@ -93,7 +93,7 @@ public class ProfileServiceImpl implements ProfileService {
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         if (profileDto == null) {
-            throw new InvalidIdException("profile dto is empty, could perform any operation");
+            throw new InvalidIdException("profile dto is empty, could not perform any operation");
         }
 
         if (profileDto.getUser().id() != loggedInUser.getId()) {

@@ -27,17 +27,6 @@ public interface JobService {
     Map<String, Object> getAnalytics(int id,String name);
 
     Page<BidDto> getBids(int jobId, int page, int size,String email);
+
+    JobDto updatePost(JobDto jobDto, MultipartFile file, String name);
 }
-
-/*
-
-//
-
-status to work on
-phase to deal with
-
-
-
-
-
- */
