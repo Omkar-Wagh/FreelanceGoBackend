@@ -346,6 +346,7 @@ public class MilestoneServiceImpl implements MilestoneService {
         return submissionMapper.toDTO(submission);
     }
 
+    @Transactional
     public MilestoneDto approveSubmission(int submissionId, int clientId, String name) {
         User user = userRepository.findByEmail(name)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
@@ -377,7 +378,7 @@ public class MilestoneServiceImpl implements MilestoneService {
         try{
             paymentService.releaseMilestonePayment(milestone);
         }catch (Exception e){
-            e.getMessage();
+            throw new RuntimeException("" + e.getMessage());
         }
         return milestoneMapper.toDTO(milestone);
     }

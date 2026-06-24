@@ -91,7 +91,7 @@ public class JobServiceImpl implements JobService {
                 job.setFile(attachmentPublicUrl);
             }
         }catch (Exception e){
-            throw new InternalServerErrorException("Something went wrong while creating the Job "
+            throw new InternalServerErrorException("Something went wrong while creating the Job / File upload Issue "
                     + e.getMessage());
         }
 
@@ -221,7 +221,7 @@ public class JobServiceImpl implements JobService {
                 oldJob.setFile(attachmentPublicUrl);
             }
         }catch (Exception e){
-            throw new InternalServerErrorException("Something went wrong while creating the Job "
+            throw new InternalServerErrorException("Something went wrong while updating the Job / File upload Issue "
                     + e.getMessage());
         }
         Job savedJob = jobRepository.save(oldJob);
