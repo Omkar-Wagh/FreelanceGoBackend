@@ -484,6 +484,7 @@ public class MilestoneServiceImpl implements MilestoneService {
         milestoneRepository.saveAll(milestones);
 
         contract.setVerificationStatus(VerificationStatus.APPROVED_BY_CLIENT);
+        contract.setStatus(ContractStatus.ACTIVE);
         contractRepository.save(contract);
         return "contract milestones Approved";
     }
