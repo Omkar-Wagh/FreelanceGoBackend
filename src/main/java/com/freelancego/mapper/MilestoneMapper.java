@@ -14,7 +14,6 @@ import java.util.List;
 public interface MilestoneMapper {
     @Mapping(target = "status", source = "status", qualifiedByName = "milestoneStatusToString")
     @Mapping(target = "paymentStatus", source = "paymentStatus", qualifiedByName = "paymentStatusToString")
-    @Mapping(target = "verificationStatus", source = "verificationStatus", qualifiedByName = "verificationStatusToString")
     MilestoneDto toDTO(Milestone Milestone);
 
     Milestone toEntity(MilestoneDto Milestone);
@@ -27,10 +26,6 @@ public interface MilestoneMapper {
     }
     @Named("paymentStatusToString")
     static String mapPaymentStatusToString(PaymentStatus status) {
-        return (status == null) ? null : status.name();
-    }
-    @Named("verificationStatusToString")
-    static String mapVerificationStatusToString(VerificationStatus status) {
         return (status == null) ? null : status.name();
     }
 }
