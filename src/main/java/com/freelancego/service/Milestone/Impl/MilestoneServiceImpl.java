@@ -386,15 +386,22 @@ public class MilestoneServiceImpl implements MilestoneService {
             }
         }
 
-        if(submission != null && submission.getStatus().equals(SubmissionStatus.APPROVED)){
-            submission.setNotes(submissionDto.getNotes());
-            submission.setFileUrl(fileUrl);
-            submission.setStatus(SubmissionStatus.PENDING_REVIEW);
-            submissionRepository.save(submission);
-            milestone.setStatus(MilestoneStatus.SUBMITTED);
-            milestone.setSubmission(submission);
-            milestoneRepository.save(milestone);
+        if(submission.getStatus() == SubmissionStatus.APPROVED){
+            throw new BadRequestException(
+                    "Approved submission cannot be modified");
         }
+
+        if(fileUrl != null){
+            submission.setFileUrl(fileUrl);
+        }
+
+        submission.setNotes(submissionDto.getNotes());
+        submission.setStatus(SubmissionStatus.PENDING_REVIEW);
+
+        milestone.setStatus(MilestoneStatus.SUBMITTED);
+
+        milestoneRepository.save(milestone);
+
         return submissionMapper.toDTO(submission);
     }
 
