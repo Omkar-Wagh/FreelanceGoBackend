@@ -318,8 +318,8 @@ public class PaymentServiceImpl implements PaymentService {
         List<Transfer> transfers;
         try {
             transfers = razorpayService.transfer(payment.getRazorpayPaymentId(), request);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to initiate payout", e);
+        } catch (RazorpayException e) {
+            throw new RuntimeException("Failed to initiate payout " + e.getMessage());
         }
 
         Transfer t = transfers.get(0);
