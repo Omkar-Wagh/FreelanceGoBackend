@@ -19,4 +19,6 @@ public interface PaymentService {
     void processTransferWebhook(String payload, String signature);
 
     void processRefundWebhook(String payload, String signature);
+
+    void validatePreviousMilestonesPaymentInitiated(Milestone milestone);
 }

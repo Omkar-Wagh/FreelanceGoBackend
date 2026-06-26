@@ -23,7 +23,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -197,6 +196,7 @@ public class MilestoneServiceImpl implements MilestoneService {
             milestone.setDescription(dto.getDescription());
             milestone.setAmount(dto.getAmount());
             milestone.setDueDate(dto.getDueDate());
+            milestone.setClientFeedback(null);
 
             updatedMilestones.add(milestone);
         }
@@ -228,8 +228,7 @@ public class MilestoneServiceImpl implements MilestoneService {
 
         // Fetch first milestone to resolve contract
         Milestone firstMilestone = milestoneRepository.findById(milestoneDtos.get(0).getId())
-                .orElseThrow(() -> new UserNotFoundException(
-                        "Milestone not found"));
+                .orElseThrow(() -> new UserNotFoundException("Milestone not found"));
 
         Contract contract = firstMilestone.getContract();
 
@@ -285,8 +284,11 @@ public class MilestoneServiceImpl implements MilestoneService {
         Milestone milestone = milestoneRepository.findById(milestoneId)
                 .orElseThrow(() -> new UserNotFoundException("Milestone not found"));
 
-//        contr.setVerificationStatus(VerificationStatus.APPROVED_BY_CLIENT);
-//        milestoneRepository.save(milestone);
+        if (milestone.getContract().getClient().getId() != clientId) {
+            throw new UnauthorizedAccessException("Not authorized");
+        }
+
+        paymentService.validatePreviousMilestonesPaymentInitiated(milestone);
 
         return paymentService.createPaymentOrder(milestone);
     }

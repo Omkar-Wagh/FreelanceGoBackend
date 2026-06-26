@@ -387,7 +387,7 @@ public class PaymentServiceImpl implements PaymentService {
             case "processed" -> {
                 payment.setStatus(PaymentStatus.COMPLETED);
 
-                if(getLastMilestone(contract).getId() == milestone.getId()){
+                if(milestone.isLast()){
                     milestone.setStatus(MilestoneStatus.COMPLETED);
                     contract.setStatus(ContractStatus.COMPLETED);
                 }
@@ -485,6 +485,26 @@ public class PaymentServiceImpl implements PaymentService {
         List<Milestone> milestones = milestoneRepository.findByContract(contract);
         return milestones.stream().max(Comparator.comparingInt(Milestone::getMilestoneNumber))
                 .orElseThrow(() -> new RuntimeException("No milestones found for this contract"));
+    }
+
+    public void validatePreviousMilestonesPaymentInitiated(Milestone milestone) {
+
+        Contract contract = milestone.getContract();
+        List<Milestone> milestones = milestoneRepository.findByContract(contract);
+        int currentMilestoneNumber = milestone.getMilestoneNumber();
+        for (Milestone m : milestones) {
+            if (m.getMilestoneNumber() < currentMilestoneNumber) {
+                Payment payment = paymentRepository.findByMilestone(m);
+                if (payment == null ||
+                        payment.getRazorpayOrderId() == null ||
+                        payment.getRazorpayOrderId().isBlank()) {
+                    throw new BadRequestException(
+                            "Payment for milestone "
+                                    + m.getMilestoneNumber()
+                                    + " has not been initiated");
+                }
+            }
+        }
     }
 
 }
