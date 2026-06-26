@@ -175,6 +175,7 @@ public class PaymentServiceImpl implements PaymentService {
 
         String contactId;
         String fundAccountId;
+        String linkedAccountId;
 
         try {
 
@@ -196,6 +197,14 @@ public class PaymentServiceImpl implements PaymentService {
                         req.getIfscCode()
                 );
 
+                linkedAccountId = razorpayService.createLinkedAccount(
+                        req.getAccountHolderName(),
+                        freelancer.getUser().getEmail(),
+                        req.getPhoneNumber()
+                );
+                freelancer.setRazorpayLinkedAccountId(linkedAccountId);
+                freelancerRepository.save(freelancer);
+
                 freelancer.setPhone(req.getPhoneNumber());
                 freelancer.setRazorpayContactId(contactId);
                 freelancer.setRazorpayFundAccountId(fundAccountId);
@@ -216,7 +225,7 @@ public class PaymentServiceImpl implements PaymentService {
             }
 
             if(hasContact && hasFundAccount && !hasLinkedAccount){
-                String linkedAccountId = razorpayService.createLinkedAccount(
+                linkedAccountId = razorpayService.createLinkedAccount(
                         req.getAccountHolderName(),
                         freelancer.getUser().getEmail(),
                         req.getPhoneNumber()
@@ -320,7 +329,7 @@ public class PaymentServiceImpl implements PaymentService {
         }
 
         JSONObject transfer = new JSONObject();
-        transfer.put("account", payment.getPayee().getRazorpayFundAccountId());
+        transfer.put("account", payment.getPayee().getRazorpayLinkedAccountId());
         transfer.put("amount", BigDecimal.valueOf(payment.getAmount()).multiply(BigDecimal.valueOf(100)).intValue());
         transfer.put("currency", "INR");
         transfer.put("notes", new JSONObject().put("milestoneId", milestone.getId()));
