@@ -367,7 +367,11 @@ public class MilestoneServiceImpl implements MilestoneService {
         if (milestone.getContract().getFreelancer().getId() != freelancer.getId()) {
             throw new BadRequestException("unauthorised to perform submission operation");
         }
-        Submission submission = submissionRepository.findById(submissionDto.getId()).orElse(null);
+
+        Submission submission = milestone.getSubmission();
+        if(submission == null){
+            throw new UserNotFoundException("submission not found");
+        }
 
         String fileUrl = null;
         if (file != null && !file.isEmpty()) {
@@ -382,7 +386,7 @@ public class MilestoneServiceImpl implements MilestoneService {
             }
         }
 
-        if(submission != null && submission.getStatus() != SubmissionStatus.APPROVED){
+        if(submission != null && submission.getStatus().equals(SubmissionStatus.APPROVED)){
             submission.setNotes(submissionDto.getNotes());
             submission.setFileUrl(fileUrl);
             submission.setStatus(SubmissionStatus.PENDING_REVIEW);
