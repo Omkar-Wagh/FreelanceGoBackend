@@ -150,7 +150,7 @@ public class FreelancerServiceImpl implements FreelancerService {
         Freelancer freelancer = freelancerRepository.findByUser(user)
                 .orElseThrow(() -> new UserNotFoundException("Freelancer not found"));
 
-        List<Contract> activeContracts = contractRepository.findByFreelancerAndStatus(freelancer, ContractStatus.ACTIVE);
+        List<Contract> activeContracts = contractRepository.findByFreelancerAndStatusIn(freelancer, List.of(ContractStatus.ACTIVE,ContractStatus.PENDING));
 
         return contractMapper.toDtoList(activeContracts);
     }

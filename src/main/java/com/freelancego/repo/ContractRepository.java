@@ -38,4 +38,5 @@ public interface ContractRepository extends JpaRepository<Contract,Integer> {
 
     Contract findByAcceptedBid(Bid bid);
 
+    List<Contract> findByFreelancerAndStatusIn(Freelancer freelancer, List<ContractStatus> statuses);
 }

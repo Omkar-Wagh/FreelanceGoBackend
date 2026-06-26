@@ -44,7 +44,8 @@ public class Milestone {
 
     private boolean locked = false;
 
-    private boolean isLast = false;
+    @Column(nullable = false, columnDefinition = "boolean default false")
+    private boolean isLast;
 
     @PrePersist
     protected void onCreate() {
