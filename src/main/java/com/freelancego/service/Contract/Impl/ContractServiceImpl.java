@@ -97,7 +97,6 @@ public class ContractServiceImpl implements ContractService {
         contract.setClient(client);
         contract.setFreelancer(freelancer);
         contract.setAcceptedBid(bid);
-        contract.setStatus(ContractStatus.ACTIVE);
 
         job.setPhase(JobPhase.IN_PROGRESS);
         job.setStatus(JobStatus.INACTIVE);

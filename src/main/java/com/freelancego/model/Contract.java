@@ -1,6 +1,7 @@
 package com.freelancego.model;
 
 import com.freelancego.enums.ContractStatus;
+import com.freelancego.enums.VerificationStatus;
 import jakarta.persistence.*;
 import java.time.OffsetDateTime;
 
@@ -29,6 +30,9 @@ public class Contract {
 
     @ManyToOne
     private Freelancer freelancer;
+
+    @Enumerated(EnumType.STRING)
+    private VerificationStatus verificationStatus = VerificationStatus.PENDING_REVIEW;
 
     @PrePersist
     protected void onCreate() {
@@ -88,5 +92,21 @@ public class Contract {
 
     public void setFreelancer(Freelancer freelancer) {
         this.freelancer = freelancer;
+    }
+
+    public OffsetDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(OffsetDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public VerificationStatus getVerificationStatus() {
+        return verificationStatus;
+    }
+
+    public void setVerificationStatus(VerificationStatus verificationStatus) {
+        this.verificationStatus = verificationStatus;
     }
 }

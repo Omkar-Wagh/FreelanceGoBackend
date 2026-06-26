@@ -31,9 +31,6 @@ public class Milestone {
     @Enumerated(EnumType.STRING)
     private PaymentStatus paymentStatus = PaymentStatus.NOT_PAID;
 
-    @Enumerated(EnumType.STRING)
-    private VerificationStatus verificationStatus = VerificationStatus.PENDING_REVIEW;
-
     @ManyToOne(optional = false)
     @JoinColumn(name = "contract_id")
     private Contract contract;
@@ -46,6 +43,8 @@ public class Milestone {
     private String clientFeedback;
 
     private boolean locked = false;
+
+    private boolean isLast = false;
 
     @PrePersist
     protected void onCreate() {
@@ -139,14 +138,6 @@ public class Milestone {
         this.paymentStatus = paymentStatus;
     }
 
-    public VerificationStatus getVerificationStatus() {
-        return verificationStatus;
-    }
-
-    public void setVerificationStatus(VerificationStatus verificationStatus) {
-        this.verificationStatus = verificationStatus;
-    }
-
     public Contract getContract() {
         return contract;
     }
@@ -173,5 +164,13 @@ public class Milestone {
 
     public void setLocked(boolean locked) {
         this.locked = locked;
+    }
+
+    public boolean isLast() {
+        return isLast;
+    }
+
+    public void setLast(boolean last) {
+        isLast = last;
     }
 }

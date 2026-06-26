@@ -3,8 +3,6 @@ package com.freelancego.service.Milestone;
 import com.freelancego.dto.user.MilestoneDto;
 import com.freelancego.dto.user.MilestonePaymentResponse;
 import com.freelancego.dto.user.SubmissionDto;
-import com.freelancego.model.Contract;
-import com.freelancego.model.Milestone;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -14,9 +12,9 @@ public interface MilestoneService {
 
     MilestoneDto createMilestone(MilestoneDto milestoneDto,int clientId,int freelancerId,String name);
 
-    MilestoneDto updateMilestone(MilestoneDto milestoneDto, int freelancerId, String name);
+    List<MilestoneDto> updateMilestone(List<MilestoneDto> milestoneDto, int freelancerId, String name);
 
-    MilestoneDto editMilestone(MilestoneDto milestoneDto, int clientId, String name);
+    List<MilestoneDto> editMilestone(List<MilestoneDto> milestoneDto, int clientId, String name);
 
     MilestonePaymentResponse approveMilestone(int milestoneId, int clientId, String name);
 
@@ -30,4 +28,5 @@ public interface MilestoneService {
 
     MilestoneDto approveSubmission(int submissionId, int clientId, String name);
 
+    String approveMilestoneSequence(int contractId, int clientId, String name);
 }

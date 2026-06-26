@@ -32,13 +32,13 @@ public class MilestoneController {
     }
 
     @PostMapping("/update-milestone")
-    ResponseEntity<MilestoneDto> updateMilestone(@RequestBody MilestoneDto milestoneDto, int freelancerId, Authentication auth){
+    ResponseEntity<List<MilestoneDto>> updateMilestone(@RequestBody List<MilestoneDto> milestoneDto, int freelancerId, Authentication auth){
         return  ResponseEntity.ok(milestoneService.updateMilestone(milestoneDto,freelancerId,auth.getName()));
     }
 
     @PreAuthorize("hasRole('CLIENT')")
     @PostMapping("/client-feedback")
-    ResponseEntity<MilestoneDto> editMilestone(@RequestBody MilestoneDto milestoneDto, @RequestParam int clientId, Authentication auth){
+    ResponseEntity<List<MilestoneDto>> editMilestone(@RequestBody List<MilestoneDto> milestoneDto, @RequestParam int clientId, Authentication auth){
         return ResponseEntity.ok(milestoneService.editMilestone(milestoneDto,clientId,auth.getName()));
     }
 
@@ -46,6 +46,11 @@ public class MilestoneController {
     @PostMapping("/milestone-approval")
     ResponseEntity<MilestonePaymentResponse> approveMilestone(@RequestParam int milestoneId, @RequestParam int clientId, Authentication auth){
         return ResponseEntity.ok(milestoneService.approveMilestone(milestoneId,clientId,auth.getName()));
+    }
+
+    @PostMapping("/milestone-sequence-approval")
+    ResponseEntity<String> approveMilestoneSequence(@RequestParam int contractId, @RequestParam int clientId, Authentication auth){
+        return ResponseEntity.ok(milestoneService.approveMilestoneSequence(contractId,clientId,auth.getName()));
     }
 
     @GetMapping("/get-submission")

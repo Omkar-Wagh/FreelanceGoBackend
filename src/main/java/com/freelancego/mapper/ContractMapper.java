@@ -2,6 +2,7 @@ package com.freelancego.mapper;
 
 import com.freelancego.dto.user.ContractDto;
 import com.freelancego.enums.ContractStatus;
+import com.freelancego.enums.VerificationStatus;
 import com.freelancego.model.Contract;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -13,6 +14,7 @@ import java.util.List;
 public interface ContractMapper {
 
     @Mapping(target = "status", source = "status", qualifiedByName = "contractStatusToString")
+    @Mapping(target = "verificationStatus", source = "verificationStatus", qualifiedByName = "verificationStatusToString")
     ContractDto toDTO(Contract contract);
 
     Contract toEntity(ContractDto contract);
@@ -21,6 +23,10 @@ public interface ContractMapper {
 
     @Named("contractStatusToString")
     static String mapContractStatusToString(ContractStatus status) {
+        return (status == null) ? null : status.name();
+    }
+    @Named("verificationStatusToString")
+    static String mapVerificationStatusToString(VerificationStatus status) {
         return (status == null) ? null : status.name();
     }
 }

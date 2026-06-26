@@ -22,6 +22,7 @@ public class MilestoneDto {
 
     private String clientFeedback;
     private boolean locked;
+    private boolean isLast;
 
     private int milestoneProgress;
 
@@ -89,6 +90,14 @@ public class MilestoneDto {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public boolean isLast() {
+        return isLast;
+    }
+
+    public void setLast(boolean last) {
+        isLast = last;
     }
 
     public String getPaymentStatus() {
