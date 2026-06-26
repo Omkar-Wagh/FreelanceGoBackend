@@ -386,9 +386,9 @@ public class PaymentServiceImpl implements PaymentService {
         switch (status) {
             case "processed" -> {
                 payment.setStatus(PaymentStatus.COMPLETED);
+                milestone.setStatus(MilestoneStatus.COMPLETED);
 
                 if(milestone.isLast()){
-                    milestone.setStatus(MilestoneStatus.COMPLETED);
                     contract.setStatus(ContractStatus.COMPLETED);
                 }
 
