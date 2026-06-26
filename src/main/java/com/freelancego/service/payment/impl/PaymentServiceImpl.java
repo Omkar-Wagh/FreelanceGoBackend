@@ -171,6 +171,8 @@ public class PaymentServiceImpl implements PaymentService {
 
         boolean hasFundAccount = freelancer.getRazorpayFundAccountId() != null;
 
+        boolean hasLinkedAccount = freelancer.getRazorpayLinkedAccountId() != null;
+
         String contactId;
         String fundAccountId;
 
@@ -179,7 +181,7 @@ public class PaymentServiceImpl implements PaymentService {
             // ==========================================
             // CASE 1 : Fresh Setup
             // ==========================================
-            if (!hasContact && !hasFundAccount) {
+            if (!hasContact && !hasFundAccount && !hasLinkedAccount) {
 
                 contactId = razorpayService.createContact(
                         req.getAccountHolderName(),
@@ -207,16 +209,27 @@ public class PaymentServiceImpl implements PaymentService {
             // ==========================================
             // CASE 2 : Already Configured
             // ==========================================
-            if (hasContact && hasFundAccount) {
+            if (hasContact && hasFundAccount && hasLinkedAccount) {
                 freelancer.setPayoutAccountStatus(PayoutAccountStatus.ACTIVE);
                 freelancerRepository.save(freelancer);
                 return "Payout account already configured";
             }
 
+            if(hasContact && hasFundAccount && !hasLinkedAccount){
+                String linkedAccountId = razorpayService.createLinkedAccount(
+                        req.getAccountHolderName(),
+                        freelancer.getUser().getEmail(),
+                        req.getPhoneNumber()
+                );
+                freelancer.setRazorpayLinkedAccountId(linkedAccountId);
+                freelancerRepository.save(freelancer);
+                return "Payout account setup completed {Linked Account}";
+            }
             // ==========================================
             // CASE 3 : Invalid State
             // Fund Account exists without Contact
             // ==========================================
+
             throw new IllegalStateException("Invalid payout account state detected");
         }
         catch (RazorpayException e) {
@@ -306,21 +319,31 @@ public class PaymentServiceImpl implements PaymentService {
             throw new ConflictException("Payment already released");
         }
 
+        JSONObject transfer = new JSONObject();
+        transfer.put("account", payment.getPayee().getRazorpayFundAccountId());
+        transfer.put("amount", BigDecimal.valueOf(payment.getAmount()).multiply(BigDecimal.valueOf(100)).intValue());
+        transfer.put("currency", "INR");
+        transfer.put("notes", new JSONObject().put("milestoneId", milestone.getId()));
+
+        JSONObject request = new JSONObject();
+        request.put("transfers", new JSONArray().put(transfer));
+
+        List<Transfer> transfers;
         try {
-
-            String payoutId = razorpayService.createPayout(milestone.getContract().getFreelancer().getRazorpayFundAccountId(),milestone.getAmount());
-
-            payment.setRazorpayTransferId(payoutId);
-            payment.setStatus(PaymentStatus.RELEASED);
-            milestone.setPaymentStatus(PaymentStatus.RELEASED);
-
-            paymentRepository.save(payment);
-            milestoneRepository.save(milestone);
-
+            transfers = razorpayService.transfer(payment.getRazorpayPaymentId(), request);
+        } catch (RazorpayException e) {
+            throw new RuntimeException("Failed to initiate payout " + e.getMessage());
         }
-        catch (Exception e) {
-            throw new RuntimeException("Failed to initiate payout : " + e.getMessage());
-        }
+
+        Transfer t = transfers.get(0);
+
+        payment.setRazorpayTransferId(t.get("id").toString());
+        payment.setStatus(PaymentStatus.RELEASED);
+
+        milestone.setPaymentStatus(PaymentStatus.RELEASED);
+
+        paymentRepository.save(payment);
+        milestoneRepository.save(milestone);
     }
 
     @Transactional

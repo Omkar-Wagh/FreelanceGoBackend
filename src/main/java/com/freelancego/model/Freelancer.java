@@ -27,6 +27,9 @@ public class Freelancer {
     @Column(unique = true)
     private String razorpayFundAccountId;
 
+    @Column(unique = true)
+    private String razorpayLinkedAccountId;
+
     @Enumerated(EnumType.STRING)
     private PayoutAccountStatus payoutAccountStatus = PayoutAccountStatus.NOT_CREATED;
 
@@ -109,6 +112,14 @@ public class Freelancer {
 
     public void setRazorpayFundAccountId(String razorpayFundAccountId) {
         this.razorpayFundAccountId = razorpayFundAccountId;
+    }
+
+    public String getRazorpayLinkedAccountId() {
+        return razorpayLinkedAccountId;
+    }
+
+    public void setRazorpayLinkedAccountId(String razorpayLinkedAccountId) {
+        this.razorpayLinkedAccountId = razorpayLinkedAccountId;
     }
 
     public PayoutAccountStatus getPayoutAccountStatus() {

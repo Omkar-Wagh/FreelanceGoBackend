@@ -379,7 +379,7 @@ public class MilestoneServiceImpl implements MilestoneService {
         try{
             paymentService.releaseMilestonePayment(milestone);
         }catch (Exception e){
-            throw new RuntimeException("" + e.getMessage());
+            throw new RuntimeException(" Failed to make payout " + e.getMessage());
         }
         return milestoneMapper.toDTO(milestone);
     }

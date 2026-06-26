@@ -72,6 +72,54 @@ public class RazorpayService {
         return new JSONObject(response).getString("id");
     }
 
+    public String createLinkedAccount(String name,
+                                      String email,
+                                      String phone) {
+
+        WebClient webClient = WebClient.builder()
+                .baseUrl("https://api.razorpay.com")
+                .defaultHeaders(headers -> {
+                    headers.setBasicAuth(keyId, keySecret);
+                    headers.setContentType(MediaType.APPLICATION_JSON);
+                })
+                .build();
+
+        JSONObject registered = new JSONObject();
+        registered.put("street1", "India");
+        registered.put("street2", "India");
+        registered.put("city", "India");
+        registered.put("state", "Maharashtra");
+        registered.put("postal_code", "111111");
+        registered.put("country", "IN");
+
+        JSONObject addresses = new JSONObject();
+        addresses.put("registered", registered);
+
+        JSONObject profile = new JSONObject();
+        profile.put("category", "services");
+        profile.put("subcategory", "professional_services");
+        profile.put("addresses", addresses);
+
+        JSONObject request = new JSONObject();
+        request.put("email", email);
+        request.put("phone", phone);
+        request.put("type", "route");
+
+        request.put("legal_business_name", name);
+        request.put("business_type", "individual");
+
+        request.put("profile", profile);
+
+        String response = webClient.post()
+                .uri("/v2/accounts")
+                .bodyValue(request.toString())
+                .retrieve()
+                .bodyToMono(String.class)
+                .block();
+
+        return new JSONObject(response).getString("id");
+    }
+
     /* -------------------------------------------------
        CREATE FUND ACCOUNT (SDK SAFE)
        ------------------------------------------------- */
@@ -181,9 +229,9 @@ public class RazorpayService {
     /* -------------------------------------------------
        TRANSFER PAYMENT (ESCROW → FREELANCER)
        ------------------------------------------------- */
-//    public List<Transfer> transfer(String paymentId, JSONObject transferRequest) throws RazorpayException {
-//        return client.payments.transfer(paymentId, transferRequest);
-//    }
+    public List<Transfer> transfer(String paymentId, JSONObject transferRequest) throws RazorpayException {
+        return client.payments.transfer(paymentId, transferRequest);
+    }
 
     public String createPayout(String fundAccountId, double amount) {
 
