@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class RazorpayService {
@@ -180,8 +181,35 @@ public class RazorpayService {
     /* -------------------------------------------------
        TRANSFER PAYMENT (ESCROW → FREELANCER)
        ------------------------------------------------- */
-    public List<Transfer> transfer(String paymentId, JSONObject transferRequest) throws RazorpayException {
-        return client.payments.transfer(paymentId, transferRequest);
+//    public List<Transfer> transfer(String paymentId, JSONObject transferRequest) throws RazorpayException {
+//        return client.payments.transfer(paymentId, transferRequest);
+//    }
+
+    public String createPayout(String fundAccountId, double amount) {
+
+        WebClient webClient = WebClient.builder()
+                .baseUrl("https://api.razorpay.com")
+                .defaultHeaders(headers -> {
+                    headers.setBasicAuth(keyId, keySecret);
+                    headers.setContentType(MediaType.APPLICATION_JSON);
+                })
+                .build();
+
+        JSONObject request = new JSONObject();
+        // Your RazorpayX account number (mandatory)
+        request.put("account_number", "41269949504");
+        request.put("fund_account_id", fundAccountId);
+        request.put("amount", Math.round(amount * 100));
+        request.put("currency", "INR");
+
+        String response = webClient.post()
+                .uri("/v1/payouts")
+                .bodyValue(request.toString())
+                .retrieve()
+                .bodyToMono(String.class)
+                .block();
+
+        return new JSONObject(response).getString("id");
     }
 
     /* -------------------------------------------------

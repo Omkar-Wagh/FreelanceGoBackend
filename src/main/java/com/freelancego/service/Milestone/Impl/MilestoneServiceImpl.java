@@ -363,6 +363,7 @@ public class MilestoneServiceImpl implements MilestoneService {
 
         Milestone milestone = milestoneRepository.findBySubmission(submission);
 
+
         if (milestone.getContract().getClient().getId() != client.getId()) {
             throw new BadRequestException("unauthorised to provide submission approval");
         }

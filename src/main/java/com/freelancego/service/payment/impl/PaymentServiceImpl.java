@@ -306,31 +306,21 @@ public class PaymentServiceImpl implements PaymentService {
             throw new ConflictException("Payment already released");
         }
 
-        JSONObject transfer = new JSONObject();
-        transfer.put("account", payment.getPayee().getRazorpayFundAccountId());
-        transfer.put("amount", BigDecimal.valueOf(payment.getAmount()).multiply(BigDecimal.valueOf(100)).intValue());
-        transfer.put("currency", "INR");
-        transfer.put("notes", new JSONObject().put("milestoneId", milestone.getId()));
-
-        JSONObject request = new JSONObject();
-        request.put("transfers", new JSONArray().put(transfer));
-
-        List<Transfer> transfers;
         try {
-            transfers = razorpayService.transfer(payment.getRazorpayPaymentId(), request);
-        } catch (RazorpayException e) {
-            throw new RuntimeException("Failed to initiate payout " + e.getMessage());
+
+            String payoutId = razorpayService.createPayout(milestone.getContract().getFreelancer().getRazorpayFundAccountId(),milestone.getAmount());
+
+            payment.setRazorpayTransferId(payoutId);
+            payment.setStatus(PaymentStatus.RELEASED);
+            milestone.setPaymentStatus(PaymentStatus.RELEASED);
+
+            paymentRepository.save(payment);
+            milestoneRepository.save(milestone);
+
         }
-
-        Transfer t = transfers.get(0);
-
-        payment.setRazorpayTransferId(t.get("id").toString());
-        payment.setStatus(PaymentStatus.RELEASED);
-
-        milestone.setPaymentStatus(PaymentStatus.RELEASED);
-
-        paymentRepository.save(payment);
-        milestoneRepository.save(milestone);
+        catch (Exception e) {
+            throw new RuntimeException("Failed to initiate payout : " + e.getMessage());
+        }
     }
 
     @Transactional
