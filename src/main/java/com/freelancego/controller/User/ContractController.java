@@ -16,7 +16,6 @@ public class ContractController {
         this.contractService = contractService;
     }
 
-
     @GetMapping("/contract")
     ResponseEntity<ContractDto> getContract(@PathVariable("jobId") int jobId, @PathVariable("freelancerId") int freelancerId,
                                        @PathVariable("clientId") int clientId, Authentication auth){

@@ -408,8 +408,7 @@ public class MilestoneServiceImpl implements MilestoneService {
         Submission submission = submissionRepository.findById(submissionDto.getId())
                 .orElseThrow(() -> new UserNotFoundException("submission not found"));
 
-        Milestone milestone = milestoneRepository.findById(submission.getId())
-                .orElseThrow(()-> new UserNotFoundException("milestone not found"));
+        Milestone milestone = milestoneRepository.findBySubmission(submission);
 
         if (milestone.getContract().getClient().getId() != client.getId()) {
             throw new BadRequestException("unauthorised to provide submission remark");
