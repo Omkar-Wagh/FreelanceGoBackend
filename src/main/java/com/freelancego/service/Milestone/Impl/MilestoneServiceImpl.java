@@ -380,6 +380,7 @@ public class MilestoneServiceImpl implements MilestoneService {
             if (filename != null && filename.matches(regex)) {
                 try {
                     fileUrl = supabaseUtil.uploadFile(file);
+                    submission.setFileUrl(fileUrl);
                 } catch (Exception e) {
                     throw new InternalServerErrorException("Error while uploading file: " + e.getMessage());
                 }
@@ -389,10 +390,6 @@ public class MilestoneServiceImpl implements MilestoneService {
         if(submission.getStatus() == SubmissionStatus.APPROVED){
             throw new BadRequestException(
                     "Approved submission cannot be modified");
-        }
-
-        if(fileUrl != null){
-            submission.setFileUrl(fileUrl);
         }
 
         submission.setNotes(submissionDto.getNotes());
@@ -425,7 +422,11 @@ public class MilestoneServiceImpl implements MilestoneService {
             throw new BadRequestException("unauthorised to provide submission remark");
         }
 
-        if(submissionDto != null && submission.getStatus() != SubmissionStatus.APPROVED){
+        if(submission.getStatus().equals(SubmissionStatus.APPROVED)){
+            throw new BadRequestException("Submission is already approved");
+        }
+
+        if(submissionDto != null){
             submission.setClientRemark(submissionDto.getClientRemark());
             submission.setStatus(SubmissionStatus.REVISION_REQUESTED);
             submissionRepository.save(submission);

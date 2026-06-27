@@ -224,16 +224,6 @@ public class PaymentServiceImpl implements PaymentService {
                 return "Payout account already configured";
             }
 
-            if(hasContact && hasFundAccount && !hasLinkedAccount){
-                linkedAccountId = razorpayService.createLinkedAccount(
-                        req.getAccountHolderName(),
-                        freelancer.getUser().getEmail(),
-                        req.getPhoneNumber()
-                );
-                freelancer.setRazorpayLinkedAccountId(linkedAccountId);
-                freelancerRepository.save(freelancer);
-                return "Payout account setup completed {Linked Account}";
-            }
             // ==========================================
             // CASE 3 : Invalid State
             // Fund Account exists without Contact
